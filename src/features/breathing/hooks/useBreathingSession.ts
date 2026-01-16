@@ -2,6 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { BreathLevel } from '../data/patterns';
 import dayjs from 'dayjs';
 import { soundManager } from '../../../utils/sounds';
+import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '../../../utils/localStorage';
+import type { HistoryRecord } from '../../../utils/types';
+
+// Константы
+const MIN_SESSION_DURATION_SECONDS = 15;
+const TIMER_INTERVAL_MS = 250;
+const MAX_HISTORY_ITEMS = 1000; // Ограничение размера истории
 
 export type Phase = 'idle' | 'inhale' | 'hold' | 'exhale' | 'finished';
 
@@ -54,6 +61,55 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     if (navigator.vibrate) navigator.vibrate(50);
   }, [level]);
 
+  const stopEngine = useCallback(() => {
+    if (state.current.timerId) {
+      clearInterval(state.current.timerId);
+      state.current.timerId = null;
+    }
+  }, []);
+
+  // --- ACTIONS ---
+
+  const saveToHistory = useCallback((endTimeStr: string, durationSec: number) => {
+    if (durationSec < MIN_SESSION_DURATION_SECONDS) return; 
+
+    try {
+      const record: HistoryRecord = {
+        id: Date.now().toString(),
+        type: 'breathing',
+        scheme: `Уровень ${level.id} (${level.inhale}-${level.hold}-${level.exhale})`,
+        startTime: dayjs(state.current.startTime || Date.now()).toISOString(),
+        endTime: endTimeStr,
+        durationSeconds: durationSec
+      };
+
+      const history = safeLocalStorageGetJSON<HistoryRecord[]>('history_fasting', []);
+      
+      // ИСПРАВЛЕНИЕ: Добавляем .slice(0, MAX_HISTORY_ITEMS)
+      const newHistory = [record, ...history].slice(0, MAX_HISTORY_ITEMS);
+      
+      safeLocalStorageSetJSON('history_fasting', newHistory);
+    } catch (error) {
+      console.error('Failed to save session', error);
+    }
+  }, [level]);
+
+  const finishSession = useCallback(() => {
+    stopEngine();
+    
+    soundManager.playFinish(); 
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+    if (state.current.startTime) {
+      const now = Date.now();
+      const duration = Math.floor((now - state.current.startTime) / 1000);
+      saveToHistory(dayjs(now).toISOString(), duration);
+    }
+
+    setPhase('finished');
+    state.current.status = 'finished';
+  }, [stopEngine, saveToHistory]);
+
   const tick = useCallback(() => {
     const now = Date.now();
     const s = state.current;
@@ -77,56 +133,9 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     } else {
       setPhaseTimeLeft(phaseRemaining);
     }
-  }, [nextPhase]);
+  }, [nextPhase, finishSession]);
 
-  // --- ACTIONS ---
-
-  const saveToHistory = useCallback((endTimeStr: string, durationSec: number) => {
-    if (durationSec < 15) return; 
-
-    try {
-      const record = {
-        id: Date.now().toString(),
-        type: 'breathing',
-        scheme: `Уровень ${level.id} (${level.inhale}-${level.hold}-${level.exhale})`,
-        startTime: dayjs(state.current.startTime).toISOString(),
-        endTime: endTimeStr,
-        durationSeconds: durationSec
-      };
-
-      const history = JSON.parse(localStorage.getItem('history_fasting') || '[]');
-      localStorage.setItem('history_fasting', JSON.stringify([record, ...history]));
-    } catch (error) {
-      console.error('Failed to save session', error);
-    }
-  }, [level]);
-
-  const finishSession = () => {
-    stopEngine();
-    
-    soundManager.playFinish(); // Победный звук + остановка музыки
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
-    if (state.current.startTime) {
-      const now = Date.now();
-      const duration = Math.floor((now - state.current.startTime) / 1000);
-      saveToHistory(dayjs(now).toISOString(), duration);
-    }
-
-    setPhase('finished');
-    state.current.status = 'finished';
-  };
-
-  const stopEngine = () => {
-    if (state.current.timerId) {
-      clearInterval(state.current.timerId);
-      state.current.timerId = null;
-    }
-    // Здесь мы НЕ останавливаем музыку полностью, 
-    // это делает soundManager.stopSession() внутри stopSession()
-  };
-
-  const stopSession = () => {
+  const stopSession = useCallback(() => {
     if (state.current.startTime && state.current.status !== 'idle' && state.current.status !== 'finished') {
       const now = Date.now();
       const duration = Math.floor((now - state.current.startTime) / 1000);
@@ -134,19 +143,17 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     }
 
     stopEngine();
-    soundManager.stopSession(); // Останавливаем музыку и фон
+    soundManager.stopSession(); 
     
     state.current.status = 'idle';
     setPhase('idle');
-  };
+  }, [stopEngine, saveToHistory]);
 
-  const startSession = () => {
+  const startSession = useCallback(() => {
     stopEngine();
-    
-    // Инициализация звука (Новый API)
     soundManager.unlock();
-    soundManager.startSession(); // Запуск фона
-    soundManager.playInhale();   // Первый колокольчик
+    soundManager.startSession(); 
+    soundManager.playInhale();   
 
     const now = Date.now();
     state.current.startTime = now;
@@ -166,8 +173,8 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     setPhaseTimeLeft(level.inhale);
     setCycles(0);
 
-    state.current.timerId = window.setInterval(tick, 100);
-  };
+    state.current.timerId = window.setInterval(tick, TIMER_INTERVAL_MS);
+  }, [level, sessionDurationMinutes, tick, stopEngine]);
 
   useEffect(() => {
     return () => {
@@ -177,25 +184,31 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
         const start = state.current.startTime || now;
         const duration = Math.floor((now - start) / 1000);
         
-        if (duration > 15) {
+        if (duration > MIN_SESSION_DURATION_SECONDS) {
              try {
-                const rec = {
+                const rec: HistoryRecord = {
                     id: Date.now().toString(),
                     type: 'breathing',
-                    scheme: `Уровень ${level.id}`, // Упрощенное название для быстрого сохранения
+                    scheme: `Уровень ${level.id}`, 
                     startTime: dayjs(start).toISOString(),
                     endTime: dayjs(now).toISOString(),
                     durationSeconds: duration
                 };
-                const h = JSON.parse(localStorage.getItem('history_fasting') || '[]');
-                localStorage.setItem('history_fasting', JSON.stringify([rec, ...h]));
-             } catch(e) {}
+                const h = safeLocalStorageGetJSON<HistoryRecord[]>('history_fasting', []);
+                
+                // ИСПРАВЛЕНИЕ: Добавляем .slice(0, MAX_HISTORY_ITEMS) и здесь тоже
+                const newHistory = [rec, ...h].slice(0, MAX_HISTORY_ITEMS);
+                
+                safeLocalStorageSetJSON('history_fasting', newHistory);
+             } catch(e) {
+                console.error('Failed to save session on unmount', e);
+             }
         }
       }
       stopEngine();
-      soundManager.stopAll(); // Полная тишина при размонтировании
+      soundManager.stopAll(); 
     };
-  }, []);
+  }, [level, stopEngine]); 
 
   return { 
     phase, 

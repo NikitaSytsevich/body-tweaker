@@ -1,11 +1,37 @@
-import { useState, useRef, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, memo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Map, Timer, Wind, History, Settings } from 'lucide-react';
 import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { cn } from '../utils/cn';
 import { SettingsModal } from './modals/SettingsModal';
 import { InfoModal } from './modals/InfoModal';
+import { safeLocalStorageGet, safeLocalStorageSet } from '../utils/localStorage';
 import WebApp from '@twa-dev/sdk';
+
+import { MetabolismMapPage } from '../features/fasting/MetabolismMapPage';
+import { FastingPage } from '../features/fasting/FastingPage';
+import { BreathingPage } from '../features/breathing/BreathingPage';
+import { HistoryPage } from '../features/history/HistoryPage';
+
+import { useFastingTimerContext } from '../features/fasting/context/TimerContext';
+import { ToastNotification } from '../components/ui/ToastNotification';
+
+// 👇 1. Вынесли PageView наружу и обернули в memo
+const PageView = memo(({ isActive, children }: { isActive: boolean, children: React.ReactNode }) => {
+    return (
+        <div 
+          className={cn(
+              "w-full h-full absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide", 
+              "pb-32 px-4 pt-2",
+              isActive ? "z-10 opacity-100 pointer-events-auto" : "-z-10 opacity-0 pointer-events-none"
+          )}
+          style={{ visibility: isActive ? 'visible' : 'hidden' }}
+        >
+            {children}
+        </div>
+    );
+});
 
 export const Layout = () => {
   const location = useLocation();
@@ -13,6 +39,8 @@ export const Layout = () => {
   
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  const { notification, closeNotification, setPhaseToOpen } = useFastingTimerContext();
 
   const navRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -30,41 +58,42 @@ export const Layout = () => {
     { id: 'history', path: '/history', icon: History },
   ];
 
+  const activeIndex = navItems.findIndex(i => i.path === location.pathname);
+  const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
+
   useEffect(() => {
-    const syncPosition = () => {
-        if (!isDragging) {
-            const index = navItems.findIndex(i => i.path === location.pathname);
-            const safeIndex = index === -1 ? 0 : index;
-            xPercent.set(safeIndex * 25);
-        }
-    };
-    syncPosition();
-    window.addEventListener('resize', syncPosition);
-    return () => window.removeEventListener('resize', syncPosition);
-  }, [location.pathname, isDragging]);
+    if (!isDragging) {
+        xPercent.set(safeActiveIndex * 25);
+    }
+  }, [safeActiveIndex, isDragging]);
 
   useEffect(() => {
     try {
-        WebApp.ready(); WebApp.expand();
-        WebApp.setHeaderColor('#F2F2F7'); WebApp.setBackgroundColor('#F2F2F7');
-        if (WebApp.initDataUnsafe?.user && !localStorage.getItem('user_name')) {
-            localStorage.setItem('user_name', WebApp.initDataUnsafe.user.first_name);
+        WebApp.ready(); 
+        WebApp.expand();
+        WebApp.setHeaderColor('#F2F2F7'); 
+        WebApp.setBackgroundColor('#F2F2F7');
+        if (WebApp.initDataUnsafe?.user && !safeLocalStorageGet('user_name')) {
+            safeLocalStorageSet('user_name', WebApp.initDataUnsafe.user.first_name);
         }
-    } catch (e) {}
+    } catch (e) { /* ignore */ }
   }, []);
+
+  const handleNotificationClick = () => {
+      if (notification?.phaseId) {
+          setPhaseToOpen(notification.phaseId);
+          navigate('/');
+      }
+  };
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
       if (!isDragging || !navRef.current) return;
       const rect = navRef.current.getBoundingClientRect();
-      const padding = 8;
-      const contentWidth = rect.width - (padding * 2);
+      const contentWidth = rect.width - 16;
       if (contentWidth <= 0) return;
-      const itemWidth = contentWidth / 4;
-      let relativeX = e.clientX - rect.left - padding - (itemWidth / 2);
+      let relativeX = e.clientX - rect.left - 8 - (contentWidth / 8); 
       let percent = (relativeX / contentWidth) * 100;
-      if (percent < 0) percent = percent / 4;
-      if (percent > 75) percent = 75 + (percent - 75) / 4;
       xPercent.set(percent);
     };
 
@@ -72,13 +101,13 @@ export const Layout = () => {
       if (!isDragging || !navRef.current) return;
       setIsDragging(false);
       const rect = navRef.current.getBoundingClientRect();
-      const padding = 8;
-      const contentWidth = rect.width - (padding * 2);
+      const contentWidth = rect.width - 16;
       const itemWidth = contentWidth / 4;
-      const relativeX = e.clientX - rect.left - padding;
+      const relativeX = e.clientX - rect.left - 8;
       let index = Math.floor(relativeX / itemWidth);
       index = Math.max(0, Math.min(index, 3));
       const targetPath = navItems[index].path;
+      
       if (targetPath !== location.pathname) {
         if (navigator.vibrate) navigator.vibrate(15);
         navigate(targetPath);
@@ -102,30 +131,37 @@ export const Layout = () => {
   const leftStyle = useTransform(springPercent, (v) => `calc(${v}% + 8px)`);
 
   return (
-    // ИСПРАВЛЕНИЕ 1: Удален класс 'touch-none', чтобы разрешить скролл и жесты
-    <div className="min-h-screen bg-[#F2F2F7] flex justify-center font-sans text-slate-900 selection:bg-blue-100">
+    <div className="bg-[#F2F2F7] flex justify-center font-sans text-slate-900 h-[100dvh] w-screen overflow-hidden fixed inset-0">
       
-      {/* ИСПРАВЛЕНИЕ 2: Заменено min-h-screen на h-[100dvh], чтобы main скроллился внутри контейнера */}
-      <div className="w-full max-w-md bg-[#F2F2F7] h-[100dvh] relative flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full max-w-md bg-[#F2F2F7] h-full relative flex flex-col shadow-2xl overflow-hidden">
         
-        {/* HEADER (Z-30) */}
-        <header className="px-6 pt-14 pb-4 bg-[#F2F2F7]/80 backdrop-blur-xl sticky top-0 z-30 flex justify-between items-center transition-all">
-          <div onClick={() => setIsInfoOpen(true)} className="cursor-pointer active:opacity-60 transition-opacity">
+        <header className="px-6 pt-safe pb-4 bg-[#F2F2F7]/90 backdrop-blur-xl sticky top-0 z-30 flex justify-between items-center transition-all shrink-0">
+          <div onClick={() => setIsInfoOpen(true)} className="cursor-pointer active:opacity-60 transition-opacity pt-2">
             <h1 className="text-2xl font-[850] tracking-tight text-slate-900">Body Tweaker</h1>
             <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-0.5">Scientific Biohacking</p>
           </div>
-          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)} className="p-2.5 text-slate-400 hover:text-slate-600 bg-white rounded-full shadow-sm border border-slate-100">
+          <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)} className="mt-2 p-2.5 text-slate-400 hover:text-slate-600 bg-white rounded-full shadow-sm border border-slate-100">
             <Settings className="w-5 h-5" />
           </motion.button>
         </header>
 
-        {/* CONTENT */}
-        <main className="flex-1 overflow-y-auto pb-32 scrollbar-hide px-4 pt-2">
-          <Outlet />
+        <main className="flex-1 relative w-full overflow-hidden">
+            {/* 👇 2. Передаем isActive как проп */}
+            <PageView isActive={location.pathname === '/' || location.pathname === ''}>
+                <MetabolismMapPage />
+            </PageView>
+            <PageView isActive={location.pathname === '/timer'}>
+                <FastingPage />
+            </PageView>
+            <PageView isActive={location.pathname === '/breathing'}>
+                <BreathingPage />
+            </PageView>
+            <PageView isActive={location.pathname === '/history'}>
+                <HistoryPage />
+            </PageView>
         </main>
 
-        {/* DOCK (Z-40) */}
-        <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-center">
+        <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-center pointer-events-none">
           <motion.nav 
             ref={navRef}
             animate={{ scale: isDragging ? 0.98 : 1, y: isDragging ? 2 : 0 }}
@@ -135,14 +171,12 @@ export const Layout = () => {
                 e.preventDefault();
                 setIsDragging(true);
                 const rect = e.currentTarget.getBoundingClientRect();
-                const padding = 8;
-                const contentWidth = rect.width - (padding * 2);
-                if (contentWidth <= 0) return;
-                let relativeX = e.clientX - rect.left - padding - (contentWidth / 8); 
+                const contentWidth = rect.width - 16;
+                let relativeX = e.clientX - rect.left - 8 - (contentWidth / 8); 
                 let percent = (relativeX / contentWidth) * 100;
                 xPercent.set(percent);
             }}
-            className="bg-white/90 backdrop-blur-2xl border border-white/40 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] rounded-[2.5rem] px-2 py-2 flex items-center mx-4 max-w-sm w-full relative h-20 cursor-grab active:cursor-grabbing select-none"
+            className="pointer-events-auto bg-white/90 backdrop-blur-2xl border border-white/40 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] rounded-[2.5rem] px-2 py-2 flex items-center mx-4 max-w-sm w-full relative h-20 cursor-grab active:cursor-grabbing select-none"
           >
             <motion.div
                 className="absolute top-2 bottom-2 bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] rounded-[2rem] border border-slate-100 z-0 pointer-events-none"
@@ -154,7 +188,7 @@ export const Layout = () => {
             />
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
-              const getIconAnimation = (): any => {
+              const getIconAnimation = (): Variants | Record<string, unknown> => {
                   if (!isActive) return {};
                   switch (item.id) {
                       case 'map': return { scaleX: [1, 1.2, 0.9, 1], transition: { duration: 0.6 } };
@@ -164,14 +198,15 @@ export const Layout = () => {
                       default: return { scale: 1.2, y: -4 };
                   }
               };
+              
               return (
                 <div key={item.id} className="relative flex-1 flex flex-col items-center justify-center h-full z-10 pointer-events-none">
-                  <motion.div animate={isActive ? { ...getIconAnimation(), y: -4, scale: 1.1 } : { y: 0, scale: 1, rotate: 0, x: 0, scaleX: 1 } as any}>
+                  <motion.div animate={isActive ? { ...getIconAnimation(), y: -4, scale: 1.1 } : { y: 0, scale: 1, rotate: 0 }}>
                     <item.icon className={cn("w-6 h-6 transition-colors duration-200", isActive ? "text-blue-600 fill-blue-600/10" : "text-slate-400")} strokeWidth={isActive ? 2.5 : 2} />
                   </motion.div>
                   <AnimatePresence>
                     {isActive && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="w-1 h-1 bg-blue-600 rounded-full absolute bottom-3" />
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="w-1 h-1 bg-blue-600 rounded-full absolute bottom-3" />
                     )}
                   </AnimatePresence>
                 </div>
@@ -180,7 +215,14 @@ export const Layout = () => {
           </motion.nav>
         </div>
 
-        {/* MODALS */}
+        <ToastNotification 
+            isVisible={!!notification} 
+            title={notification?.title || ""} 
+            message={notification?.message || ""} 
+            onClose={closeNotification} 
+            onPress={handleNotificationClick}
+        />
+
         {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
         {isInfoOpen && <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />}
 

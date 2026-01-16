@@ -1,21 +1,16 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './app/Layout';
 import { WelcomeScreen } from './app/WelcomeScreen';
-
-// Импорты страниц
-import { MetabolismMapPage } from './features/fasting/MetabolismMapPage';
-import { FastingPage } from './features/fasting/FastingPage';
-import { BreathingPage } from './features/breathing/BreathingPage';
-import { HistoryPage } from './features/history/HistoryPage';
+import { TimerProvider } from './features/fasting/context/TimerContext';
 
 function App() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
-      // Проверяем, согласился ли пользователь с условиями
-      const accepted = localStorage.getItem('has_accepted_terms');
-      if (!accepted) {
+      // Прямая проверка (надежно)
+      const accepted = localStorage.getItem('bt_app_has_accepted_terms');
+      if (accepted !== 'true') {
           setShowWelcome(true);
       }
   }, []);
@@ -25,27 +20,13 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          
-          {/* Главная: Карта метаболизма */}
-          <Route index element={<MetabolismMapPage />} />
-          
-          {/* Таймер голодания */}
-          <Route path="timer" element={<FastingPage />} />
-          
-          {/* Дыхательные практики */}
-          <Route path="breathing" element={<BreathingPage />} />
-          
-          {/* История */}
-          <Route path="history" element={<HistoryPage />} />
-          
-          {/* Любой другой путь -> на главную */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <TimerProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="*" element={<Layout />} />
+        </Routes>
+      </BrowserRouter>
+    </TimerProvider>
   );
 }
 

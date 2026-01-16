@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom'; // 👈 Импорт Портала
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Activity, AlertTriangle, Lightbulb, Thermometer } from 'lucide-react';
-import type { FastingStage } from '../data/stages'; // Исправлен импорт типа
+import type { FastingStage } from '../data/stages';
 import { cn } from '../../../utils/cn';
 
 interface Props {
@@ -9,120 +10,128 @@ interface Props {
 }
 
 export const PhaseSheet = ({ phase, onClose }: Props) => {
-  if (!phase) return null;
-
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-      />
-
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#F2F2F7] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
-      >
-        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
-          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-        </div>
-
-        <button 
+  // Контент модалки
+  const content = (
+    <AnimatePresence>
+      {phase && (
+        <>
+          {/* Затемнение */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 bg-gray-200/50 hover:bg-gray-200 rounded-full transition-colors z-50"
-        >
-            <X className="w-5 h-5 text-gray-500" />
-        </button>
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[100]"
+          />
 
-        <div className="flex-1 overflow-y-auto pb-safe px-4 pt-2">
-          
-          <div className="text-center mb-6 px-4">
-            <div className={cn(
-                "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3 shadow-lg",
-                phase.color.replace('text-', 'bg-').replace('600', '100')
-            )}>
-                <phase.icon className={cn("w-8 h-8", phase.color)} />
+          {/* Шторка */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
+          >
+            <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 leading-tight">
-                {phase.title}
-            </h2>
-            <p className="text-sm font-medium text-gray-400 mt-1 font-mono uppercase tracking-wide">
-                {phase.hoursStart} — {phase.hoursEnd ?? '∞'} ч
-            </p>
-          </div>
 
-          <div className="space-y-4 pb-10">
-            
-            <div className="bg-white rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
-                    <Activity className="w-5 h-5 text-blue-500" />
-                    <h3 className="font-bold text-slate-800">Физиология</h3>
+            <button 
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 bg-gray-200/50 hover:bg-gray-200 rounded-full transition-colors z-50"
+            >
+                <X className="w-5 h-5 text-gray-500" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto pb-safe px-4 pt-2">
+              
+              <div className="text-center mb-6 px-4">
+                <div className={cn(
+                    "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3 shadow-lg",
+                    phase.color.replace('text-', 'bg-').replace('600', '100')
+                )}>
+                    <phase.icon className={cn("w-8 h-8", phase.color)} />
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                    {phase.details.physiology}
+                <h2 className="text-2xl font-black text-slate-900 leading-tight">
+                    {phase.title}
+                </h2>
+                <p className="text-sm font-medium text-gray-400 mt-1 font-mono uppercase tracking-wide">
+                    {phase.hoursStart} — {phase.hoursEnd ?? '∞'} ч
                 </p>
-            </div>
+              </div>
 
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
-                    <Thermometer className="w-4 h-4 text-orange-500" />
-                    <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wide">Что вы чувствуете</h3>
+              <div className="space-y-4 pb-10">
+                
+                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
+                        <Activity className="w-5 h-5 text-blue-500" />
+                        <h3 className="font-bold text-slate-800">Физиология</h3>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                        {phase.details.physiology}
+                    </p>
                 </div>
-                <div className="p-5">
-                    <ul className="space-y-3">
-                        {phase.details.sensations.map((item, i) => (
-                            <li key={i} className="flex gap-3 text-sm text-slate-700">
-                                <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0" />
-                                {item}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
 
-            {phase.recommendations && (
-                <div className="bg-white rounded-2xl overflow-hidden shadow-sm border-l-4 border-green-500">
-                    <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4 text-green-600" />
-                        <h3 className="font-bold text-sm text-green-700 uppercase tracking-wide">Советы</h3>
+                <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                    <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
+                        <Thermometer className="w-4 h-4 text-orange-500" />
+                        <h3 className="font-bold text-sm text-gray-500 uppercase tracking-wide">Что вы чувствуете</h3>
                     </div>
                     <div className="p-5">
                         <ul className="space-y-3">
-                            {phase.recommendations.map((item, i) => (
+                            {phase.details.sensations.map((item, i) => (
                                 <li key={i} className="flex gap-3 text-sm text-slate-700">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0" />
                                     {item}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
-            )}
 
-            {phase.precautions && phase.precautions.length > 0 && (
-                <div className="bg-rose-50 rounded-2xl p-5 border border-rose-100">
-                    <div className="flex items-center gap-2 mb-3 text-rose-600">
-                        <AlertTriangle className="w-5 h-5" />
-                        <h3 className="font-bold">Меры предосторожности</h3>
+                {phase.recommendations && (
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border-l-4 border-green-500">
+                        <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-green-600" />
+                            <h3 className="font-bold text-sm text-green-700 uppercase tracking-wide">Советы</h3>
+                        </div>
+                        <div className="p-5">
+                            <ul className="space-y-3">
+                                {phase.recommendations.map((item, i) => (
+                                    <li key={i} className="flex gap-3 text-sm text-slate-700">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
-                    <ul className="space-y-2">
-                        {phase.precautions.map((item, i) => (
-                            <li key={i} className="text-xs text-rose-800 leading-relaxed opacity-80">
-                                • {item}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+                )}
 
-          </div>
-        </div>
-      </motion.div>
-    </>
+                {phase.precautions && phase.precautions.length > 0 && (
+                    <div className="bg-rose-50 rounded-2xl p-5 border border-rose-100">
+                        <div className="flex items-center gap-2 mb-3 text-rose-600">
+                            <AlertTriangle className="w-5 h-5" />
+                            <h3 className="font-bold">Меры предосторожности</h3>
+                        </div>
+                        <ul className="space-y-2">
+                            {phase.precautions.map((item, i) => (
+                                <li key={i} className="text-xs text-rose-800 leading-relaxed opacity-80">
+                                    • {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
+
+  // Рендерим в body
+  return createPortal(content, document.body);
 };

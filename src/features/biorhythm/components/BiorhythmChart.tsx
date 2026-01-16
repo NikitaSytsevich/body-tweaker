@@ -1,7 +1,14 @@
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, Tooltip } from 'recharts';
 
+export interface BiorhythmDataPoint {
+  date: string;
+  physical: number;
+  emotional: number;
+  intellectual: number;
+}
+
 interface Props {
-  data: any[];
+  data: BiorhythmDataPoint[];
 }
 
 export const BiorhythmChart = ({ data }: Props) => {

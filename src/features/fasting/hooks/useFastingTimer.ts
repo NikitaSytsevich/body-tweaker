@@ -1,16 +1,26 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import dayjs from 'dayjs';
 import { FASTING_SCHEMES } from '../data/schemes';
 import { FASTING_PHASES } from '../data/stages';
+import { 
+  safeLocalStorageGet, 
+  safeLocalStorageSet, 
+  safeLocalStorageRemove, 
+  safeLocalStorageGetJSON,
+  safeLocalStorageUpdateHistory // 👈 Новая функция
+} from '../../../utils/localStorage';
+import type { NotificationSettings, HistoryRecord } from '../../../utils/types';
 
 export const useFastingTimer = () => {
+  // 1. Инициализация (Ленивая)
   const [schemeId, setSchemeId] = useState(() => {
-    const saved = localStorage.getItem('fasting_scheme');
+    const saved = safeLocalStorageGet('fasting_scheme');
+    // Проверяем, существует ли такой ID (вдруг удалили схему из конфига)
     const exists = FASTING_SCHEMES.find(s => s.id === saved);
     return exists ? saved : FASTING_SCHEMES[0].id;
   });
 
-  const [startTime, setStartTimeState] = useState<string | null>(() => localStorage.getItem('fasting_startTime'));
+  const [startTime, setStartTimeState] = useState<string | null>(() => safeLocalStorageGet('fasting_startTime'));
   const [elapsed, setElapsed] = useState(0);
   
   const [notification, setNotification] = useState<{title: string, message: string} | null>(null);
@@ -19,27 +29,34 @@ export const useFastingTimer = () => {
   const scheme = FASTING_SCHEMES.find(s => s.id === schemeId) || FASTING_SCHEMES[0];
   const goalSeconds = scheme.hours * 3600;
 
-  const setStartTime = (date: string | null) => {
+  // 2. Умный сеттер времени
+  const setStartTime = useCallback((date: string | null) => {
     setStartTimeState(date);
+    
     if (date) {
-      localStorage.setItem('fasting_startTime', date);
+      safeLocalStorageSet('fasting_startTime', date);
       const now = dayjs();
-      setElapsed(now.diff(dayjs(date), 'second'));
+      const diff = now.diff(dayjs(date), 'second');
+      setElapsed(diff >= 0 ? diff : 0);
       
       const currentHours = now.diff(dayjs(date), 'hour');
       const currentPhase = FASTING_PHASES.findIndex(p => currentHours >= p.hoursStart);
       lastPhaseIndexRef.current = currentPhase;
     } else {
-      localStorage.removeItem('fasting_startTime');
+      safeLocalStorageRemove('fasting_startTime');
       setElapsed(0);
       lastPhaseIndexRef.current = -1;
     }
-  };
+  }, []);
 
+  // 3. Сохранение схемы при изменении
   useEffect(() => {
-    if (schemeId) localStorage.setItem('fasting_scheme', schemeId);
+    if (schemeId) {
+      safeLocalStorageSet('fasting_scheme', schemeId);
+    }
   }, [schemeId]);
 
+  // 4. Основной цикл таймера
   useEffect(() => {
     if (!startTime) {
       setElapsed(0);
@@ -50,49 +67,82 @@ export const useFastingTimer = () => {
         const start = dayjs(startTime);
         const now = dayjs();
         const diff = now.diff(start, 'second');
-        setElapsed(diff);
-
-        const currentHours = diff / 3600;
-        const newPhaseIndex = FASTING_PHASES.findIndex(p => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
         
-        if (newPhaseIndex !== -1 && newPhaseIndex !== lastPhaseIndexRef.current) {
-            if (lastPhaseIndexRef.current !== -1) {
-                // 👇 ПРОВЕРКА НАСТРОЕК
-                const settings = JSON.parse(localStorage.getItem('user_settings') || '{}');
-                // Если настройки нет - считаем true. Если есть и false - не показываем.
-                if (settings.fasting !== false) {
-                    const phase = FASTING_PHASES[newPhaseIndex];
-                    setNotification({
-                        title: `Новый этап: ${phase.title}`,
-                        message: phase.subtitle
-                    });
-                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        // Защита от отрицательного времени (если системное время перевели назад)
+        const safeDiff = diff >= 0 ? diff : 0;
+        setElapsed(safeDiff);
+
+        // Проверка смены фазы (только если прошло достаточно времени)
+        if (safeDiff % 60 === 0) { // Проверяем фазы только раз в минуту, экономим ресурсы
+            const currentHours = safeDiff / 3600;
+            const newPhaseIndex = FASTING_PHASES.findIndex(p => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
+            
+            if (newPhaseIndex !== -1 && newPhaseIndex !== lastPhaseIndexRef.current) {
+                if (lastPhaseIndexRef.current !== -1) {
+                    const settings = safeLocalStorageGetJSON<NotificationSettings>('user_settings', { fasting: true });
+                    if (settings.fasting !== false) {
+                        const phase = FASTING_PHASES[newPhaseIndex];
+                        setNotification({
+                            title: `Новый этап: ${phase.title}`,
+                            message: phase.subtitle
+                        });
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    }
                 }
+                lastPhaseIndexRef.current = newPhaseIndex;
             }
-            lastPhaseIndexRef.current = newPhaseIndex;
         }
     };
 
+    // Инициализация индекса фазы при маунте
     if (lastPhaseIndexRef.current === -1) {
         const start = dayjs(startTime);
         const currentHours = dayjs().diff(start, 'hour', true);
         lastPhaseIndexRef.current = FASTING_PHASES.findIndex(p => currentHours >= p.hoursStart);
     }
 
+    // Запускаем сразу, чтобы не ждать 1 секунду до первого обновления
+    update();
+    
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [startTime]);
 
-  const toggleFasting = () => {
-    if (startTime) setStartTime(null);
-    else {
-        setStartTime(dayjs().toISOString());
+  // 5. Логика переключения (Старт / Стоп)
+  const toggleFasting = useCallback(() => {
+    if (startTime) {
+        // --- СТОП ---
+        const now = dayjs();
+        const start = dayjs(startTime);
+        const duration = now.diff(start, 'second');
+        
+        // Сохраняем, только если голодание длилось больше 1 минуты (защита от мискликов)
+        if (duration > 60) {
+            const record: HistoryRecord = {
+                id: Date.now().toString(),
+                type: 'fasting',
+                scheme: scheme.title,
+                startTime: startTime,
+                endTime: now.toISOString(),
+                durationSeconds: duration
+            };
+
+            // Используем новую безопасную утилиту
+            safeLocalStorageUpdateHistory('history_fasting', record);
+        }
+
+        setStartTime(null);
+    } else {
+        // --- СТАРТ ---
+        const nowStr = dayjs().toISOString();
+        setStartTime(nowStr);
         lastPhaseIndexRef.current = 0;
     }
-  };
+  }, [startTime, scheme.title, setStartTime]);
 
   const progress = Math.min((elapsed / goalSeconds) * 100, 100);
 
+  // Форматирование вынесено в хук для удобства
   const formatTime = (totalSeconds: number) => {
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
@@ -111,6 +161,6 @@ export const useFastingTimer = () => {
     startTime,
     setStartTime,
     notification,
-    closeNotification: () => setNotification(null)
+    closeNotification: useCallback(() => setNotification(null), [])
   };
 };

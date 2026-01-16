@@ -1,12 +1,12 @@
 import { forwardRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, LucideIcon } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 
 interface Props {
   schemeTitle: string;
   elapsedTime: string;
   progress: number;
-  schemeIcon: any;
+  schemeIcon: LucideIcon;
   color: string;
 }
 

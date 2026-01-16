@@ -1,36 +1,28 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { X, Calendar, Trash2, Edit3, Check, Sunrise, Moon } from 'lucide-react';
-import { TimerRing } from '../../fasting/components/TimerRing'; 
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Calendar, Trash2, Edit3, Check, Sunrise, Moon, Clock, Trophy } from 'lucide-react';
 import { FASTING_PHASES } from '../../fasting/data/stages';
 import { NativeDatePicker } from '../../../components/ui/DatePicker';
 import dayjs from 'dayjs';
 import { cn } from '../../../utils/cn';
-
-interface FastingRecord {
-  id: string;
-  scheme: string;
-  startTime: string;
-  endTime: string;
-  durationSeconds: number;
-}
+import type { HistoryRecord } from '../../../utils/types';
 
 interface Props {
-  record: FastingRecord | null;
+  record: HistoryRecord | null;
   onClose: () => void;
   onDelete: (id: string) => void;
-  onUpdate: (updatedRecord: FastingRecord) => void;
+  onUpdate: (updatedRecord: HistoryRecord) => void;
 }
 
 export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) => {
+  // Хуки должны быть вызваны всегда
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedStart, setEditedStart] = useState(record?.startTime || '');
+  const [editedEnd, setEditedEnd] = useState(record?.endTime || '');
+
   if (!record) return null;
 
-  // Локальное состояние для редактирования
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedStart, setEditedStart] = useState(record.startTime);
-  const [editedEnd, setEditedEnd] = useState(record.endTime);
-
-  // Пересчет статистики на лету
   const durationSeconds = dayjs(editedEnd).diff(dayjs(editedStart), 'second');
   const hours = Math.floor(durationSeconds / 3600);
   const minutes = Math.floor((durationSeconds % 3600) / 60);
@@ -47,128 +39,189 @@ export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) =>
     setIsEditing(false);
   };
 
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
-      />
+  const isFasting = record.type === 'fasting';
 
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#F2F2F7] rounded-t-[2.5rem] h-[90vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
-      >
-        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
-          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-        </div>
+  const content = (
+    <AnimatePresence>
+      <>
+        {/* Backdrop */}
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100]"
+        />
 
-        {/* ХЕДЕР С КНОПКАМИ */}
-        <div className="px-6 flex justify-between items-center mb-4">
-            
-            {/* Кнопка Удалить */}
-            <button onClick={() => { onDelete(record.id); onClose(); }} className="p-2.5 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
-                <Trash2 className="w-5 h-5" />
-            </button>
-            
-            <div className="flex gap-3">
-                {/* 👇 КНОПКА РЕДАКТИРОВАНИЯ */}
-                {isEditing ? (
-                    <button onClick={handleSave} className="p-2.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 shadow-lg shadow-blue-500/30 transition-all">
-                        <Check className="w-5 h-5" />
-                    </button>
-                ) : (
-                    <button onClick={() => setIsEditing(true)} className="p-2.5 bg-white text-blue-500 rounded-full border border-blue-100 hover:bg-blue-50 transition-colors">
-                        <Edit3 className="w-5 h-5" />
-                    </button>
-                )}
+        {/* Modal Sheet */}
+        <motion.div
+          initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] rounded-t-[2.5rem] h-[90vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
+        >
+          {/* Handle */}
+          <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+          </div>
 
-                {/* Закрыть */}
-                <button onClick={onClose} className="p-2.5 bg-gray-200/50 text-gray-500 rounded-full hover:bg-gray-300 transition-colors">
-                    <X className="w-5 h-5" />
-                </button>
-            </div>
-        </div>
+          {/* HEADER */}
+          <div className="px-6 pt-2 pb-4 flex justify-between items-center bg-[#F2F2F7] shrink-0">
+              <button 
+                onClick={() => { onDelete(record.id); onClose(); }} 
+                className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors shadow-sm"
+              >
+                  <Trash2 className="w-5 h-5" />
+              </button>
+              
+              <div className="flex gap-3">
+                  {isEditing ? (
+                      <button onClick={handleSave} className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 transition-all active:scale-95">
+                          <Check className="w-5 h-5" />
+                      </button>
+                  ) : (
+                      <button onClick={() => setIsEditing(true)} className="w-10 h-10 bg-white text-blue-500 rounded-full flex items-center justify-center shadow-sm border border-transparent hover:border-blue-100 active:scale-95 transition-all">
+                          <Edit3 className="w-5 h-5" />
+                      </button>
+                  )}
 
-        <div className="flex-1 overflow-y-auto pb-safe px-4">
-            
-            {/* КОЛЬЦО */}
-            <div className="bg-white rounded-[2.5rem] p-6 shadow-sm mb-4 flex flex-col items-center border border-white">
-                <div className="scale-75 -my-4 pointer-events-none">
-                    <TimerRing 
-                        progress={100} 
-                        time={`${hours}:${minutes.toString().padStart(2, '0')}:00`}
-                        isFasting={true}
-                        color="text-emerald-500"
-                        label={isEditing ? "Изменение..." : "Завершено"}
-                    />
-                </div>
-                <h2 className="text-xl font-black text-slate-800 mt-2">{record.scheme}</h2>
-                <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mt-1">
-                    <Calendar className="w-3 h-3" />
-                    {dayjs(editedEnd).format('D MMMM YYYY')}
-                </div>
-            </div>
+                  <button onClick={onClose} className="w-10 h-10 bg-gray-200/50 text-gray-500 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors">
+                      <X className="w-5 h-5" />
+                  </button>
+              </div>
+          </div>
 
-            {/* ВРЕМЯ (С поддержкой редактирования) */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className={cn("bg-white p-4 rounded-2xl shadow-sm border border-slate-100 transition-all", isEditing && "ring-2 ring-blue-500/20 bg-blue-50/10")}>
-                    {isEditing ? (
-                        <NativeDatePicker 
-                            label="Начало" icon={Sunrise} 
-                            dateValue={editedStart} onChange={setEditedStart}
-                            disabled={false}
-                        />
-                    ) : (
-                        <div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Начало</p>
-                            <p className="text-lg font-bold text-slate-700">{dayjs(editedStart).format('HH:mm')}</p>
-                        </div>
-                    )}
-                </div>
-                
-                <div className={cn("bg-white p-4 rounded-2xl shadow-sm border border-slate-100 transition-all", isEditing && "ring-2 ring-blue-500/20 bg-blue-50/10")}>
-                    {isEditing ? (
-                        <NativeDatePicker 
-                            label="Конец" icon={Moon} 
-                            dateValue={editedEnd} onChange={setEditedEnd}
-                            disabled={false}
-                        />
-                    ) : (
-                        <div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Конец</p>
-                            <p className="text-lg font-bold text-slate-700">{dayjs(editedEnd).format('HH:mm')}</p>
-                        </div>
-                    )}
-                </div>
-            </div>
+          {/* CONTENT */}
+          <div className="flex-1 overflow-y-auto pb-safe px-4 space-y-4">
+              
+              {/* HERO CARD */}
+              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-white pointer-events-none" />
+                  
+                  {/* Иконка типа записи */}
+                  <div className={cn(
+                      "w-16 h-16 rounded-3xl flex items-center justify-center mb-4 shadow-lg rotate-3 relative z-10",
+                      isFasting ? "bg-blue-500 text-white" : "bg-purple-500 text-white"
+                  )}>
+                      {isFasting ? <Trophy className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
+                  </div>
 
-            {/* СПИСОК ФАЗ */}
-            <div className="mb-8">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 ml-2">Достигнутые этапы</h3>
-                <div className="space-y-2">
-                    {passedPhases.map((phase) => (
-                        <div key={phase.id} className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3 border border-slate-100">
-                            <div className={cn("p-2 rounded-xl bg-slate-50", phase.color.replace('text-', 'text-'))}>
-                                <phase.icon className={cn("w-5 h-5", phase.color)} />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-slate-700">{phase.title}</h4>
-                                <p className="text-xs text-slate-400">{phase.hoursStart}ч+</p>
-                            </div>
-                        </div>
-                    ))}
-                    {passedPhases.length === 0 && (
-                        <p className="text-center text-xs text-gray-400 py-4 bg-white rounded-2xl border border-dashed border-gray-200">
-                            Слишком короткое голодание для этапов
-                        </p>
-                    )}
-                </div>
-            </div>
+                  <h2 className="text-xl font-[900] text-slate-800 leading-tight relative z-10 max-w-[200px]">
+                      {record.scheme}
+                  </h2>
+                  <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider mt-2 relative z-10 bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">
+                      <Calendar className="w-3 h-3" />
+                      {dayjs(editedEnd).format('D MMMM YYYY')}
+                  </div>
 
-        </div>
-      </motion.div>
-    </>
+                  {/* Огромная цифра длительности */}
+                  <div className="mt-8 mb-2 relative z-10">
+                      <div className="flex items-baseline justify-center text-slate-800">
+                          <span className="text-7xl font-[900] tracking-tighter tabular-nums leading-none">
+                              {hours}
+                          </span>
+                          <span className="text-lg font-bold text-slate-400 ml-1">ч</span>
+                          {minutes > 0 && (
+                              <>
+                                  <span className="text-4xl font-[900] tracking-tighter tabular-nums leading-none ml-3 text-slate-300">
+                                      {minutes}
+                                  </span>
+                                  <span className="text-lg font-bold text-slate-300 ml-1">м</span>
+                              </>
+                          )}
+                      </div>
+                  </div>
+              </div>
+
+              {/* TIMELINE / EDITING */}
+              <div className="bg-white rounded-[2rem] p-6 shadow-sm">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 pl-1">
+                      Временной интервал
+                  </h3>
+
+                  <div className="relative pl-4 space-y-8">
+                      {/* Линия */}
+                      <div className="absolute left-[23px] top-2 bottom-2 w-0.5 bg-slate-100 rounded-full" />
+
+                      {/* Начало */}
+                      <div className="relative z-10 flex items-center gap-4">
+                          <div className="w-4 h-4 rounded-full bg-white border-4 border-emerald-400 shadow-sm shrink-0" />
+                          <div className="flex-1">
+                              {isEditing ? (
+                                  <NativeDatePicker 
+                                      label="Начало" icon={Sunrise} 
+                                      dateValue={editedStart} onChange={setEditedStart}
+                                      disabled={false}
+                                  />
+                              ) : (
+                                  <div className="flex justify-between items-center">
+                                      <div>
+                                          <p className="text-[10px] font-bold text-slate-400 uppercase">Начало</p>
+                                          <p className="text-lg font-bold text-slate-700">{dayjs(editedStart).format('HH:mm')}</p>
+                                      </div>
+                                      <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-lg">
+                                          {dayjs(editedStart).format('D MMM')}
+                                      </span>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+
+                      {/* Конец */}
+                      <div className="relative z-10 flex items-center gap-4">
+                          <div className="w-4 h-4 rounded-full bg-slate-800 shadow-sm shrink-0" />
+                          <div className="flex-1">
+                              {isEditing ? (
+                                  <NativeDatePicker 
+                                      label="Конец" icon={Moon} 
+                                      dateValue={editedEnd} onChange={setEditedEnd}
+                                      disabled={false}
+                                  />
+                              ) : (
+                                  <div className="flex justify-between items-center">
+                                      <div>
+                                          <p className="text-[10px] font-bold text-slate-400 uppercase">Завершение</p>
+                                          <p className="text-lg font-bold text-slate-700">{dayjs(editedEnd).format('HH:mm')}</p>
+                                      </div>
+                                      <span className="text-xs text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-lg">
+                                          {dayjs(editedEnd).format('D MMM')}
+                                      </span>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              {/* ACHIEVEMENTS (PHASES) */}
+              {isFasting && passedPhases.length > 0 && (
+                  <div className="bg-white rounded-[2rem] p-6 shadow-sm mb-8">
+                      <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 pl-1">
+                          Достигнутые этапы
+                      </h3>
+                      <div className="space-y-3">
+                          {passedPhases.map((phase) => (
+                              <div key={phase.id} className="flex items-center gap-4 group">
+                                  <div className={cn(
+                                      "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
+                                      phase.color.replace('text-', 'bg-').replace('500', '50')
+                                  )}>
+                                      <phase.icon className={cn("w-5 h-5", phase.color)} />
+                                  </div>
+                                  <div className="flex-1 border-b border-slate-50 pb-3 group-last:border-0 group-last:pb-0">
+                                      <h4 className="text-sm font-bold text-slate-700">{phase.title}</h4>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5">
+                                          {phase.hoursStart} часов
+                                      </p>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  </div>
+              )}
+
+          </div>
+        </motion.div>
+      </>
+    </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 };

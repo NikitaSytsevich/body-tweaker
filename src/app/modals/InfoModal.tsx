@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Send, Zap, User, X, Code, CheckCircle2, Stethoscope } from 'lucide-react';
+import { Send, User, X, Code, CheckCircle2, Stethoscope } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import WebApp from '@twa-dev/sdk';
 
@@ -11,7 +11,6 @@ interface Props {
 export const InfoModal = ({ isOpen, onClose }: Props) => {
   if (!isOpen) return null;
 
-  // Данные текущего пользователя
   const currentUser = WebApp.initDataUnsafe?.user;
 
   const team = [
@@ -43,48 +42,46 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
 
   return (
     <>
-      {/* ЗАТЕМНЕНИЕ */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
         className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
       />
 
-      {/* ШТОРКА */}
       <motion.div
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="fixed bottom-0 left-0 right-0 z-50 bg-[#F2F2F7] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
       >
-        {/* Хендл */}
         <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
           <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
         </div>
 
-        {/* Кнопка закрытия */}
         <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-200/50 hover:bg-gray-200 rounded-full transition-colors z-50">
             <X className="w-5 h-5 text-gray-500" />
         </button>
 
         <div className="flex-1 overflow-y-auto pb-safe px-6 pt-2">
             
-            {/* ХЕДЕР: Логотип + Юзер */}
+            {/* ХЕДЕР */}
             <div className="flex items-center justify-between mb-8 mt-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
                 <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/20">
-                        <Zap className="w-7 h-7 text-white fill-current" />
-                    </div>
+                    {/* 👇 ЛОГОТИП */}
+                    <img 
+                        src="/logo.svg" 
+                        alt="Logo" 
+                        className="w-14 h-14 rounded-2xl shadow-md border border-slate-100"
+                    />
                     <div>
                         <h2 className="text-xl font-[900] text-slate-800 tracking-tight leading-none">
                             Body Tweaker
                         </h2>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                            Версия 1.0.2
+                            Версия 2.0
                         </p>
                     </div>
                 </div>
 
-                {/* Аватар пользователя (из Telegram) */}
                 <div className="relative">
                     {currentUser?.photo_url ? (
                         <img 
@@ -97,7 +94,6 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
                             <User className="w-5 h-5 text-slate-400" />
                         </div>
                     )}
-                    {/* Зеленая точка онлайна */}
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
                 </div>
             </div>
@@ -119,12 +115,10 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
                             member.border
                         )}
                     >
-                        {/* Иконка роли */}
                         <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", member.color)}>
                             <member.icon className="w-6 h-6" />
                         </div>
 
-                        {/* Инфо */}
                         <div className="flex-1 min-w-0 pr-2">
                             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-0.5">
                                 {member.role}
@@ -134,7 +128,6 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
                             </p>
                         </div>
 
-                        {/* Стрелка */}
                         <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
                             <Send className="w-4 h-4" />
                         </div>
@@ -142,7 +135,6 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
                 ))}
             </div>
 
-            {/* ФУТЕР */}
             <div className="text-center pb-8 opacity-50">
                 <p className="text-[10px] text-slate-400 font-mono">
                     Built with ❤️ for Biohackers

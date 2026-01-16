@@ -1,91 +1,159 @@
-import { useState, useEffect, useRef } from 'react';
-import { useFastingTimer } from './hooks/useFastingTimer';
+import { useState, useEffect, useRef, memo } from 'react';
+import { useFastingTimerContext } from './context/TimerContext';
 import { ProtocolSelector } from './components/ProtocolSelector';
+import { FastingStartModal } from './components/FastingStartModal';
 import { NativeDatePicker } from '../../components/ui/DatePicker';
-import { Play, Square, ListFilter, Sunrise, Moon, ChevronDown, Map } from 'lucide-react';
+import { Play, Square, ListFilter, Sunrise, Moon, Map } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
-import { ToastNotification } from '../../components/ui/ToastNotification';
 import { useNavigate } from 'react-router-dom';
 
+// 1. Кнопка карты (стабильная)
+const MapButton = memo(({ onClick }: { onClick: () => void }) => (
+    <button 
+        onClick={onClick}
+        className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 hover:bg-slate-100 transition-all active:scale-95 text-slate-400 hover:text-blue-500"
+    >
+        <Map className="w-5 h-5" />
+    </button>
+));
+
+// 2. Визуализация таймера (Минималистичная: Кольцо + Время)
+const TimerVisual = memo(({ 
+    progress, elapsedFormatted, totalHours, isFasting 
+}: any) => {
+    const size = 280;
+    const stroke = 8;
+    const center = size / 2;
+    const radius = (size - stroke) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+    return (
+        <div className="flex flex-col items-center justify-center relative z-20 py-10 space-y-8 flex-1">
+            <div className="relative shrink-0" style={{ width: size, height: size }}>
+                {/* SVG Кольцо */}
+                <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg] drop-shadow-2xl">
+                    <circle cx={center} cy={center} r={radius} fill="none" stroke="#F1F5F9" strokeWidth={stroke} strokeLinecap="round" />
+                    <circle 
+                        cx={center} cy={center} r={radius} fill="none" 
+                        stroke="currentColor" strokeWidth={stroke} 
+                        strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round"
+                        className={cn(
+                            "transition-all duration-1000 ease-out", 
+                            isFasting ? "text-blue-500" : "text-transparent"
+                        )}
+                    />
+                </svg>
+
+                {/* Контент внутри кольца */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    
+                    {/* Время */}
+                    <div className="flex items-baseline text-slate-800 translate-y-[-5px]">
+                        <span className="text-[4.5rem] font-[850] font-mono tracking-tighter tabular-nums leading-none">
+                            {isFasting ? elapsedFormatted.split(':')[0] : `${totalHours}`}
+                            <span className="mx-1 opacity-20 relative -top-1">:</span>
+                            {isFasting ? elapsedFormatted.split(':')[1] : `00`}
+                        </span>
+                    </div>
+                    
+                    {/* Подпись */}
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
+                        {isFasting ? elapsedFormatted.split(':')[2] : 'Часов'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+});
+
 export const FastingPage = () => {
-  const timerData = useFastingTimer();
+  const { 
+    isFasting, scheme, setSchemeId, progress, elapsedFormatted, 
+    toggleFasting, startTime, setStartTime 
+  } = useFastingTimerContext();
+
   const [isSelecting, setIsSelecting] = useState(false);
   const [isReadyToStart, setIsReadyToStart] = useState(false);
+  const [showStartSuccess, setShowStartSuccess] = useState(false);
   
   const navigate = useNavigate();
   const buttonRef = useRef<HTMLDivElement>(null);
 
+  // Синхронизация состояния готовности
   useEffect(() => {
-    if (!timerData || !timerData.scheme) {
-      localStorage.clear();
-      window.location.reload(); 
-    }
-    if (timerData?.isFasting) {
+    if (isFasting) {
         setIsReadyToStart(true);
     }
-  }, [timerData]);
+  }, [isFasting]);
 
-  if (!timerData || !timerData.scheme) return null;
-
-  const { isFasting, scheme, setSchemeId, progress, elapsedFormatted, toggleFasting, startTime, setStartTime, notification, closeNotification } = timerData;
-
+  // Главная кнопка (внизу экрана)
   const handleMainButtonClick = () => {
     if (isFasting) {
+      // Остановить
       toggleFasting();
       setIsReadyToStart(false);
     } else if (isReadyToStart) {
+      // Запустить (если схема уже выбрана)
       toggleFasting();
+      setShowStartSuccess(true);
     } else {
+      // Открыть выбор схемы
       setIsSelecting(true);
     }
   };
 
+  // Хендлер выбора из модалки
   const handleSelectScheme = (id: string) => {
     setSchemeId(id);       
     setIsSelecting(false); 
+    
+    // Если таймер НЕ запущен — запускаем
+    if (!isFasting) {
+        toggleFasting();
+        // Показываем окно успеха с небольшой задержкой для плавности
+        setTimeout(() => setShowStartSuccess(true), 300);
+    }
+    
     setIsReadyToStart(true);
-    setTimeout(() => {
-        buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 150);
   };
 
   const currentStart = startTime || dayjs().toISOString();
   const currentEnd = dayjs(currentStart).add(scheme.hours, 'hour').toISOString();
+  
   const handleChangeStart = (v: string) => setStartTime(v);
   const handleChangeEnd = (v: string) => {
     const newStart = dayjs(v).subtract(scheme.hours, 'hour').toISOString();
     setStartTime(newStart);
   };
 
-  const size = 260;
-  const stroke = 8;
-  const center = size / 2;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  if (isSelecting) {
-    return <ProtocolSelector onSelect={handleSelectScheme} onClose={() => setIsSelecting(false)} />;
-  }
-
   return (
     <>
-        <ToastNotification 
-            isVisible={!!notification} 
-            title={notification?.title || ""} 
-            message={notification?.message || ""} 
-            onClose={closeNotification} 
+        {/* Модальное окно выбора протокола */}
+        {isSelecting && (
+            <ProtocolSelector 
+                onSelect={handleSelectScheme} 
+                onClose={() => setIsSelecting(false)} 
+                currentSchemeId={scheme.id}
+            />
+        )}
+
+        {/* Модальное окно успеха старта */}
+        <FastingStartModal 
+            isOpen={showStartSuccess} 
+            onClose={() => setShowStartSuccess(false)} 
         />
 
-        <div className="min-h-screen bg-[#F2F2F7] flex flex-col px-4 pt-14 pb-32 relative z-0">
+        <div className="min-h-full flex flex-col pb-6 relative z-0">
         
-        <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/60 flex-1 border border-white/50 overflow-hidden grid grid-rows-[auto_1fr_auto]">
+        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 flex-1 border border-white/60 relative flex flex-col">
             
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.03] pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.03] pointer-events-none rounded-[3rem]" />
 
-            <div className="px-8 pt-10 flex justify-between items-start relative z-20 shrink-0">
+            {/* HEADER */}
+            <div className="px-8 pt-8 flex justify-between items-start relative z-20 shrink-0">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className={cn("w-2 h-2 rounded-full", isFasting ? "bg-blue-500 animate-pulse" : "bg-slate-300")} />
@@ -97,70 +165,28 @@ export const FastingPage = () => {
                         {isFasting ? "Голодание" : "Ожидание"}
                     </h1>
                 </div>
-                
-                <button 
-                    onClick={() => navigate('/')}
-                    className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 hover:bg-slate-100 transition-all active:scale-95 text-slate-400 hover:text-blue-500"
-                >
-                    <Map className="w-5 h-5" />
-                </button>
+                <MapButton onClick={() => navigate('/')} />
             </div>
 
-            <div className="flex flex-col items-center justify-center relative z-20 py-4 space-y-6">
-                
-                <div className="relative shrink-0" style={{ width: size, height: size }}>
-                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg] drop-shadow-xl">
-                        <circle cx={center} cy={center} r={radius} fill="none" stroke="#F1F5F9" strokeWidth={stroke} strokeLinecap="round" />
-                        <circle 
-                            cx={center} cy={center} r={radius} fill="none" 
-                            stroke="currentColor" strokeWidth={stroke} 
-                            strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round"
-                            className={cn("transition-all duration-1000 ease-out", isFasting ? "text-blue-500" : "text-transparent")}
-                        />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="flex items-baseline text-slate-800">
-                            <span className="text-6xl font-[800] font-mono tracking-tighter tabular-nums leading-none">
-                                {isFasting ? elapsedFormatted.split(':')[0] : `${scheme.hours}`}
-                                <span className="mx-1 opacity-20">:</span>
-                                {isFasting ? elapsedFormatted.split(':')[1] : `00`}
-                            </span>
-                        </div>
-                        <span className="text-sm font-medium text-slate-400 mt-1 font-mono">
-                            {isFasting ? elapsedFormatted.split(':')[2] : 'Часов'}
-                        </span>
-                        {isFasting && (
-                            <div className="mt-3 px-3 py-1 bg-blue-50 rounded-full text-[10px] font-bold text-blue-600 border border-blue-100 tabular-nums">
-                                {progress.toFixed(1)}%
-                            </div>
-                        )}
-                    </div>
-                </div>
+            {/* CONTENT */}
+            <TimerVisual 
+                progress={progress} 
+                elapsedFormatted={elapsedFormatted}
+                totalHours={scheme.hours}
+                isFasting={isFasting}
+            />
 
-                <div 
-                    onClick={() => setIsSelecting(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100 cursor-pointer active:scale-95 transition-transform hover:bg-slate-100 shrink-0"
-                >
-                    <scheme.icon className={cn("w-4 h-4", scheme.color.split(' ')[0])} />
-                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wide truncate max-w-[150px]">
-                        {scheme.title}
-                    </span>
-                    <ChevronDown className="w-3 h-3 text-slate-400 ml-1" />
-                </div>
-
-                <div className="flex gap-8 shrink-0 mt-6">
-                    <NativeDatePicker label="Начало" icon={Sunrise} dateValue={currentStart} onChange={handleChangeStart} disabled={!isFasting} />
-                    <div className="w-px bg-slate-100 h-10" />
-                    <NativeDatePicker label="Финиш" icon={Moon} dateValue={currentEnd} onChange={handleChangeEnd} disabled={!isFasting} />
-                </div>
+            <div className="flex justify-center gap-6 shrink-0 mt-2 mb-4 relative z-20">
+                <NativeDatePicker label="Начало" icon={Sunrise} dateValue={currentStart} onChange={handleChangeStart} disabled={!isFasting} />
+                <div className="w-px bg-slate-100 h-10 self-center" />
+                <NativeDatePicker label="Финиш" icon={Moon} dateValue={currentEnd} onChange={handleChangeEnd} disabled={!isFasting} />
             </div>
 
-            <div ref={buttonRef} className="p-6 mt-auto shrink-0 bg-white">
+            {/* BUTTON */}
+            <div ref={buttonRef} className="p-6 mt-auto shrink-0 bg-white/50 backdrop-blur-sm z-20 rounded-b-[3rem]">
                 <motion.button 
                     whileTap={{ scale: 0.98 }}
                     onClick={handleMainButtonClick}
-                    animate={isReadyToStart && !isFasting ? { y: [0, -2, 0], boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" } : {}}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                     className={cn(
                         "w-full py-4 rounded-2xl flex items-center justify-between px-6 shadow-lg transition-all group relative overflow-hidden",
                         isFasting 

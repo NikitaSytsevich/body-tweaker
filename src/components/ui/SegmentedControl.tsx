@@ -1,20 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '../../utils/cn';
+import type { SegmentedControlOption } from '../../utils/types';
 
-interface Option {
-  value: string;
-  label: string;
-  icon: any;
+interface Props<T extends string = string> {
+  options: SegmentedControlOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
 }
 
-interface Props {
-  options: Option[];
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export const SegmentedControl = ({ options, value, onChange }: Props) => {
+export function SegmentedControl<T extends string = string>({ options, value, onChange }: Props<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   
