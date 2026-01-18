@@ -1,11 +1,37 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <!-- 👇 Новый логотип -->
+    
+    <!-- 1. Фавиконка для вкладки браузера (SVG) -->
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    
+    <!-- 2. Настройки вьюпорта: запрещаем зум (user-scalable=no) для ощущения нативного приложения -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- 3. Цвет темы: красит адресную строку браузера в цвет фона приложения -->
     <meta name="theme-color" content="#F2F2F7" />
+    
+    <!-- ================= PWA SETTINGS ================= -->
+
+    <!-- Android: Ссылка на манифест (название, иконки, настройки запуска) -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- iOS: Иконка для экрана "Домой" (iPhone игнорирует манифест для иконок) -->
+    <!-- Файл apple-touch-icon.png должен лежать в папке /public -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- iOS: Включает режим "Standalone" (скрывает адресную строку Safari после установки) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <!-- iOS: Название приложения под иконкой -->
+    <meta name="apple-mobile-web-app-title" content="Body Tweaker" />
+    
+    <!-- iOS: Цвет статус-бара (default - белый/черный в зависимости от темы, black-translucent - прозрачный) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- ================================================ -->
+
     <title>Body Tweaker</title>
   </head>
   <body>

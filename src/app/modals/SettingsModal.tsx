@@ -1,21 +1,26 @@
 // src/app/modals/SettingsModal.tsx
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Trash2, ShieldCheck, Download, Upload, X, Loader2 } from 'lucide-react';
+import { Bell, Trash2, ShieldCheck, Download, Upload, X, Loader2, Smartphone } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { useStorage } from '../../hooks/useStorage'; // 👈 NEW
+
+// Хуки и утилиты
+import { useStorage } from '../../hooks/useStorage';
+import { useAddToHomeScreen } from '../../hooks/useAddToHomeScreen';
 import { 
   storageGet, 
   storageRemove, 
   storageGetJSON, 
   storageSetJSON, 
   storageSet 
-} from '../../utils/storage'; // 👈 NEW
-
+} from '../../utils/storage';
 import type { NotificationSettings } from '../../utils/types';
+import WebApp from '@twa-dev/sdk';
+
+// Компоненты
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { ToastNotification } from '../../components/ui/ToastNotification';
-import WebApp from '@twa-dev/sdk';
+import { InstallGuideModal } from './InstallGuideModal';
 
 interface Props {
   isOpen: boolean;
@@ -24,45 +29,77 @@ interface Props {
 
 export const SettingsModal = ({ isOpen, onClose }: Props) => {
   const user = WebApp.initDataUnsafe?.user;
+  
+  // Локальные состояния UI
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Для лоадера на кнопках данных
 
-  // Используем новый хук
-  const { value: notifications, setValue: setNotifications, isLoading: isSettingsLoading } = useStorage<NotificationSettings>(
-    'user_settings',
-    { fasting: true }
-  );
+  // 1. Асинхронные настройки (Cloud)
+  const { 
+    value: notifications, 
+    setValue: setNotifications, 
+    isLoading: isSettingsLoading 
+  } = useStorage<NotificationSettings>('user_settings', { fasting: true });
+
+  // 2. Логика PWA (Установка на экран)
+  const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
+  
+  // Показываем кнопку, если: (iOS ИЛИ есть промпт Android) И (не установлено как PWA)
+  const canInstall = !isStandalone && (isIOS || !!deferredPrompt);
+
+  // --- HANDLERS ---
 
   const toggleNotification = (e: React.MouseEvent) => {
       e.stopPropagation();
       setNotifications((prev) => ({ ...prev, fasting: !prev.fasting }));
   };
 
+  const handleInstallClick = () => {
+      if (isIOS) {
+          setShowInstallGuide(true);
+      } else if (deferredPrompt) {
+          promptInstall();
+      } else {
+          // Фолбэк для десктопа или веб-версии Telegram
+          alert('Функция установки доступна в мобильных браузерах (Safari, Chrome).');
+      }
+  };
+
   const handleReset = () => setShowResetConfirm(true);
 
   const confirmReset = async () => {
-      // Удаляем ключи
-      await storageRemove('history_fasting');
-      await storageRemove('user_settings');
-      await storageRemove('fasting_startTime');
-      await storageRemove('fasting_scheme');
-      await storageRemove('user_name');
-      await storageRemove('has_accepted_terms');
-      window.location.reload();
+      setIsProcessing(true);
+      try {
+          await Promise.all([
+              storageRemove('history_fasting'),
+              storageRemove('user_settings'),
+              storageRemove('fasting_startTime'),
+              storageRemove('fasting_scheme'),
+              storageRemove('user_name'),
+              storageRemove('has_accepted_terms')
+          ]);
+          window.location.reload();
+      } catch (e) {
+          console.error("Reset failed", e);
+          setIsProcessing(false);
+      }
   };
 
   const handleExport = async () => {
       setIsProcessing(true);
       try {
-          // Асинхронный сбор данных
-          const history = await storageGetJSON('history_fasting', []);
-          const settings = await storageGetJSON('user_settings', { fasting: true });
-          const startTime = await storageGet('fasting_startTime');
-          const scheme = await storageGet('fasting_scheme');
-          const userName = await storageGet('user_name');
-          const terms = await storageGet('has_accepted_terms');
+          // Собираем данные параллельно для скорости
+          const [history, settings, startTime, scheme, userName, terms] = await Promise.all([
+              storageGetJSON('history_fasting', []),
+              storageGetJSON('user_settings', { fasting: true }),
+              storageGet('fasting_startTime'),
+              storageGet('fasting_scheme'),
+              storageGet('user_name'),
+              storageGet('has_accepted_terms')
+          ]);
 
           const backupData = {
               version: 1,
@@ -114,7 +151,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
               if (!parsed.data) throw new Error('Invalid backup format');
               const { data } = parsed;
 
-              // Асинхронное восстановление
+              // Восстанавливаем данные
               const promises = [];
               if (data.history_fasting) promises.push(storageSetJSON('history_fasting', data.history_fasting));
               if (data.user_settings) promises.push(storageSetJSON('user_settings', data.user_settings));
@@ -125,11 +162,11 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
               
               await Promise.all(promises);
 
-              alert('Данные восстановлены! Перезагрузка...');
+              alert('Данные восстановлены! Приложение будет перезагружено.');
               window.location.reload();
           } catch (error) {
               console.error(error);
-              alert('Ошибка импорта');
+              alert('Ошибка: Неверный формат файла бэкапа');
           } finally {
               setIsProcessing(false);
           }
@@ -138,6 +175,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
       event.target.value = ''; 
   };
 
+  // Данные пользователя
   const firstName = user?.first_name || 'Гость';
   const lastName = user?.last_name || '';
   const username = user?.username ? `@${user.username}` : 'Локальный профиль';
@@ -174,7 +212,8 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                 <p className="text-sm font-medium text-slate-400 mt-1">Персонализация</p>
             </div>
 
-            <div className="space-y-6 pb-10">
+            <div className="space-y-6 pb-6">
+                
                 {/* ПРОФИЛЬ */}
                 <section>
                     <div className="bg-white border border-slate-100 rounded-[2rem] p-5 shadow-sm relative overflow-hidden">
@@ -196,11 +235,39 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                     </div>
                 </section>
 
-                {/* НАСТРОЙКИ */}
+                {/* ПРИЛОЖЕНИЕ (Установка + Уведомления) */}
                 <section>
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Приложение</h4>
                     <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
                         
+                        {/* КНОПКА УСТАНОВКИ */}
+                        {canInstall && (
+                             <button 
+                                onClick={handleInstallClick}
+                                className="w-full flex items-center justify-between p-4 cursor-pointer active:bg-slate-50 transition-colors border-b border-slate-50"
+                             >
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-slate-800 rounded-lg text-white">
+                                        <Smartphone className="w-4 h-4" />
+                                    </div>
+                                    <div className="text-left">
+                                        <span className="text-sm font-bold text-slate-800 block leading-tight">
+                                            Установить приложение
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">
+                                            Добавить на главный экран
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-100 px-3 py-1.5 rounded-lg">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                        {isIOS ? 'Инструкция' : 'Скачать'}
+                                    </span>
+                                </div>
+                             </button>
+                        )}
+
+                        {/* УВЕДОМЛЕНИЯ */}
                         <div className="flex items-center justify-between p-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-50 rounded-lg text-blue-500">
@@ -248,12 +315,13 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                     </div>
                 </section>
 
-                <button onClick={handleReset} className="w-full mt-2 flex items-center justify-center gap-2 p-4 text-red-500 bg-red-50/50 hover:bg-red-50 rounded-2xl border border-red-100/50 transition-colors text-sm font-bold active:scale-98">
-                    <Trash2 className="w-4 h-4" />
-                    Сбросить все данные
-                </button>
-                
-                <div className="text-center pt-2 pb-6">
+                {/* ФУТЕР (Центрированный) */}
+                <div className="flex flex-col items-center gap-4 mt-8 pb-8">
+                    <button onClick={handleReset} className="w-full flex items-center justify-center gap-2 p-4 text-red-500 bg-red-50/50 hover:bg-red-50 rounded-2xl border border-red-100/50 transition-colors text-sm font-bold active:scale-98">
+                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        Сбросить все данные
+                    </button>
+                    
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
                         <ShieldCheck className="w-3 h-3 text-slate-400" />
                         <span className="text-[10px] font-medium text-slate-400">Ver 2.0.0 (Cloud)</span>
@@ -280,6 +348,12 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
         title={toastMessage.title}
         message={toastMessage.message}
         onClose={() => setShowExportToast(false)}
+      />
+
+      {/* Модалка PWA (iOS) */}
+      <InstallGuideModal 
+        isOpen={showInstallGuide} 
+        onClose={() => setShowInstallGuide(false)} 
       />
     </>
   );
