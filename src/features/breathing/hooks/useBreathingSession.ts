@@ -1,25 +1,22 @@
+// src/features/breathing/hooks/useBreathingSession.ts
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { BreathLevel } from '../data/patterns';
 import dayjs from 'dayjs';
 import { soundManager } from '../../../utils/sounds';
-import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '../../../utils/localStorage';
+import { storageUpdateHistory } from '../../../utils/storage'; // 👈 NEW
 import type { HistoryRecord } from '../../../utils/types';
 
-// Константы
 const MIN_SESSION_DURATION_SECONDS = 15;
 const TIMER_INTERVAL_MS = 250;
-const MAX_HISTORY_ITEMS = 1000; // Ограничение размера истории
 
 export type Phase = 'idle' | 'inhale' | 'hold' | 'exhale' | 'finished';
 
 export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: number) => {
-  // --- STATE (UI) ---
   const [phase, setPhase] = useState<Phase>('idle');
   const [phaseTimeLeft, setPhaseTimeLeft] = useState(0);
   const [totalTimeLeft, setTotalTimeLeft] = useState(0);
   const [cycles, setCycles] = useState(0);
 
-  // --- REFS (MUTABLE LOGIC) ---
   const state = useRef({
     status: 'idle' as Phase,
     startTime: null as number | null,     
@@ -29,8 +26,6 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     timerId: null as number | null
   });
 
-  // --- ENGINE ---
-  
   const nextPhase = useCallback(() => {
     const current = state.current.status;
     let next: Phase = 'idle';
@@ -68,30 +63,21 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     }
   }, []);
 
-  // --- ACTIONS ---
-
+  // СОХРАНЕНИЕ
   const saveToHistory = useCallback((endTimeStr: string, durationSec: number) => {
     if (durationSec < MIN_SESSION_DURATION_SECONDS) return; 
 
-    try {
-      const record: HistoryRecord = {
-        id: Date.now().toString(),
-        type: 'breathing',
-        scheme: `Уровень ${level.id} (${level.inhale}-${level.hold}-${level.exhale})`,
-        startTime: dayjs(state.current.startTime || Date.now()).toISOString(),
-        endTime: endTimeStr,
-        durationSeconds: durationSec
-      };
+    const record: HistoryRecord = {
+      id: Date.now().toString(),
+      type: 'breathing',
+      scheme: `Уровень ${level.id} (${level.inhale}-${level.hold}-${level.exhale})`,
+      startTime: dayjs(state.current.startTime || Date.now()).toISOString(),
+      endTime: endTimeStr,
+      durationSeconds: durationSec
+    };
 
-      const history = safeLocalStorageGetJSON<HistoryRecord[]>('history_fasting', []);
-      
-      // ИСПРАВЛЕНИЕ: Добавляем .slice(0, MAX_HISTORY_ITEMS)
-      const newHistory = [record, ...history].slice(0, MAX_HISTORY_ITEMS);
-      
-      safeLocalStorageSetJSON('history_fasting', newHistory);
-    } catch (error) {
-      console.error('Failed to save session', error);
-    }
+    // Асинхронное сохранение (fire and forget)
+    storageUpdateHistory('history_fasting', record);
   }, [level]);
 
   const finishSession = useCallback(() => {
@@ -114,10 +100,8 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
     const now = Date.now();
     const s = state.current;
 
-    // 1. Проверка завершения всей сессии
     if (!s.isInfinite && s.sessionEndTime > 0) {
       const remaining = Math.ceil((s.sessionEndTime - now) / 1000);
-      
       if (remaining <= 0) {
         finishSession();
         return;
@@ -125,9 +109,7 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
       setTotalTimeLeft(remaining);
     }
 
-    // 2. Проверка фазы
     const phaseRemaining = Math.ceil((s.phaseEndTime - now) / 1000);
-
     if (phaseRemaining <= 0) {
       nextPhase();
     } else {
@@ -178,31 +160,23 @@ export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: 
 
   useEffect(() => {
     return () => {
-      // Сохранение при уходе со страницы
+      // Сохранение при размонтировании
       if (state.current.status !== 'idle' && state.current.status !== 'finished') {
         const now = Date.now();
         const start = state.current.startTime || now;
         const duration = Math.floor((now - start) / 1000);
         
         if (duration > MIN_SESSION_DURATION_SECONDS) {
-             try {
-                const rec: HistoryRecord = {
-                    id: Date.now().toString(),
-                    type: 'breathing',
-                    scheme: `Уровень ${level.id}`, 
-                    startTime: dayjs(start).toISOString(),
-                    endTime: dayjs(now).toISOString(),
-                    durationSeconds: duration
-                };
-                const h = safeLocalStorageGetJSON<HistoryRecord[]>('history_fasting', []);
-                
-                // ИСПРАВЛЕНИЕ: Добавляем .slice(0, MAX_HISTORY_ITEMS) и здесь тоже
-                const newHistory = [rec, ...h].slice(0, MAX_HISTORY_ITEMS);
-                
-                safeLocalStorageSetJSON('history_fasting', newHistory);
-             } catch(e) {
-                console.error('Failed to save session on unmount', e);
-             }
+             const rec: HistoryRecord = {
+                id: Date.now().toString(),
+                type: 'breathing',
+                scheme: `Уровень ${level.id}`, 
+                startTime: dayjs(start).toISOString(),
+                endTime: dayjs(now).toISOString(),
+                durationSeconds: duration
+             };
+             // Fire and forget
+             storageUpdateHistory('history_fasting', rec);
         }
       }
       stopEngine();

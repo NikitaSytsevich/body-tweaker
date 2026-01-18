@@ -1,3 +1,4 @@
+// src/app/Layout.tsx
 import { useState, useRef, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Map, Timer, Wind, History, Settings } from 'lucide-react';
@@ -6,7 +7,7 @@ import type { Variants } from 'framer-motion';
 import { cn } from '../utils/cn';
 import { SettingsModal } from './modals/SettingsModal';
 import { InfoModal } from './modals/InfoModal';
-import { safeLocalStorageGet, safeLocalStorageSet } from '../utils/localStorage';
+import { storageGet, storageSet } from '../utils/storage'; // 👈 NEW
 import WebApp from '@twa-dev/sdk';
 
 import { MetabolismMapPage } from '../features/fasting/MetabolismMapPage';
@@ -17,7 +18,6 @@ import { HistoryPage } from '../features/history/HistoryPage';
 import { useFastingTimerContext } from '../features/fasting/context/TimerContext';
 import { ToastNotification } from '../components/ui/ToastNotification';
 
-// 👇 1. Вынесли PageView наружу и обернули в memo
 const PageView = memo(({ isActive, children }: { isActive: boolean, children: React.ReactNode }) => {
     return (
         <div 
@@ -67,15 +67,24 @@ export const Layout = () => {
     }
   }, [safeActiveIndex, isDragging]);
 
+  // Init & User Name Check
   useEffect(() => {
     try {
         WebApp.ready(); 
         WebApp.expand();
         WebApp.setHeaderColor('#F2F2F7'); 
         WebApp.setBackgroundColor('#F2F2F7');
-        if (WebApp.initDataUnsafe?.user && !safeLocalStorageGet('user_name')) {
-            safeLocalStorageSet('user_name', WebApp.initDataUnsafe.user.first_name);
-        }
+        
+        const checkUser = async () => {
+            if (WebApp.initDataUnsafe?.user) {
+                const existingName = await storageGet('user_name');
+                if (!existingName) {
+                    await storageSet('user_name', WebApp.initDataUnsafe.user.first_name);
+                }
+            }
+        };
+        checkUser();
+
     } catch (e) { /* ignore */ }
   }, []);
 
@@ -146,7 +155,6 @@ export const Layout = () => {
         </header>
 
         <main className="flex-1 relative w-full overflow-hidden">
-            {/* 👇 2. Передаем isActive как проп */}
             <PageView isActive={location.pathname === '/' || location.pathname === ''}>
                 <MetabolismMapPage />
             </PageView>

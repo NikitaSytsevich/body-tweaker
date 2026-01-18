@@ -1,5 +1,7 @@
+// src/features/biorhythm/hooks/useBiorhythms.ts
 import { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
+import { useStorage } from '../../../hooks/useStorage'; // 👈 NEW
 
 const CYCLES = {
   PHYSICAL: 23,
@@ -8,12 +10,16 @@ const CYCLES = {
 };
 
 export const useBiorhythms = () => {
-  const [birthDate, setBirthDate] = useState(() => localStorage.getItem('bio_birthDate') || '2000-01-01');
+  // Используем useStorage вместо useState + localStorage
+  const { value: birthDate, setValue: setBirthDate } = useStorage<string>(
+    'bio_birthDate', 
+    '2000-01-01'
+  );
+  
   const [targetDate, setTargetDate] = useState(dayjs().format('YYYY-MM-DD'));
 
   const handleBirthDateChange = (date: string) => {
-    setBirthDate(date);
-    localStorage.setItem('bio_birthDate', date);
+    setBirthDate(date); // Это сохранит и в стейт, и в облако
   };
 
   const calculate = (birth: string, target: string) => {

@@ -1,19 +1,19 @@
+// src/features/fasting/context/TimerContext.tsx
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import dayjs from 'dayjs';
 
 import { FASTING_SCHEMES } from '../data/schemes';
 import type { FastingScheme } from '../data/schemes';
-
 import { FASTING_PHASES } from '../data/stages';
-import type { FastingStage } from '../data/stages';
 
 import { 
-    safeLocalStorageGet, 
-    safeLocalStorageSet, 
-    safeLocalStorageRemove, 
-    safeLocalStorageGetJSON,
-    safeLocalStorageUpdateHistory
-} from '../../../utils/localStorage';
+    storageGet, 
+    storageSet, 
+    storageRemove, 
+    storageGetJSON,
+    storageUpdateHistory
+} from '../../../utils/storage'; // 👈 NEW
+
 import type { NotificationSettings, HistoryRecord } from '../../../utils/types';
 
 interface TimerContextType {
@@ -26,57 +26,88 @@ interface TimerContextType {
     toggleFasting: () => void;
     startTime: string | null;
     setStartTime: (date: string | null) => void;
-    // 👇 Обновили тип уведомления: добавили phaseId
     notification: {title: string, message: string, phaseId?: number} | null;
     closeNotification: () => void;
-    // 👇 Новое состояние для навигации к фазе
     phaseToOpen: number | null;
     setPhaseToOpen: (id: number | null) => void;
+    isLoading: boolean; // 👈 NEW
 }
 
 const TimerContext = createContext<TimerContextType | null>(null);
 
 export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
-    const [schemeId, setSchemeIdState] = useState<string>(() => {
-        const saved = safeLocalStorageGet('fasting_scheme');
-        const exists = FASTING_SCHEMES.find((s: FastingScheme) => s.id === saved);
-        return exists ? saved! : FASTING_SCHEMES[0].id;
-    });
-
-    const [startTime, setStartTimeState] = useState<string | null>(() => safeLocalStorageGet('fasting_startTime'));
+    // Начальные состояния пустые или дефолтные
+    const [schemeId, setSchemeIdState] = useState<string>(FASTING_SCHEMES[0].id);
+    const [startTime, setStartTimeState] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true); // 👈 Индикатор загрузки
+    
     const [elapsed, setElapsed] = useState(0);
-    // 👇 Добавил phaseId в тип стейта
     const [notification, setNotification] = useState<{title: string, message: string, phaseId?: number} | null>(null);
-    // 👇 Стейт для диплинка
     const [phaseToOpen, setPhaseToOpen] = useState<number | null>(null);
     
     const lastPhaseIndexRef = useRef<number>(-1);
 
-    const scheme = FASTING_SCHEMES.find((s: FastingScheme) => s.id === schemeId) || FASTING_SCHEMES[0];
+    const scheme = FASTING_SCHEMES.find((s) => s.id === schemeId) || FASTING_SCHEMES[0];
     const goalSeconds = scheme.hours * 3600;
 
-    const setSchemeId = useCallback((id: string) => {
-        setSchemeIdState(id);
-        safeLocalStorageSet('fasting_scheme', id);
+    // 1. Асинхронная Инициализация
+    useEffect(() => {
+        const init = async () => {
+            try {
+                // Загружаем схему
+                const savedSchemeId = await storageGet('fasting_scheme');
+                if (savedSchemeId && FASTING_SCHEMES.find(s => s.id === savedSchemeId)) {
+                    setSchemeIdState(savedSchemeId);
+                }
+
+                // Загружаем время старта
+                const savedStart = await storageGet('fasting_startTime');
+                if (savedStart) {
+                    setStartTimeState(savedStart);
+                    
+                    // Сразу пересчитываем фазу, чтобы не ждать useEffect таймера
+                    const now = dayjs();
+                    const diff = now.diff(dayjs(savedStart), 'second');
+                    setElapsed(diff >= 0 ? diff : 0);
+                    
+                    const currentHours = now.diff(dayjs(savedStart), 'hour');
+                    lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart);
+                }
+            } catch (e) {
+                console.error("Timer init error:", e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        init();
     }, []);
 
+    // 2. Сеттер схемы
+    const setSchemeId = useCallback((id: string) => {
+        setSchemeIdState(id);
+        storageSet('fasting_scheme', id); // fire & forget
+    }, []);
+
+    // 3. Сеттер времени
     const setStartTime = useCallback((date: string | null) => {
         setStartTimeState(date);
         if (date) {
-            safeLocalStorageSet('fasting_startTime', date);
+            storageSet('fasting_startTime', date);
             const now = dayjs();
             const diff = now.diff(dayjs(date), 'second');
             setElapsed(diff >= 0 ? diff : 0);
             
             const currentHours = now.diff(dayjs(date), 'hour');
-            lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p: FastingStage) => currentHours >= p.hoursStart);
+            lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart);
         } else {
-            safeLocalStorageRemove('fasting_startTime');
+            storageRemove('fasting_startTime');
             setElapsed(0);
             lastPhaseIndexRef.current = -1;
         }
     }, []);
 
+    // 4. Таймер
     useEffect(() => {
         if (!startTime) {
             setElapsed(0);
@@ -90,41 +121,40 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
             const safeDiff = diff >= 0 ? diff : 0;
             setElapsed(safeDiff);
 
+            // Проверка фаз
             if (safeDiff % 60 === 0) {
                 const currentHours = safeDiff / 3600;
-                const newPhaseIndex = FASTING_PHASES.findIndex((p: FastingStage) => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
+                const newPhaseIndex = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
                 
                 if (newPhaseIndex !== -1 && newPhaseIndex !== lastPhaseIndexRef.current) {
                     if (lastPhaseIndexRef.current !== -1) {
-                        const settings = safeLocalStorageGetJSON<NotificationSettings>('user_settings', { fasting: true });
-                        if (settings.fasting !== false) {
-                            const phase = FASTING_PHASES[newPhaseIndex];
-                            setNotification({
-                                title: `Новый этап: ${phase.title}`,
-                                message: phase.subtitle,
-                                phaseId: phase.id // 👈 Передаем ID фазы
-                            });
-                            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                        }
+                        // Асинхронно проверяем настройки (тут можно использовать промис, но useEffect синхронен)
+                        storageGetJSON<NotificationSettings>('user_settings', { fasting: true }).then(settings => {
+                            if (settings.fasting !== false) {
+                                const phase = FASTING_PHASES[newPhaseIndex];
+                                setNotification({
+                                    title: `Новый этап: ${phase.title}`,
+                                    message: phase.subtitle,
+                                    phaseId: phase.id
+                                });
+                                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                            }
+                        });
                     }
                     lastPhaseIndexRef.current = newPhaseIndex;
                 }
             }
         };
 
-        if (lastPhaseIndexRef.current === -1) {
-            const start = dayjs(startTime);
-            const currentHours = dayjs().diff(start, 'hour', true);
-            lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p: FastingStage) => currentHours >= p.hoursStart);
-        }
-
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
     }, [startTime]);
 
+    // 5. Переключатель (Старт/Стоп)
     const toggleFasting = useCallback(() => {
         if (startTime) {
+            // STOP
             const now = dayjs();
             const start = dayjs(startTime);
             const duration = now.diff(start, 'second');
@@ -138,10 +168,11 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
                     endTime: now.toISOString(),
                     durationSeconds: duration
                 };
-                safeLocalStorageUpdateHistory('history_fasting', record);
+                storageUpdateHistory('history_fasting', record);
             }
             setStartTime(null);
         } else {
+            // START
             setStartTime(dayjs().toISOString());
             lastPhaseIndexRef.current = 0;
         }
@@ -169,8 +200,9 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
             setStartTime,
             notification,
             closeNotification: () => setNotification(null),
-            phaseToOpen, // 👈
-            setPhaseToOpen // 👈
+            phaseToOpen,
+            setPhaseToOpen,
+            isLoading // Экспортируем флаг загрузки
         }}>
             {children}
         </TimerContext.Provider>

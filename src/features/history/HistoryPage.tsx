@@ -1,11 +1,12 @@
+// src/features/history/HistoryPage.tsx
 import { useState, useEffect, useMemo } from 'react';
-import { History, Calendar, Clock, Wind, Flame, ChevronRight } from 'lucide-react';
+import { History, Calendar, Clock, Wind, Flame, ChevronRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
-import { safeLocalStorageGetJSON, safeLocalStorageSetJSON } from '../../utils/localStorage';
+import { storageGetJSON, storageSetJSON } from '../../utils/storage'; // 👈 NEW
 import type { HistoryRecord } from '../../utils/types';
 
 dayjs.locale('ru');
@@ -14,29 +15,43 @@ export const HistoryPage = () => {
   const [activeTab, setActiveTab] = useState<'fasting' | 'breathing'>('fasting');
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // 👈 NEW
 
+  // Загрузка данных
   useEffect(() => {
-    const saved = safeLocalStorageGetJSON<HistoryRecord[]>('history_fasting', []);
-    const validRecords = saved.filter((r): r is HistoryRecord => 
-      r && 
-      typeof r.id === 'string' &&
-      (r.type === 'fasting' || r.type === 'breathing')
-    );
-    setRecords(validRecords);
+    const loadHistory = async () => {
+      setIsLoading(true);
+      try {
+        const saved = await storageGetJSON<HistoryRecord[]>('history_fasting', []);
+        const validRecords = saved.filter((r): r is HistoryRecord => 
+          r && 
+          typeof r.id === 'string' &&
+          (r.type === 'fasting' || r.type === 'breathing')
+        );
+        setRecords(validRecords);
+      } catch (e) {
+        console.error('Failed to load history', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadHistory();
   }, []);
 
-  const handleDelete = (id: string) => {
+  // Удаление (Асинхронное)
+  const handleDelete = async (id: string) => {
     const newRecords = records.filter(r => r.id !== id);
-    setRecords(newRecords);
-    safeLocalStorageSetJSON('history_fasting', newRecords);
+    setRecords(newRecords); // Оптимистичное обновление UI
     setSelectedRecord(null);
+    await storageSetJSON('history_fasting', newRecords);
   };
 
-  const handleUpdate = (updatedRecord: HistoryRecord) => {
+  // Обновление (Асинхронное)
+  const handleUpdate = async (updatedRecord: HistoryRecord) => {
     const newRecords = records.map(r => r.id === updatedRecord.id ? updatedRecord : r);
-    setRecords(newRecords);
-    safeLocalStorageSetJSON('history_fasting', newRecords);
+    setRecords(newRecords); // Оптимистичное обновление UI
     setSelectedRecord(updatedRecord);
+    await storageSetJSON('history_fasting', newRecords);
   };
 
   const filteredRecords = useMemo(() => 
@@ -49,11 +64,10 @@ export const HistoryPage = () => {
     [filteredRecords]
   );
 
-  // ГРУППИРОВКА ПО МЕСЯЦАМ
   const groupedRecords = useMemo(() => {
       const groups: Record<string, HistoryRecord[]> = {};
       filteredRecords.forEach(r => {
-          const key = dayjs(r.endTime).format('MMMM YYYY'); // "Май 2024"
+          const key = dayjs(r.endTime).format('MMMM YYYY');
           if (!groups[key]) groups[key] = [];
           groups[key].push(r);
       });
@@ -108,7 +122,12 @@ export const HistoryPage = () => {
 
         {/* СПИСОК */}
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10 scrollbar-hide relative z-10">
-          {filteredRecords.length === 0 ? (
+          
+          {isLoading ? (
+             <div className="flex flex-col items-center justify-center h-full pb-20">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+             </div>
+          ) : filteredRecords.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center pb-20 opacity-50">
               <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                 <Calendar className="w-8 h-8 text-slate-300" />
@@ -134,7 +153,7 @@ export const HistoryPage = () => {
                                 onClick={() => setSelectedRecord(record)}
                                 className="bg-slate-50/50 hover:bg-slate-100 p-4 rounded-[1.5rem] flex items-center gap-4 group cursor-pointer transition-colors relative overflow-hidden"
                             >
-                                {/* Дата (Слева, Крупно) */}
+                                {/* Дата */}
                                 <div className="flex flex-col items-center justify-center w-12 shrink-0 border-r border-slate-200 pr-4">
                                     <span className="text-[10px] font-bold text-slate-400 uppercase">
                                         {dayjs(record.endTime).format('ddd')}
