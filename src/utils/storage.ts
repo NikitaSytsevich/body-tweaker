@@ -8,6 +8,10 @@ const STORAGE_KEY = import.meta.env.VITE_STORAGE_KEY || 'dev-key-change-in-prod-
 // Префикс, чтобы ключи не пересекались с другими приложениями
 const KEY_PREFIX = 'bt_app_';
 
+// Константы для чанкинга (8 записей * ~400 байт < 4096 байт)
+const HISTORY_CHUNK_SIZE = 8;
+const HISTORY_MAX_CHUNKS = 50; // Хватит на 400 записей
+
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
 
 // Проверка: доступны ли облачные функции (Telegram Environment)
@@ -38,14 +42,11 @@ const decrypt = (value: string): string | null => {
     const bytes = AES.decrypt(value, STORAGE_KEY);
     const decryptedData = bytes.toString(encUtf8);
     
-    // Если расшифровка вернула пустую строку, но исходник не пуст - 
-    // возможно, данные не зашифрованы (миграция)
     if (!decryptedData && value.length > 0) {
       return value.startsWith('{') || value.startsWith('[') ? value : null;
     }
     return decryptedData;
   } catch {
-    // Если упала ошибка (Malformed UTF-8), возвращаем "как есть"
     return value;
   }
 };
@@ -60,12 +61,10 @@ export async function storageGet(key: string): Promise<string | null> {
 
   if (isCloudAvailable()) {
     try {
-      // Исправление 1: Убран 'reject', так как мы всегда делаем resolve (даже при ошибке фоллбэчимся)
       return new Promise((resolve) => {
         WebApp.CloudStorage.getItem(namespacedKey, (err, value) => {
           if (err) {
             console.warn('[Cloud] Get Error, falling back to local:', err);
-            // Пробуем фоллбэк на локальное, если облако сбоит
             resolve(decrypt(localStorage.getItem(namespacedKey) || ''));
           } else {
             resolve(decrypt(value || ''));
@@ -77,7 +76,6 @@ export async function storageGet(key: string): Promise<string | null> {
     }
   }
 
-  // Fallback to localStorage (Dev mode or Cloud unavailable)
   return decrypt(localStorage.getItem(namespacedKey) || '');
 }
 
@@ -88,7 +86,6 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
   const namespacedKey = getKey(key);
   const encrypted = encrypt(value);
 
-  // Всегда пишем и в локалку (для кэша/скорости)
   try {
     localStorage.setItem(namespacedKey, encrypted);
   } catch (e) { /* ignore quota */ }
@@ -100,7 +97,6 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
             console.error('[Cloud] Set Error:', err);
             resolve(false);
         } else {
-            // Исправление 2: Гарантируем boolean, так как stored может быть undefined в типах SDK
             resolve(stored || false);
         }
       });
@@ -123,7 +119,6 @@ export async function storageRemove(key: string): Promise<boolean> {
   if (isCloudAvailable()) {
     return new Promise((resolve) => {
       WebApp.CloudStorage.removeItem(namespacedKey, (err, deleted) => {
-         // Исправление 3: Гарантируем boolean
          resolve(!err && (deleted || false));
       });
     });
@@ -157,8 +152,54 @@ export async function storageSetJSON<T>(key: string, value: T): Promise<boolean>
   }
 }
 
+// ================= NEW HISTORY API =================
+
 /**
- * Асинхронное обновление истории (Безопасное добавление в начало списка)
+ * Чтение истории с поддержкой чанков и миграцией
+ */
+export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
+  // 1. Попытка миграции (если есть данные в старом ключе)
+  const legacyData = await storageGetJSON<T[] | null>(baseKey, null);
+  if (legacyData && Array.isArray(legacyData) && legacyData.length > 0) {
+    console.log('[Storage] Migrating legacy history to chunks...');
+    await storageSaveHistory(baseKey, legacyData);
+    await storageRemove(baseKey);
+    return legacyData;
+  }
+
+  // 2. Чтение чанков
+  const chunks = await Promise.all(
+    Array.from({ length: HISTORY_MAX_CHUNKS }, (_, i) => 
+      storageGetJSON<T[]>(`${baseKey}_${i}`, [])
+    )
+  );
+
+  return chunks.flat();
+}
+
+/**
+ * Сохранение истории в чанки
+ */
+export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise<boolean> {
+  let success = true;
+  
+  for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
+    const chunk = list.slice(i * HISTORY_CHUNK_SIZE, (i + 1) * HISTORY_CHUNK_SIZE);
+    const key = `${baseKey}_${i}`;
+    
+    if (chunk.length > 0) {
+      const res = await storageSetJSON(key, chunk);
+      if (!res) success = false;
+    } else {
+      // Удаляем пустые ключи, чтобы не занимать квоту
+      await storageRemove(key);
+    }
+  }
+  return success;
+}
+
+/**
+ * Обновление истории (добавление в начало)
  */
 export async function storageUpdateHistory<T>(
   key: string, 
@@ -166,10 +207,10 @@ export async function storageUpdateHistory<T>(
   maxItems: number = 1000
 ): Promise<T[]> {
   try {
-    const currentList = await storageGetJSON<T[]>(key, []);
+    const currentList = await storageGetHistory<T>(key);
     // Добавляем в начало и обрезаем
     const newList = [newItem, ...currentList].slice(0, maxItems);
-    await storageSetJSON(key, newList);
+    await storageSaveHistory(key, newList);
     return newList;
   } catch (e) {
     console.error(`[Storage] Failed to update history for "${key}"`, e);

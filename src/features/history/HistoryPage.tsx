@@ -6,7 +6,10 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
-import { storageGetJSON, storageSetJSON } from '../../utils/storage'; // 👈 NEW
+import { 
+  storageGetHistory, // 👈 CHANGED
+  storageSaveHistory // 👈 CHANGED
+} from '../../utils/storage';
 import type { HistoryRecord } from '../../utils/types';
 
 dayjs.locale('ru');
@@ -15,14 +18,15 @@ export const HistoryPage = () => {
   const [activeTab, setActiveTab] = useState<'fasting' | 'breathing'>('fasting');
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // 👈 NEW
+  const [isLoading, setIsLoading] = useState(true);
 
   // Загрузка данных
   useEffect(() => {
     const loadHistory = async () => {
       setIsLoading(true);
       try {
-        const saved = await storageGetJSON<HistoryRecord[]>('history_fasting', []);
+        // 👇 Используем новую функцию с поддержкой чанков
+        const saved = await storageGetHistory<HistoryRecord>('history_fasting');
         const validRecords = saved.filter((r): r is HistoryRecord => 
           r && 
           typeof r.id === 'string' &&
@@ -43,7 +47,8 @@ export const HistoryPage = () => {
     const newRecords = records.filter(r => r.id !== id);
     setRecords(newRecords); // Оптимистичное обновление UI
     setSelectedRecord(null);
-    await storageSetJSON('history_fasting', newRecords);
+    // 👇 Используем новую функцию сохранения
+    await storageSaveHistory('history_fasting', newRecords);
   };
 
   // Обновление (Асинхронное)
@@ -51,14 +56,17 @@ export const HistoryPage = () => {
     const newRecords = records.map(r => r.id === updatedRecord.id ? updatedRecord : r);
     setRecords(newRecords); // Оптимистичное обновление UI
     setSelectedRecord(updatedRecord);
-    await storageSetJSON('history_fasting', newRecords);
+    // 👇 Используем новую функцию сохранения
+    await storageSaveHistory('history_fasting', newRecords);
   };
-
+  
+  // Остальной код без изменений...
   const filteredRecords = useMemo(() => 
     records.filter(r => r.type === activeTab),
     [records, activeTab]
   );
-
+  // ... (весь UI код остается таким же)
+  
   const totalHours = useMemo(() => 
     Math.round(filteredRecords.reduce((acc, r) => acc + r.durationSeconds, 0) / 3600),
     [filteredRecords]
