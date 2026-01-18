@@ -1,6 +1,7 @@
 // src/app/modals/SettingsModal.tsx
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Trash2, ShieldCheck, Download, Upload, X, Loader2, Smartphone } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -30,12 +31,12 @@ interface Props {
 export const SettingsModal = ({ isOpen, onClose }: Props) => {
   const user = WebApp.initDataUnsafe?.user;
   
-  // Локальные состояния UI
+  // Состояния UI
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
-  const [isProcessing, setIsProcessing] = useState(false); // Для лоадера на кнопках данных
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // 1. Асинхронные настройки (Cloud)
   const { 
@@ -44,11 +45,15 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
     isLoading: isSettingsLoading 
   } = useStorage<NotificationSettings>('user_settings', { fasting: true });
 
-  // 2. Логика PWA (Установка на экран)
+  // 2. Логика PWA (Browser & Telegram)
   const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
   
-  // Показываем кнопку, если: (iOS ИЛИ есть промпт Android) И (не установлено как PWA)
-  const canInstall = !isStandalone && (isIOS || !!deferredPrompt);
+  // Проверяем поддержку нативного метода в Telegram (v8.0+)
+  const isTelegramNativeInstallSupported = WebApp.isVersionAtLeast('8.0');
+
+  // Условие показа кнопки установки:
+  // (Telegram Native ИЛИ iOS ИЛИ Android Prompt) И (Не установлено)
+  const canInstall = !isStandalone && (isTelegramNativeInstallSupported || isIOS || !!deferredPrompt);
 
   // --- HANDLERS ---
 
@@ -58,13 +63,20 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
   };
 
   const handleInstallClick = () => {
+      // 1. Приоритет: Нативный метод Telegram
+      if (isTelegramNativeInstallSupported) {
+          WebApp.addToHomeScreen();
+          return;
+      }
+
+      // 2. Фолбэки для браузеров
       if (isIOS) {
           setShowInstallGuide(true);
       } else if (deferredPrompt) {
           promptInstall();
       } else {
-          // Фолбэк для десктопа или веб-версии Telegram
-          alert('Функция установки доступна в мобильных браузерах (Safari, Chrome).');
+          // Если открыто в старом Telegram или Desktop
+          alert('Функция установки доступна в мобильных браузерах или обновите Telegram.');
       }
   };
 
@@ -91,7 +103,6 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
   const handleExport = async () => {
       setIsProcessing(true);
       try {
-          // Собираем данные параллельно для скорости
           const [history, settings, startTime, scheme, userName, terms] = await Promise.all([
               storageGetJSON('history_fasting', []),
               storageGetJSON('user_settings', { fasting: true }),
@@ -151,7 +162,6 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
               if (!parsed.data) throw new Error('Invalid backup format');
               const { data } = parsed;
 
-              // Восстанавливаем данные
               const promises = [];
               if (data.history_fasting) promises.push(storageSetJSON('history_fasting', data.history_fasting));
               if (data.user_settings) promises.push(storageSetJSON('user_settings', data.user_settings));
@@ -184,27 +194,32 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
 
   if (!isOpen) return null;
 
-  return (
-    <>
+  const content = (
+    <AnimatePresence>
+      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
         className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
       />
 
+      {/* Modal Sheet */}
       <motion.div
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="fixed bottom-0 left-0 right-0 z-50 bg-[#F2F2F7] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
       >
-        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
+        {/* Handle */}
+        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0 cursor-pointer" onClick={onClose}>
           <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
         </div>
 
+        {/* Close Button */}
         <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-200/50 hover:bg-gray-200 rounded-full transition-colors z-50">
             <X className="w-5 h-5 text-gray-500" />
         </button>
 
+        {/* Content Container */}
         <div className="flex-1 overflow-y-auto pb-safe px-6 pt-2 overscroll-contain">
             
             <div className="mb-8 mt-2">
@@ -235,7 +250,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                     </div>
                 </section>
 
-                {/* ПРИЛОЖЕНИЕ (Установка + Уведомления) */}
+                {/* ПРИЛОЖЕНИЕ */}
                 <section>
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Приложение</h4>
                     <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
@@ -261,7 +276,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                                 </div>
                                 <div className="bg-slate-100 px-3 py-1.5 rounded-lg">
                                     <span className="text-[10px] font-bold text-slate-500 uppercase">
-                                        {isIOS ? 'Инструкция' : 'Скачать'}
+                                        {isTelegramNativeInstallSupported ? 'Добавить' : (isIOS ? 'Инструкция' : 'Скачать')}
                                     </span>
                                 </div>
                              </button>
@@ -324,7 +339,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                     
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
                         <ShieldCheck className="w-3 h-3 text-slate-400" />
-                        <span className="text-[10px] font-medium text-slate-400">Ver 2.0.0 (Cloud)</span>
+                        <span className="text-[10px] font-medium text-slate-400">Ver 2.0.1 (Cloud)</span>
                     </div>
                 </div>
 
@@ -332,6 +347,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
         </div>
       </motion.div>
 
+      {/* Модальные окна (вне структуры шторки для правильного z-index) */}
       <ConfirmModal
         isOpen={showResetConfirm}
         onClose={() => setShowResetConfirm(false)}
@@ -350,11 +366,12 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
         onClose={() => setShowExportToast(false)}
       />
 
-      {/* Модалка PWA (iOS) */}
       <InstallGuideModal 
         isOpen={showInstallGuide} 
         onClose={() => setShowInstallGuide(false)} 
       />
-    </>
+    </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 };
