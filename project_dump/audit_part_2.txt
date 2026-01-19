@@ -1,5 +1,1332 @@
 
 ====================
+START FILE: src/features/fasting/MetabolismMapPage.tsx
+====================
+import { useState, useEffect, useMemo } from 'react';
+import { useFastingTimerContext } from './context/TimerContext';
+import { FASTING_PHASES } from './data/stages';
+import type { FastingStage } from './data/stages';
+import { cn } from '../../utils/cn';
+import { Check, Lock, Navigation, Sparkles, BookOpen, Activity } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PhaseSheet } from './components/PhaseSheet';
+import { ArticlesPage } from '../articles/pages/ArticlesPage';
+import { SegmentedControl } from '../../components/ui/SegmentedControl';
+
+const getZoneColor = (hours: number) => {
+  if (hours < 12) return "text-orange-500";
+  if (hours < 24) return "text-blue-500";
+  if (hours < 72) return "text-violet-500";
+  return "text-emerald-500";
+};
+
+export const MetabolismMapPage = () => {
+  const { isFasting, elapsed, phaseToOpen, setPhaseToOpen } = useFastingTimerContext();
+  const elapsedHours = elapsed / 3600;
+
+  const [viewMode, setViewMode] = useState<'map' | 'articles'>('map');
+
+  // Авто-переключение при старте/остановке таймера
+  useEffect(() => {
+    setViewMode(isFasting ? 'map' : 'articles');
+  }, [isFasting]);
+
+  // Обработка Deep Link (открытие фазы из уведомления)
+  const [selectedPhase, setSelectedPhase] = useState<FastingStage | null>(null);
+  useEffect(() => {
+      if (phaseToOpen !== null) {
+          const targetPhase = FASTING_PHASES.find(p => p.id === phaseToOpen);
+          if (targetPhase) {
+              setSelectedPhase(targetPhase);
+              setViewMode('map');
+          }
+          setPhaseToOpen(null);
+      }
+  }, [phaseToOpen, setPhaseToOpen]);
+
+  const { activeIndex, phaseProgress } = useMemo(() => {
+    let activeIndex = 0;
+    let phaseProgress = 0;
+    for (let i = 0; i < FASTING_PHASES.length; i++) {
+      const phase = FASTING_PHASES[i];
+      const nextPhase = FASTING_PHASES[i + 1];
+      if (elapsedHours >= phase.hoursStart) {
+        activeIndex = i;
+        if (nextPhase) {
+          const duration = nextPhase.hoursStart - phase.hoursStart;
+          const passedInPhase = elapsedHours - phase.hoursStart;
+          phaseProgress = Math.min((passedInPhase / duration) * 100, 100);
+        } else {
+          phaseProgress = 100;
+        }
+      }
+    }
+    return { activeIndex, phaseProgress };
+  }, [elapsedHours]);
+
+  const accentColor = getZoneColor(elapsedHours);
+
+  const tabs = [
+    { value: 'map', label: 'Процессы', icon: Activity },
+    { value: 'articles', label: 'Знания', icon: BookOpen }
+  ];
+
+  return (
+    <>
+      <div className="flex flex-col pb-32 relative z-0">
+        
+        {/* БЕЛЫЙ КОНТЕЙНЕР */}
+        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative flex flex-col z-10 border border-white/60 min-h-[80vh]">
+          
+          {/* Переключатель */}
+          <div className="px-6 pt-6 pb-2 bg-white rounded-t-[3rem]">
+             <SegmentedControl 
+                options={tabs}
+                value={viewMode}
+                onChange={(val) => setViewMode(val as 'map' | 'articles')}
+            />
+          </div>
+
+          {/* Контент (без свайпов) */}
+          <div className="flex-1 flex flex-col">
+            <AnimatePresence mode="wait">
+                
+                {/* === РЕЖИМ 1: СТАТЬИ === */}
+                {viewMode === 'articles' ? (
+                    <motion.div
+                        key="articles"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.25 }}
+                        className="w-full min-h-[50vh]"
+                    >
+                        <div className="pt-2"> 
+                            <ArticlesPage />
+                        </div>
+                    </motion.div>
+                ) : (
+                    
+                /* === РЕЖИМ 2: КАРТА === */
+                <motion.div
+                    key="map"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.25 }}
+                    className="w-full flex flex-col"
+                >
+                    {/* Хедер Карты */}
+                    <div className="px-8 pt-4 pb-6 flex justify-between items-start border-b border-gray-50/50 bg-white">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Navigation className={cn("w-3 h-3", accentColor)} />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    Маршрут
+                                </span>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                                <h1 className="text-3xl font-[900] text-slate-800 leading-none">
+                                    {isFasting ? Math.floor(elapsedHours) : 0}
+                                </h1>
+                                <span className="text-sm font-bold text-slate-400">часов</span>
+                            </div>
+                        </div>
+                        
+                        {isFasting ? (
+                            <div className="px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-2">
+                                <div className={cn("w-2 h-2 rounded-full bg-current", accentColor)} />
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                                    {elapsedHours < 12 ? "Питание" : elapsedHours < 24 ? "Кетоз" : "Аутофагия"}
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Ожидание</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Список Фаз */}
+                    <div className="px-4 py-6 relative z-10 pb-10">
+                        <div className="absolute left-[35px] top-6 bottom-10 w-0.5 bg-slate-100 rounded-full" />
+
+                        {FASTING_PHASES.map((phase, index) => {
+                            const isActive = isFasting && index === activeIndex;
+                            const isPassed = isFasting && index < activeIndex;
+                            const iconColor = phase.color.replace(/bg-[\w-]+\s*/, '');
+
+                            return (
+                                <div 
+                                    key={index} 
+                                    className={cn("relative z-10 flex gap-4 transition-all duration-500", isActive ? "mb-8 mt-2" : "mb-4")}
+                                >
+                                    <div className="flex flex-col items-center shrink-0 w-12 pt-2">
+                                        {isActive && (
+                                            <div className="absolute top-0 bottom-0 left-[23px] w-0.5 bg-slate-100 -z-10">
+                                                <motion.div 
+                                                    initial={{ height: 0 }}
+                                                    animate={{ height: `${phaseProgress}%` }}
+                                                    transition={{ duration: 1 }}
+                                                    className="w-full bg-blue-500"
+                                                />
+                                            </div>
+                                        )}
+                                        <div 
+                                            onClick={() => setSelectedPhase(phase)}
+                                            className={cn(
+                                                "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer border-[3px] z-20 bg-white",
+                                                isActive ? "border-blue-500 scale-110 shadow-lg shadow-blue-500/20" : isPassed ? "border-slate-200 text-slate-300 scale-90" : "border-slate-100 text-slate-200 scale-75"
+                                            )}
+                                        >
+                                            {isPassed ? <Check className="w-4 h-4" /> : isActive ? <phase.icon className={cn("w-5 h-5", iconColor)} /> : <span className="text-[10px] font-bold font-mono">{index + 1}</span>}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                        {isActive ? (
+                                            <motion.div 
+                                                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
+                                                onClick={() => setSelectedPhase(phase)}
+                                                className="bg-slate-50 rounded-[1.5rem] p-5 border border-slate-200 cursor-pointer active:scale-[0.98] transition-transform relative overflow-hidden"
+                                            >
+                                                <div className="flex justify-between items-start mb-2 relative z-10">
+                                                    <span className="text-[9px] font-bold text-blue-500 bg-white border border-blue-100 px-2 py-1 rounded-lg uppercase tracking-wide">Сейчас</span>
+                                                    <span className="text-xs font-mono font-bold text-slate-400">{Math.round(phaseProgress)}%</span>
+                                                </div>
+                                                <h3 className="text-lg font-black text-slate-800 leading-tight mb-1 relative z-10">{phase.title}</h3>
+                                                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed relative z-10">{phase.subtitle}</p>
+                                                <div className="h-1.5 w-full bg-slate-200 rounded-full mt-4 overflow-hidden relative z-10">
+                                                    <motion.div initial={{ width: 0 }} animate={{ width: `${phaseProgress}%` }} transition={{ duration: 1, delay: 0.2 }} className="h-full bg-blue-500 rounded-full" />
+                                                </div>
+                                            </motion.div>
+                                        ) : isPassed ? (
+                                            <div onClick={() => setSelectedPhase(phase)} className="py-3 px-4 rounded-2xl transition-all cursor-pointer flex items-center justify-between group hover:bg-slate-50">
+                                                <span className="text-sm font-bold text-slate-400 group-hover:text-slate-600 transition-colors line-through decoration-slate-300">{phase.title}</span>
+                                            </div>
+                                        ) : (
+                                            <div onClick={() => setSelectedPhase(phase)} className="py-3 px-4 rounded-2xl border border-dashed border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between group mt-1">
+                                                <div>
+                                                    <span className="text-sm font-bold text-slate-400 group-hover:text-slate-600 transition-colors">{phase.title}</span>
+                                                    {isFasting && <div className="text-[10px] text-slate-300 font-mono mt-0.5">+{Math.max(0, Math.floor(phase.hoursStart - elapsedHours))}ч</div>}
+                                                </div>
+                                                <Lock className="w-3 h-3 text-slate-200" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div className="ml-[28px] mt-4 mb-10 pl-8 relative opacity-50 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-emerald-500" />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Финиш</span>
+                        </div>
+                    </div>
+                </motion.div>
+                )}
+            </AnimatePresence>
+          </div>
+
+        </div>
+
+        {selectedPhase && (
+            <PhaseSheet 
+                phase={selectedPhase} 
+                onClose={() => setSelectedPhase(null)} 
+            />
+        )}
+
+      </div>
+    </>
+  );
+};
+
+====================
+END FILE: src/features/fasting/MetabolismMapPage.tsx
+====================
+
+====================
+START FILE: src/features/fasting/context/TimerContext.tsx
+====================
+// src/features/fasting/context/TimerContext.tsx
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import dayjs from 'dayjs';
+
+import { FASTING_SCHEMES } from '../data/schemes';
+import type { FastingScheme } from '../data/schemes';
+import { FASTING_PHASES } from '../data/stages';
+
+import { 
+    storageGet, 
+    storageSet, 
+    storageRemove, 
+    storageGetJSON,
+    storageUpdateHistory
+} from '../../../utils/storage'; // 👈 NEW
+
+import type { NotificationSettings, HistoryRecord } from '../../../utils/types';
+
+interface TimerContextType {
+    isFasting: boolean;
+    scheme: FastingScheme;
+    setSchemeId: (id: string) => void;
+    progress: number;
+    elapsedFormatted: string;
+    elapsed: number;
+    toggleFasting: () => void;
+    startTime: string | null;
+    setStartTime: (date: string | null) => void;
+    notification: {title: string, message: string, phaseId?: number} | null;
+    closeNotification: () => void;
+    phaseToOpen: number | null;
+    setPhaseToOpen: (id: number | null) => void;
+    isLoading: boolean; // 👈 NEW
+}
+
+const TimerContext = createContext<TimerContextType | null>(null);
+
+export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
+    // Начальные состояния пустые или дефолтные
+    const [schemeId, setSchemeIdState] = useState<string>(FASTING_SCHEMES[0].id);
+    const [startTime, setStartTimeState] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true); // 👈 Индикатор загрузки
+    
+    const [elapsed, setElapsed] = useState(0);
+    const [notification, setNotification] = useState<{title: string, message: string, phaseId?: number} | null>(null);
+    const [phaseToOpen, setPhaseToOpen] = useState<number | null>(null);
+    
+    const lastPhaseIndexRef = useRef<number>(-1);
+
+    const scheme = FASTING_SCHEMES.find((s) => s.id === schemeId) || FASTING_SCHEMES[0];
+    const goalSeconds = scheme.hours * 3600;
+
+    // 1. Асинхронная Инициализация
+    useEffect(() => {
+        const init = async () => {
+            try {
+                // Загружаем схему
+                const savedSchemeId = await storageGet('fasting_scheme');
+                if (savedSchemeId && FASTING_SCHEMES.find(s => s.id === savedSchemeId)) {
+                    setSchemeIdState(savedSchemeId);
+                }
+
+                // Загружаем время старта
+                const savedStart = await storageGet('fasting_startTime');
+                if (savedStart) {
+                    setStartTimeState(savedStart);
+                    
+                    // Сразу пересчитываем фазу, чтобы не ждать useEffect таймера
+                    const now = dayjs();
+                    const diff = now.diff(dayjs(savedStart), 'second');
+                    setElapsed(diff >= 0 ? diff : 0);
+                    
+                    const currentHours = now.diff(dayjs(savedStart), 'hour');
+                    lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart);
+                }
+            } catch (e) {
+                console.error("Timer init error:", e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        init();
+    }, []);
+
+    // 2. Сеттер схемы
+    const setSchemeId = useCallback((id: string) => {
+        setSchemeIdState(id);
+        storageSet('fasting_scheme', id); // fire & forget
+    }, []);
+
+    // 3. Сеттер времени
+    const setStartTime = useCallback((date: string | null) => {
+        setStartTimeState(date);
+        if (date) {
+            storageSet('fasting_startTime', date);
+            const now = dayjs();
+            const diff = now.diff(dayjs(date), 'second');
+            setElapsed(diff >= 0 ? diff : 0);
+            
+            const currentHours = now.diff(dayjs(date), 'hour');
+            lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart);
+        } else {
+            storageRemove('fasting_startTime');
+            setElapsed(0);
+            lastPhaseIndexRef.current = -1;
+        }
+    }, []);
+
+    // 4. Таймер
+    useEffect(() => {
+        if (!startTime) {
+            setElapsed(0);
+            return;
+        }
+        
+        const update = () => {
+            const start = dayjs(startTime);
+            const now = dayjs();
+            const diff = now.diff(start, 'second');
+            const safeDiff = diff >= 0 ? diff : 0;
+            setElapsed(safeDiff);
+
+            // Проверка фаз
+            if (safeDiff % 60 === 0) {
+                const currentHours = safeDiff / 3600;
+                const newPhaseIndex = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
+                
+                if (newPhaseIndex !== -1 && newPhaseIndex !== lastPhaseIndexRef.current) {
+                    if (lastPhaseIndexRef.current !== -1) {
+                        // Асинхронно проверяем настройки (тут можно использовать промис, но useEffect синхронен)
+                        storageGetJSON<NotificationSettings>('user_settings', { fasting: true }).then(settings => {
+                            if (settings.fasting !== false) {
+                                const phase = FASTING_PHASES[newPhaseIndex];
+                                setNotification({
+                                    title: `Новый этап: ${phase.title}`,
+                                    message: phase.subtitle,
+                                    phaseId: phase.id
+                                });
+                                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                            }
+                        });
+                    }
+                    lastPhaseIndexRef.current = newPhaseIndex;
+                }
+            }
+        };
+
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, [startTime]);
+
+    // 5. Переключатель (Старт/Стоп)
+    const toggleFasting = useCallback(() => {
+        if (startTime) {
+            // STOP
+            const now = dayjs();
+            const start = dayjs(startTime);
+            const duration = now.diff(start, 'second');
+            
+            if (duration > 60) {
+                const record: HistoryRecord = {
+                    id: Date.now().toString(),
+                    type: 'fasting',
+                    scheme: scheme.title,
+                    startTime: startTime,
+                    endTime: now.toISOString(),
+                    durationSeconds: duration
+                };
+                storageUpdateHistory('history_fasting', record);
+            }
+            setStartTime(null);
+        } else {
+            // START
+            setStartTime(dayjs().toISOString());
+            lastPhaseIndexRef.current = 0;
+        }
+    }, [startTime, scheme.title, setStartTime]);
+
+    const progress = Math.min((elapsed / goalSeconds) * 100, 100);
+
+    const formatTime = (totalSeconds: number) => {
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <TimerContext.Provider value={{
+            isFasting: !!startTime,
+            scheme,
+            setSchemeId,
+            progress,
+            elapsedFormatted: formatTime(elapsed),
+            elapsed,
+            toggleFasting,
+            startTime,
+            setStartTime,
+            notification,
+            closeNotification: () => setNotification(null),
+            phaseToOpen,
+            setPhaseToOpen,
+            isLoading // Экспортируем флаг загрузки
+        }}>
+            {children}
+        </TimerContext.Provider>
+    );
+};
+
+export const useFastingTimerContext = () => {
+    const context = useContext(TimerContext);
+    if (!context) {
+        throw new Error('useFastingTimerContext must be used within a TimerProvider');
+    }
+    return context;
+};
+
+====================
+END FILE: src/features/fasting/context/TimerContext.tsx
+====================
+
+====================
+START FILE: src/features/fasting/components/ProtocolDetails.tsx
+====================
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, Play, Clock, Activity, ChevronDown, Zap, PartyPopper } from 'lucide-react';
+import { FASTING_SCHEMES } from '../data/schemes';
+import { FASTING_PHASES } from '../data/stages';
+import { cn } from '../../../utils/cn';
+
+interface Props {
+  schemeId: string;
+  onBack: () => void;
+  onStart: () => void;
+}
+
+export const ProtocolDetails = ({ schemeId, onBack, onStart }: Props) => {
+  const scheme = FASTING_SCHEMES.find(s => s.id === schemeId);
+  const [expandedPhaseId, setExpandedPhaseId] = useState<number | null>(null);
+
+  if (!scheme) return null;
+
+  const relevantPhases = FASTING_PHASES.filter(p => p.hoursStart < scheme.hours);
+
+  const togglePhase = (id: number) => {
+      setExpandedPhaseId(current => current === id ? null : id);
+  };
+
+  const colorName = scheme.color.split('-')[1];
+
+  return (
+    <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="flex flex-col h-full bg-[#F2F2F7] relative"
+    >
+        {/* Хедер */}
+        <div className="px-6 pt-4 pb-2 flex items-center gap-4 shrink-0 bg-[#F2F2F7] z-20">
+            <button 
+                onClick={onBack}
+                className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-500 active:scale-95 transition-transform"
+            >
+                <ChevronLeft className="w-6 h-6 ml-[-2px]" />
+            </button>
+            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+                Обзор
+            </span>
+        </div>
+
+        {/* Контент */}
+        <div className="flex-1 overflow-y-auto px-6 pb-10 scrollbar-hide"> {/* Увеличен padding-bottom */}
+            
+            {/* HERO */}
+            <div className="flex flex-col items-center text-center mt-6 mb-10">
+                <div className={cn(
+                    "w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-xl bg-white",
+                    `shadow-${colorName}-200`
+                )}>
+                    <scheme.icon className={cn("w-10 h-10", scheme.color)} />
+                </div>
+                
+                <h2 className="text-3xl font-[900] text-slate-800 leading-tight mb-2">
+                    {scheme.title.split(':')[0]}
+                </h2>
+                <p className="text-base font-medium text-slate-500 max-w-[250px]">
+                    {scheme.title.split(':')[1]?.trim() || scheme.title}
+                </p>
+
+                {/* Info Badges */}
+                <div className="flex gap-2 mt-6">
+                    <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-100 flex items-center gap-2 shadow-sm">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-600">~{Math.round(scheme.hours / 24 * 10) / 10} дн.</span>
+                    </div>
+                    <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-100 flex items-center gap-2 shadow-sm">
+                        <Activity className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-600">{relevantPhases.length} этапов</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* TIMELINE */}
+            <div className="relative">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 pl-2">
+                    Маршрут
+                </h4>
+                
+                <div className="relative pl-4 space-y-4">
+                    {/* Линия (теперь заканчивается чуть раньше финиша) */}
+                    <div className="absolute left-[23px] top-2 bottom-8 w-[2px] bg-slate-200 rounded-full" />
+
+                    {relevantPhases.map((phase) => {
+                        const isExpanded = expandedPhaseId === phase.id;
+                        const iconColorClass = phase.color.replace('bg-', 'text-').replace('100', '500');
+
+                        return (
+                            <div key={phase.id} className="relative z-10 flex gap-5">
+                                {/* Маркер */}
+                                <div className={cn(
+                                    "w-5 h-5 rounded-full border-[3px] shadow-sm flex items-center justify-center shrink-0 z-20 mt-4 transition-colors bg-white",
+                                    isExpanded ? "border-slate-800" : "border-slate-200"
+                                )}>
+                                    {isExpanded && <div className="w-1.5 h-1.5 bg-slate-800 rounded-full" />}
+                                </div>
+                                
+                                {/* Карточка */}
+                                <div 
+                                    onClick={() => togglePhase(phase.id)}
+                                    className={cn(
+                                        "flex-1 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all active:scale-[0.99] cursor-pointer group",
+                                        isExpanded ? "ring-1 ring-slate-800 border-slate-800" : "hover:border-slate-300"
+                                    )}
+                                >
+                                    <div className="p-4 flex items-center gap-4">
+                                        <div className={cn(
+                                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                                            isExpanded ? "bg-slate-100" : "bg-slate-50 group-hover:bg-slate-100"
+                                        )}>
+                                            <phase.icon className={cn("w-5 h-5", iconColorClass)} />
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                                    {phase.hoursStart}ч+
+                                                </span>
+                                                <ChevronDown className={cn("w-4 h-4 text-slate-300 transition-transform", isExpanded && "rotate-180")} />
+                                            </div>
+                                            <h5 className="font-bold text-sm text-slate-800 truncate">
+                                                {phase.title}
+                                            </h5>
+                                        </div>
+                                    </div>
+
+                                    {isExpanded && (
+                                        <div className="px-4 pb-4 pt-0 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            <div className="border-t border-slate-50 pt-3 space-y-3">
+                                                <p className="text-xs text-slate-500 leading-relaxed">
+                                                    {phase.subtitle}
+                                                </p>
+                                                
+                                                <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-50/50 flex gap-3">
+                                                    <div className="mt-0.5 p-1 bg-blue-100 rounded text-blue-600 shrink-0 h-fit">
+                                                        <Zap className="w-3 h-3" />
+                                                    </div>
+                                                    <div>
+                                                        <h6 className="text-[10px] font-bold text-blue-500 uppercase mb-0.5">Физиология</h6>
+                                                        <p className="text-[11px] text-slate-600 leading-relaxed">
+                                                            {phase.details.physiology}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <h6 className="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Ощущения</h6>
+                                                    <ul className="space-y-1">
+                                                        {phase.details.sensations.map((s, i) => (
+                                                            <li key={i} className="text-[11px] text-slate-500 flex gap-2 items-baseline">
+                                                                <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                                                                {s}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                    
+                    {/* Финиш с конфетти (Исправлено) */}
+                    <div className="relative z-10 flex gap-5 pt-4 pb-6">
+                        {/* Белая подложка z-20 чтобы перекрыть линию */}
+                        <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 border-[3px] border-white shadow-sm z-20 animate-pulse">
+                            <PartyPopper className="w-3 h-3 text-emerald-600" />
+                        </div>
+                        <div className="pt-0.5 opacity-60">
+                            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wide">
+                                Цель достигнута
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Кнопка старта (С отступом) */}
+            <div className="mt-8 mb-8"> {/* Увеличенный марджин */}
+                <button 
+                    onClick={onStart}
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                    <span>Начать голодание</span>
+                    <Play className="w-4 h-4 fill-current" />
+                </button>
+            </div>
+
+        </div>
+    </motion.div>
+  );
+};
+
+====================
+END FILE: src/features/fasting/components/ProtocolDetails.tsx
+====================
+
+====================
+START FILE: src/features/fasting/components/SovietProtocolSheet.tsx
+====================
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, BookOpen, Droplets, Feather, ShieldCheck, Scroll } from 'lucide-react';
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const SovietProtocolSheet = ({ isOpen, onClose }: Props) => {
+  const content = (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100]"
+          />
+
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] rounded-t-[2.5rem] h-[90vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
+          >
+            {/* Handle */}
+            <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0" onClick={onClose}>
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            </div>
+
+            {/* Close Button */}
+            <button 
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 bg-gray-200/50 hover:bg-gray-200 rounded-full transition-colors z-50"
+            >
+                <X className="w-5 h-5 text-gray-500" />
+            </button>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto pb-safe px-4 pt-2">
+              
+              {/* HEADER */}
+              <div className="text-center mb-8 px-4 pt-4">
+                <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-red-100 rotate-3">
+                    <BookOpen className="w-8 h-8 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-[900] text-slate-800 leading-tight">
+                    Метод РДТ
+                </h2>
+                <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">
+                    По Ю.С. Николаеву
+                </p>
+              </div>
+
+              <div className="space-y-4 pb-10">
+                
+                {/* Цитата */}
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-red-500" />
+                    <Scroll className="w-12 h-12 text-slate-100 absolute -right-2 -bottom-2 rotate-[-15deg]" />
+                    <p className="text-sm font-serif italic text-slate-600 leading-relaxed relative z-10">
+                        «Голодание — это не просто отсутствие пищи. Это естественная биологическая операция без ножа, которую проводит сама природа.»
+                    </p>
+                </div>
+
+                {/* 1. Питание до */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3 border-b border-gray-100 pb-2">
+                        <div className="p-1.5 bg-green-50 rounded-lg text-green-600">
+                            <Feather className="w-4 h-4" />
+                        </div>
+                        <h3 className="font-bold text-slate-800">Вход в голод</h3>
+                    </div>
+                    <ul className="space-y-3">
+                        <li className="flex gap-3 text-sm text-slate-600">
+                            <span className="text-green-500 font-bold">•</span>
+                            <span>
+                                <strong>За 3 дня:</strong> Исключить животные белки (мясо, яйца, молочное). Перейти на растительно-молочную диету.
+                            </span>
+                        </li>
+                        <li className="flex gap-3 text-sm text-slate-600">
+                            <span className="text-green-500 font-bold">•</span>
+                            <span>
+                                <strong>Накануне:</strong> Легкий ужин. Каши на воде, тушеные овощи или кефир.
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                {/* 2. Очищение (Спорный момент, но по книге) */}
+                <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+                    <div className="flex items-center gap-3 mb-3 border-b border-blue-100 pb-2">
+                        <div className="p-1.5 bg-white rounded-lg text-blue-600 shadow-sm">
+                            <Droplets className="w-4 h-4" />
+                        </div>
+                        <h3 className="font-bold text-blue-900">Очищение (Магнезия)</h3>
+                    </div>
+                    <p className="text-sm text-blue-800 leading-relaxed mb-2">
+                        Советская школа настаивает на приеме солевого слабительного (сульфат магния) перед стартом.
+                    </p>
+                    <div className="bg-white/60 p-3 rounded-xl text-xs text-blue-700 font-medium">
+                        Это полностью «выключает» пищеварительный тракт и блокирует чувство голода на следующие дни.
+                    </div>
+                </div>
+
+                {/* 3. Психология */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3 border-b border-gray-100 pb-2">
+                        <div className="p-1.5 bg-slate-50 rounded-lg text-slate-600">
+                            <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <h3 className="font-bold text-slate-800">Психологический настрой</h3>
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                        Николаев подчеркивал: вы не «голодаете» (страдаете), вы проводите <strong>лечебную процедуру</strong>. Воспринимайте это как отдых для органов, которые трудились без выходных всю вашу жизнь.
+                    </p>
+                </div>
+
+                {/* Footer Note */}
+                <div className="text-center px-6">
+                    <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                        Основано на книге «Голодание ради здоровья» (1988).<br/>
+                        Методика разгрузочно-диетической терапии (РДТ).
+                    </p>
+                </div>
+
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
+  return createPortal(content, document.body);
+};
+
+====================
+END FILE: src/features/fasting/components/SovietProtocolSheet.tsx
+====================
+
+====================
+START FILE: src/features/fasting/components/AnabolicState.tsx
+====================
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, Play, BookOpen, ArrowLeft, CheckCircle2, Circle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '../../../utils/cn';
+import { SovietProtocolSheet } from './SovietProtocolSheet';
+import { PREP_STEPS } from '../data/preparationSteps';
+
+// --- ART COMPONENTS (Те же, что и были, для атмосферы) ---
+// (Я сократил их код для читаемости, вставьте полные версии из предыдущего ответа)
+const MindArt = () => <div className="absolute inset-0 flex items-center justify-center opacity-60"><motion.div animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }} className="w-56 h-56 border-2 border-dashed border-violet-300 rounded-full" /></div>;
+const NatureArt = () => <div className="absolute inset-0 flex items-center justify-center opacity-50"><motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 5, repeat: Infinity }} className="w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl" /></div>;
+const GrainsArt = () => <div className="absolute inset-0 opacity-30"><div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" /></div>;
+const ChemistryArt = () => <div className="absolute inset-0 flex items-center justify-center opacity-40"><div className="grid grid-cols-3 gap-6 rotate-12">{[...Array(9)].map((_, i) => <div key={i} className="w-2 h-2 bg-blue-500 rounded-full" />)}</div></div>;
+const WaterArt = () => <div className="absolute inset-0 overflow-hidden opacity-50">{[...Array(5)].map((_, i) => <motion.div key={i} animate={{ y: -100 }} transition={{ duration: 3 + i, repeat: Infinity, ease: "linear" }} className="absolute w-3 h-3 bg-cyan-400/40 rounded-full blur-sm" style={{ top: '100%', left: `${i * 20}%` }} />)}</div>;
+const MovementArt = () => <div className="absolute inset-0 flex items-center justify-center opacity-40"><motion.div animate={{ rotate: [0, 10, 0] }} transition={{ duration: 4, repeat: Infinity }} className="w-64 h-2 bg-orange-300/50 rounded-full" /></div>;
+const MedicalArt = () => <div className="absolute inset-0 flex items-center justify-center opacity-30"><div className="text-6xl text-rose-300 font-black">+</div></div>;
+
+const getArt = (theme: string) => {
+    switch (theme) {
+        case 'mind': return <MindArt />;
+        case 'nature': case 'grains': return <NatureArt />; // Объединил для простоты
+        case 'chemistry': return <ChemistryArt />;
+        case 'water': return <WaterArt />;
+        case 'movement': return <MovementArt />;
+        case 'medical': return <MedicalArt />;
+        default: return <GrainsArt />;
+    }
+};
+
+// --- КОМПОНЕНТ ---
+
+export const AnabolicState = () => {
+  const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(0);
+  const [showSovietSheet, setShowSovietSheet] = useState(false);
+  
+  // Храним состояние чекбоксов: { "stepId-itemIndex": boolean }
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+
+  const step = PREP_STEPS[activeStep];
+  const isLastStep = activeStep === PREP_STEPS.length - 1;
+
+  // Проверка: все ли пункты на текущем шаге отмечены?
+  const allChecked = step.checklist.every((_, idx) => checkedItems[`${activeStep}-${idx}`]);
+
+  const toggleCheck = (idx: number) => {
+      const key = `${activeStep}-${idx}`;
+      const newVal = !checkedItems[key];
+      setCheckedItems(prev => ({ ...prev, [key]: newVal }));
+      
+      // Вибрация при нажатии (если поддерживается)
+      if (newVal && navigator.vibrate) navigator.vibrate(10);
+  };
+
+  const handleNext = () => {
+    if (isLastStep) {
+      navigate('/timer');
+    } else {
+      setActiveStep(s => s + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (activeStep > 0) setActiveStep(s => s - 1);
+  };
+
+  return (
+    <>
+        <SovietProtocolSheet 
+            isOpen={showSovietSheet} 
+            onClose={() => setShowSovietSheet(false)} 
+        />
+
+        <div className="min-h-full flex flex-col pb-6 relative z-0">
+        
+        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative flex-1 flex flex-col z-10 border border-white/60 overflow-hidden">
+            
+            {/* ХЕДЕР (Прогресс) */}
+            <div className="px-8 pt-8 pb-2 shrink-0 z-20">
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex gap-1">
+                        {PREP_STEPS.map((_, i) => (
+                            <motion.div
+                                key={i}
+                                animate={{ 
+                                    width: i === activeStep ? 20 : 6,
+                                    height: 6,
+                                    backgroundColor: i <= activeStep ? (step.color.includes('violet') ? '#7c3aed' : step.color.includes('emerald') ? '#059669' : '#334155') : '#e2e8f0'
+                                }}
+                                className="rounded-full"
+                            />
+                        ))}
+                    </div>
+                    <button 
+                        onClick={() => setShowSovietSheet(true)}
+                        className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 active:scale-95 transition-transform"
+                    >
+                        <BookOpen className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* ОСНОВНОЙ КОНТЕНТ */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-6 pb-28">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={step.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                        {/* 1. ВИЗУАЛЬНАЯ КАРТОЧКА */}
+                        <div className="relative w-full aspect-[16/9] rounded-[2rem] overflow-hidden mb-8 shadow-sm border border-slate-100 bg-white">
+                            <div className={cn("absolute inset-0 bg-gradient-to-br opacity-40", step.gradient)} />
+                            <div className="absolute inset-0">{getArt(step.theme)}</div>
+                            
+                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
+                                <div className="w-16 h-16 bg-white/80 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg mb-3">
+                                    <step.icon className={cn("w-8 h-8", step.color)} />
+                                </div>
+                                <h2 className="text-2xl font-[900] text-slate-800 leading-none mb-1">
+                                    {step.title}
+                                </h2>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                    {step.subtitle}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 2. ЦИТАТА */}
+                        <div className="mb-8 relative pl-4 border-l-4 border-slate-200">
+                            <p className="text-sm italic font-medium text-slate-500 leading-relaxed">
+                                {step.quote}
+                            </p>
+                        </div>
+
+                        {/* 3. ИНТЕРАКТИВНЫЙ ЧЕК-ЛИСТ */}
+                        <div className="space-y-3">
+                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2">
+                                Чек-лист подготовки
+                            </h3>
+                            {step.checklist.map((item, idx) => {
+                                const isChecked = checkedItems[`${activeStep}-${idx}`];
+                                return (
+                                    <div 
+                                        key={idx}
+                                        onClick={() => toggleCheck(idx)}
+                                        className={cn(
+                                            "p-4 rounded-2xl border transition-all duration-200 flex items-center gap-4 cursor-pointer active:scale-[0.98]",
+                                            isChecked 
+                                                ? "bg-slate-50 border-slate-200" 
+                                                : "bg-white border-slate-100 shadow-sm hover:border-blue-200"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                                            isChecked ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-300"
+                                        )}>
+                                            {isChecked ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+                                        </div>
+                                        <span className={cn(
+                                            "text-sm font-medium transition-all",
+                                            isChecked ? "text-slate-400 line-through" : "text-slate-700"
+                                        )}>
+                                            {item}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+
+            {/* ФУТЕР (Кнопки навигации) */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 pt-8 bg-gradient-to-t from-white via-white/90 to-transparent z-30 flex gap-3">
+                {activeStep > 0 && (
+                    <button 
+                        onClick={handlePrev}
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white border border-slate-200 text-slate-400 active:scale-95 transition-transform shrink-0 shadow-sm"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
+                )}
+                
+                <button 
+                    onClick={handleNext}
+                    className={cn(
+                        "flex-1 h-14 rounded-2xl flex items-center justify-between px-6 shadow-xl transition-all duration-300 group active:scale-95",
+                        // Если все отмечено - кнопка яркая, если нет - обычная
+                        allChecked 
+                            ? "bg-slate-900 text-white shadow-slate-900/20" 
+                            : "bg-white text-slate-400 border border-slate-200"
+                    )}
+                >
+                    <span className={cn("font-bold text-sm tracking-wide pl-2", !allChecked && "font-medium")}>
+                        {isLastStep ? "Начать голодание" : allChecked ? "Продолжить" : "Пропустить"}
+                    </span>
+                    
+                    <div className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center transition-colors",
+                        allChecked ? "bg-white/20" : "bg-slate-50"
+                    )}>
+                        {isLastStep ? (
+                            <Play className="w-4 h-4 fill-current" />
+                        ) : (
+                            <ChevronRight className="w-5 h-5" />
+                        )}
+                    </div>
+                </button>
+            </div>
+
+        </div>
+        </div>
+    </>
+  );
+};
+
+====================
+END FILE: src/features/fasting/components/AnabolicState.tsx
+====================
+
+====================
+START FILE: src/features/fasting/components/TimerRing.tsx
+====================
+import { cn } from '../../../utils/cn';
+import { motion } from 'framer-motion';
+
+interface Props {
+  progress: number;
+  time: string;
+  isFasting: boolean;
+  color: string;
+  label?: string;
+}
+
+export const TimerRing = ({ progress, time, isFasting, label }: Props) => {
+  const size = 280;
+  const center = size / 2;
+  const strokeWidth = 16; // Сделаем линию чуть толще для солидности
+  const radius = 120;
+  
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center">
+      
+      <div className="relative" style={{ width: size, height: size }}>
+        
+        {/* Фоновое свечение */}
+        {isFasting && (
+            <div className="absolute inset-0 bg-blue-500/5 blur-3xl rounded-full animate-pulse" />
+        )}
+
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg]">
+          
+          {/* 1. ФОН ШКАЛЫ (Серый круг) */}
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="transparent"
+            stroke="#f1f5f9" // slate-100
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+          />
+
+          {/* 2. ЛИНИЯ ПРОГРЕССА (Цветная) */}
+          <circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="transparent"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            className={cn(
+              "transition-all duration-1000 ease-out",
+              isFasting ? "text-blue-500" : "text-transparent"
+            )}
+          />
+        </svg>
+
+        {/* ЦЕНТРАЛЬНЫЙ ТЕКСТ */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+            
+            {/* Лейбл (например, "24ч База") */}
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
+                {label || (isFasting ? "Голодание" : "Ожидание")}
+            </span>
+
+            {/* ВРЕМЯ */}
+            <div className="flex items-baseline text-slate-800">
+                <span className="text-6xl font-[800] font-mono tracking-tighter tabular-nums leading-none">
+                    {time.split(':')[0]}:{time.split(':')[1]}
+                </span>
+                <span className="text-xl font-medium text-slate-300 ml-1">
+                    {time.split(':')[2]}
+                </span>
+            </div>
+
+            {/* ПРОЦЕНТ */}
+            {isFasting && (
+                <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="mt-3 px-3 py-1 bg-blue-50 rounded-full border border-blue-100 flex items-center gap-1.5"
+                >
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                    <span className="text-xs font-bold text-blue-600 tabular-nums">
+                        {progress.toFixed(1)}%
+                    </span>
+                </motion.div>
+            )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+====================
+END FILE: src/features/fasting/components/TimerRing.tsx
+====================
+
+====================
+START FILE: src/features/fasting/components/ProtocolSelector.tsx
+====================
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, ChevronDown, Check } from 'lucide-react';
+import { FASTING_SCHEMES } from '../data/schemes';
+import { cn } from '../../../utils/cn';
+import { ProtocolDetails } from './ProtocolDetails';
+
+interface Props {
+  onSelect: (id: string) => void;
+  onClose: () => void;
+  currentSchemeId?: string;
+}
+
+export const ProtocolSelector = ({ onSelect, onClose, currentSchemeId }: Props) => {
+  const [selectedPreviewId, setSelectedPreviewId] = useState<string | null>(null);
+
+  const handlePreview = (id: string) => {
+    setSelectedPreviewId(id);
+  };
+
+  const handleStart = () => {
+    if (selectedPreviewId) {
+        onSelect(selectedPreviewId);
+        onClose();
+    }
+  };
+
+  const ModalContent = (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-[100] bg-black/5 backdrop-blur-[2px]"
+      />
+
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] rounded-t-[2.5rem] h-[85vh] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden max-w-md mx-auto border-t border-white/50"
+      >
+        
+        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0 cursor-pointer" onClick={onClose}>
+          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+        </div>
+
+        <AnimatePresence mode="wait">
+            
+            {/* ЭКРАН ДЕТАЛЕЙ */}
+            {selectedPreviewId ? (
+                <ProtocolDetails 
+                    key="details"
+                    schemeId={selectedPreviewId} 
+                    onBack={() => setSelectedPreviewId(null)}
+                    onStart={handleStart}
+                />
+            ) : (
+                /* ЭКРАН СПИСКА (ОБЛЕГЧЕННЫЙ) */
+                <motion.div 
+                    key="list"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col h-full"
+                >
+                    <div className="px-6 pt-2 pb-6 flex justify-between items-end bg-[#F2F2F7] shrink-0">
+                        <div>
+                            <h2 className="text-2xl font-[900] text-slate-800 leading-none">
+                                Протокол
+                            </h2>
+                            <p className="text-xs font-bold text-slate-400 mt-1.5 uppercase tracking-wide">
+                                Выберите цель
+                            </p>
+                        </div>
+                        
+                        <button 
+                            onClick={onClose}
+                            className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-400 hover:text-slate-600 active:scale-95 transition-transform"
+                        >
+                            <ChevronDown className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto px-4 pb-10 space-y-2 pt-0 scrollbar-hide">
+                        {FASTING_SCHEMES.map((s) => {
+                            const isSelected = currentSchemeId === s.id;
+                            // "24ч: База" -> "База"
+                            const titleClean = s.title.split(':')[1]?.trim() || s.title;
+                            
+                            return (
+                                <motion.button
+                                    key={s.id}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => handlePreview(s.id)}
+                                    className={cn(
+                                        "w-full flex items-center gap-4 p-3 rounded-[1.5rem] border text-left transition-all relative overflow-hidden group",
+                                        isSelected 
+                                            ? "bg-white border-blue-200 shadow-md ring-1 ring-blue-100" 
+                                            : "bg-white border-slate-100/50 shadow-sm hover:border-slate-200"
+                                    )}
+                                >
+                                    {/* Иконка: Меньше и аккуратнее */}
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                                        "bg-slate-50 group-hover:bg-slate-100"
+                                    )}>
+                                        <s.icon className={cn("w-5 h-5 opacity-80", s.color)} />
+                                    </div>
+
+                                    {/* Инфо: Только название и время */}
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <h3 className="font-bold text-[15px] text-slate-800 leading-tight">
+                                            {titleClean}
+                                        </h3>
+                                        <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                                            {s.hours} часов
+                                        </p>
+                                    </div>
+
+                                    {/* Индикатор: Минималистичная стрелка или галочка */}
+                                    <div className="pr-1">
+                                        {isSelected ? (
+                                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-sm">
+                                                <Check className="w-3 h-3" />
+                                            </div>
+                                        ) : (
+                                            <ChevronRight className="w-4 h-4 text-slate-300" />
+                                        )}
+                                    </div>
+
+                                </motion.button>
+                            );
+                        })}
+                        <div className="h-8" />
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+      </motion.div>
+    </>
+  );
+
+  return createPortal(
+    <AnimatePresence>
+        {ModalContent}
+    </AnimatePresence>, 
+    document.body
+  );
+};
+
+====================
+END FILE: src/features/fasting/components/ProtocolSelector.tsx
+====================
+
+====================
 START FILE: src/features/fasting/components/PhasesList.tsx
 ====================
 import { useState, useEffect } from 'react';
@@ -1266,7 +2593,10 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
-import { storageGetJSON, storageSetJSON } from '../../utils/storage'; // 👈 NEW
+import { 
+  storageGetHistory, // 👈 CHANGED
+  storageSaveHistory // 👈 CHANGED
+} from '../../utils/storage';
 import type { HistoryRecord } from '../../utils/types';
 
 dayjs.locale('ru');
@@ -1275,14 +2605,15 @@ export const HistoryPage = () => {
   const [activeTab, setActiveTab] = useState<'fasting' | 'breathing'>('fasting');
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // 👈 NEW
+  const [isLoading, setIsLoading] = useState(true);
 
   // Загрузка данных
   useEffect(() => {
     const loadHistory = async () => {
       setIsLoading(true);
       try {
-        const saved = await storageGetJSON<HistoryRecord[]>('history_fasting', []);
+        // 👇 Используем новую функцию с поддержкой чанков
+        const saved = await storageGetHistory<HistoryRecord>('history_fasting');
         const validRecords = saved.filter((r): r is HistoryRecord => 
           r && 
           typeof r.id === 'string' &&
@@ -1303,7 +2634,8 @@ export const HistoryPage = () => {
     const newRecords = records.filter(r => r.id !== id);
     setRecords(newRecords); // Оптимистичное обновление UI
     setSelectedRecord(null);
-    await storageSetJSON('history_fasting', newRecords);
+    // 👇 Используем новую функцию сохранения
+    await storageSaveHistory('history_fasting', newRecords);
   };
 
   // Обновление (Асинхронное)
@@ -1311,14 +2643,17 @@ export const HistoryPage = () => {
     const newRecords = records.map(r => r.id === updatedRecord.id ? updatedRecord : r);
     setRecords(newRecords); // Оптимистичное обновление UI
     setSelectedRecord(updatedRecord);
-    await storageSetJSON('history_fasting', newRecords);
+    // 👇 Используем новую функцию сохранения
+    await storageSaveHistory('history_fasting', newRecords);
   };
-
+  
+  // Остальной код без изменений...
   const filteredRecords = useMemo(() => 
     records.filter(r => r.type === activeTab),
     [records, activeTab]
   );
-
+  // ... (весь UI код остается таким же)
+  
   const totalHours = useMemo(() => 
     Math.round(filteredRecords.reduce((acc, r) => acc + r.durationSeconds, 0) / 3600),
     [filteredRecords]
@@ -1978,6 +3313,10 @@ const STORAGE_KEY = import.meta.env.VITE_STORAGE_KEY || 'dev-key-change-in-prod-
 // Префикс, чтобы ключи не пересекались с другими приложениями
 const KEY_PREFIX = 'bt_app_';
 
+// Константы для чанкинга (8 записей * ~400 байт < 4096 байт)
+const HISTORY_CHUNK_SIZE = 8;
+const HISTORY_MAX_CHUNKS = 50; // Хватит на 400 записей
+
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
 
 // Проверка: доступны ли облачные функции (Telegram Environment)
@@ -2008,14 +3347,11 @@ const decrypt = (value: string): string | null => {
     const bytes = AES.decrypt(value, STORAGE_KEY);
     const decryptedData = bytes.toString(encUtf8);
     
-    // Если расшифровка вернула пустую строку, но исходник не пуст - 
-    // возможно, данные не зашифрованы (миграция)
     if (!decryptedData && value.length > 0) {
       return value.startsWith('{') || value.startsWith('[') ? value : null;
     }
     return decryptedData;
   } catch {
-    // Если упала ошибка (Malformed UTF-8), возвращаем "как есть"
     return value;
   }
 };
@@ -2030,12 +3366,10 @@ export async function storageGet(key: string): Promise<string | null> {
 
   if (isCloudAvailable()) {
     try {
-      // Исправление 1: Убран 'reject', так как мы всегда делаем resolve (даже при ошибке фоллбэчимся)
       return new Promise((resolve) => {
         WebApp.CloudStorage.getItem(namespacedKey, (err, value) => {
           if (err) {
             console.warn('[Cloud] Get Error, falling back to local:', err);
-            // Пробуем фоллбэк на локальное, если облако сбоит
             resolve(decrypt(localStorage.getItem(namespacedKey) || ''));
           } else {
             resolve(decrypt(value || ''));
@@ -2047,7 +3381,6 @@ export async function storageGet(key: string): Promise<string | null> {
     }
   }
 
-  // Fallback to localStorage (Dev mode or Cloud unavailable)
   return decrypt(localStorage.getItem(namespacedKey) || '');
 }
 
@@ -2058,7 +3391,6 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
   const namespacedKey = getKey(key);
   const encrypted = encrypt(value);
 
-  // Всегда пишем и в локалку (для кэша/скорости)
   try {
     localStorage.setItem(namespacedKey, encrypted);
   } catch (e) { /* ignore quota */ }
@@ -2070,7 +3402,6 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
             console.error('[Cloud] Set Error:', err);
             resolve(false);
         } else {
-            // Исправление 2: Гарантируем boolean, так как stored может быть undefined в типах SDK
             resolve(stored || false);
         }
       });
@@ -2093,7 +3424,6 @@ export async function storageRemove(key: string): Promise<boolean> {
   if (isCloudAvailable()) {
     return new Promise((resolve) => {
       WebApp.CloudStorage.removeItem(namespacedKey, (err, deleted) => {
-         // Исправление 3: Гарантируем boolean
          resolve(!err && (deleted || false));
       });
     });
@@ -2127,8 +3457,54 @@ export async function storageSetJSON<T>(key: string, value: T): Promise<boolean>
   }
 }
 
+// ================= NEW HISTORY API =================
+
 /**
- * Асинхронное обновление истории (Безопасное добавление в начало списка)
+ * Чтение истории с поддержкой чанков и миграцией
+ */
+export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
+  // 1. Попытка миграции (если есть данные в старом ключе)
+  const legacyData = await storageGetJSON<T[] | null>(baseKey, null);
+  if (legacyData && Array.isArray(legacyData) && legacyData.length > 0) {
+    console.log('[Storage] Migrating legacy history to chunks...');
+    await storageSaveHistory(baseKey, legacyData);
+    await storageRemove(baseKey);
+    return legacyData;
+  }
+
+  // 2. Чтение чанков
+  const chunks = await Promise.all(
+    Array.from({ length: HISTORY_MAX_CHUNKS }, (_, i) => 
+      storageGetJSON<T[]>(`${baseKey}_${i}`, [])
+    )
+  );
+
+  return chunks.flat();
+}
+
+/**
+ * Сохранение истории в чанки
+ */
+export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise<boolean> {
+  let success = true;
+  
+  for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
+    const chunk = list.slice(i * HISTORY_CHUNK_SIZE, (i + 1) * HISTORY_CHUNK_SIZE);
+    const key = `${baseKey}_${i}`;
+    
+    if (chunk.length > 0) {
+      const res = await storageSetJSON(key, chunk);
+      if (!res) success = false;
+    } else {
+      // Удаляем пустые ключи, чтобы не занимать квоту
+      await storageRemove(key);
+    }
+  }
+  return success;
+}
+
+/**
+ * Обновление истории (добавление в начало)
  */
 export async function storageUpdateHistory<T>(
   key: string, 
@@ -2136,10 +3512,10 @@ export async function storageUpdateHistory<T>(
   maxItems: number = 1000
 ): Promise<T[]> {
   try {
-    const currentList = await storageGetJSON<T[]>(key, []);
+    const currentList = await storageGetHistory<T>(key);
     // Добавляем в начало и обрезаем
     const newList = [newItem, ...currentList].slice(0, maxItems);
-    await storageSetJSON(key, newList);
+    await storageSaveHistory(key, newList);
     return newList;
   } catch (e) {
     console.error(`[Storage] Failed to update history for "${key}"`, e);

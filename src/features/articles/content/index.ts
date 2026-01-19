@@ -1,23 +1,38 @@
-// src/features/articles/content/index.ts
+import type { Article } from '../types';
 
-import { howToPrepare } from './how-to-prepare';
-import { fluidBiohacking } from './fluid-biohacking';
-import { howToExit } from './how-to-exit';
-import { livingFood } from './living-food';
+const modules = import.meta.glob('./*.tsx', {
+  eager: true,
+});
 
-export const articles = [
-  // 1. С чего начать (Вход)
-  howToPrepare,
-  
-  // 2. Как не сорваться (Процесс)
-  fluidBiohacking,
-  
-  // 3. Самое важное (Выход)
-  howToExit,
-  
-  // 4. Глобальная цель (Философия и Питание)
-  livingFood,
-];
+/**
+ * Ручная логическая карта порядка
+ * (UI не трогаем, статьи не переписываем)
+ */
+const ORDER: Record<string, number> = {
+  'how-to-prepare': 1,
+  'fluid-biohacking': 2,
+  'water-truth': 3,
 
-// Хелпер для поиска статьи по ID (используется в роутинге)
-export const getArticleById = (id: string) => articles.find(article => article.id === id);
+  'mucusless-diet': 10,
+  'living-food': 11,
+  'china-study': 12,
+  'bombard-psychology': 13,
+
+  'how-to-exit': 20,
+};
+
+export const articles: Article[] = Object.values(modules)
+  .map((mod: any) => {
+    if (mod.default) return mod.default;
+    return Object.values(mod)[0];
+  })
+  .filter((article): article is Article => Boolean(article && article.id))
+  .sort((a, b) => {
+    const orderA = ORDER[a.id] ?? 999;
+    const orderB = ORDER[b.id] ?? 999;
+    return orderA - orderB;
+  });
+
+export const getArticleById = (id: string): Article | undefined => {
+  return articles.find(article => article.id === id);
+};
