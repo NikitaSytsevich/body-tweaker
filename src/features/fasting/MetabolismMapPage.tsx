@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useFastingTimerContext } from './context/TimerContext';
-import { FASTING_PHASES } from './data/stages'; // Убедитесь, что путь верный
+import { FASTING_PHASES } from './data/stages';
 import type { FastingStage } from './data/stages';
 import { cn } from '../../utils/cn';
 import { Check, Lock, Navigation, Sparkles, BookOpen, Activity } from 'lucide-react';
@@ -16,42 +16,18 @@ const getZoneColor = (hours: number) => {
   return "text-emerald-500";
 };
 
-// 👇 Убедитесь, что здесь есть 'export const'
 export const MetabolismMapPage = () => {
   const { isFasting, elapsed, phaseToOpen, setPhaseToOpen } = useFastingTimerContext();
   const elapsedHours = elapsed / 3600;
 
   const [viewMode, setViewMode] = useState<'map' | 'articles'>('map');
 
-  // --- ЛОГИКА СВАЙПОВ ---
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && viewMode === 'map') setViewMode('articles');
-    if (isRightSwipe && viewMode === 'articles') setViewMode('map');
-  };
-  // -----------------------
-
+  // Авто-переключение при старте/остановке таймера
   useEffect(() => {
     setViewMode(isFasting ? 'map' : 'articles');
   }, [isFasting]);
 
+  // Обработка Deep Link (открытие фазы из уведомления)
   const [selectedPhase, setSelectedPhase] = useState<FastingStage | null>(null);
   useEffect(() => {
       if (phaseToOpen !== null) {
@@ -95,8 +71,10 @@ export const MetabolismMapPage = () => {
     <>
       <div className="flex flex-col pb-32 relative z-0">
         
+        {/* БЕЛЫЙ КОНТЕЙНЕР */}
         <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative flex flex-col z-10 border border-white/60 min-h-[80vh]">
           
+          {/* Переключатель */}
           <div className="px-6 pt-6 pb-2 bg-white rounded-t-[3rem]">
              <SegmentedControl 
                 options={tabs}
@@ -105,14 +83,11 @@ export const MetabolismMapPage = () => {
             />
           </div>
 
-          <div 
-            className="flex-1 flex flex-col"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-          >
+          {/* Контент (без свайпов) */}
+          <div className="flex-1 flex flex-col">
             <AnimatePresence mode="wait">
                 
+                {/* === РЕЖИМ 1: СТАТЬИ === */}
                 {viewMode === 'articles' ? (
                     <motion.div
                         key="articles"
@@ -128,6 +103,7 @@ export const MetabolismMapPage = () => {
                     </motion.div>
                 ) : (
                     
+                /* === РЕЖИМ 2: КАРТА === */
                 <motion.div
                     key="map"
                     initial={{ opacity: 0, x: -20 }}
@@ -136,6 +112,7 @@ export const MetabolismMapPage = () => {
                     transition={{ duration: 0.25 }}
                     className="w-full flex flex-col"
                 >
+                    {/* Хедер Карты */}
                     <div className="px-8 pt-4 pb-6 flex justify-between items-start border-b border-gray-50/50 bg-white">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -166,13 +143,13 @@ export const MetabolismMapPage = () => {
                         )}
                     </div>
 
+                    {/* Список Фаз */}
                     <div className="px-4 py-6 relative z-10 pb-10">
                         <div className="absolute left-[35px] top-6 bottom-10 w-0.5 bg-slate-100 rounded-full" />
 
                         {FASTING_PHASES.map((phase, index) => {
                             const isActive = isFasting && index === activeIndex;
                             const isPassed = isFasting && index < activeIndex;
-                            
                             const iconColor = phase.color.replace(/bg-[\w-]+\s*/, '');
 
                             return (
