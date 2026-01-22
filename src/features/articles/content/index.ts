@@ -5,7 +5,7 @@ const modules = import.meta.glob('./*.tsx', {
 });
 
 /**
- * Порядок статей: подготовка → голодание → питание → сыроедение → выход
+ * Порядок статей: подготовка → голодание → питание → сыроедение → особые случаи → выход
  */
 const ORDER: Record<string, number> = {
   // Подготовка
@@ -25,6 +25,10 @@ const ORDER: Record<string, number> = {
 
   // Сыроедение
   'raw-food-monodiet': 40,
+
+  // Особые случаи (безопасность)
+  'smoking-and-fasting': 45,
+  'diabetes-fasting': 46,
 
   // Выход
   'how-to-exit': 50,
