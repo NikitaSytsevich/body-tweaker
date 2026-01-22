@@ -197,22 +197,31 @@ export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) =>
                           Достигнутые этапы
                       </h3>
                       <div className="space-y-3">
-                          {passedPhases.map((phase) => (
-                              <div key={phase.id} className="flex items-center gap-4 group">
-                                  <div className={cn(
-                                      "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
-                                      phase.color.replace('text-', 'bg-').replace('500', '50')
-                                  )}>
-                                      <phase.icon className={cn("w-5 h-5", phase.color)} />
+                          {passedPhases.map((phase) => {
+                              // Extract the text color from phase.color (e.g., "text-blue-600" from "bg-blue-100 text-blue-600")
+                              const textColor = phase.color.split(' ').find(c => c.startsWith('text-')) || 'text-slate-600';
+                              // Extract the bg color for the icon container (e.g., "bg-blue-50" from "bg-blue-100 text-blue-600")
+                              const bgColor = phase.color.split(' ').find(c => c.startsWith('bg-'))?.replace('100', '50').replace('600', '50') || 'bg-slate-50';
+
+                              const IconComponent = phase.icon;
+
+                              return (
+                                  <div key={phase.id} className="flex items-center gap-4 group">
+                                      <div className={cn(
+                                          "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-colors",
+                                          bgColor
+                                      )}>
+                                          <IconComponent className={cn("w-5 h-5", textColor)} />
+                                      </div>
+                                      <div className="flex-1 border-b border-slate-50 pb-3 group-last:border-0 group-last:pb-0">
+                                          <h4 className="text-sm font-bold text-slate-700">{phase.title}</h4>
+                                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5">
+                                              {phase.hoursStart} часов
+                                          </p>
+                                      </div>
                                   </div>
-                                  <div className="flex-1 border-b border-slate-50 pb-3 group-last:border-0 group-last:pb-0">
-                                      <h4 className="text-sm font-bold text-slate-700">{phase.title}</h4>
-                                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5">
-                                          {phase.hoursStart} часов
-                                      </p>
-                                  </div>
-                              </div>
-                          ))}
+                              );
+                          })}
                       </div>
                   </div>
               )}

@@ -1,66 +1,250 @@
 import type { Article } from '../types';
-import { Leaf, Scale, AlertOctagon } from 'lucide-react';
+import { Apple, BarChart3, Beaker, Leaf, Shield, Target } from 'lucide-react';
 
 export const chinaStudy: Article = {
   id: 'china-study',
-  title: 'Китайское исследование: Почему мы болеем?',
-  category: 'Питание',
-  summary: 'Самое масштабное исследование связи еды и болезней. Животный белок как «кнопка рака» и этический взгляд Толстого.',
-  imageUrl: '/images/articles/china-study.jpg',
+  title: 'Китайское исследование: Питание и болезни',
+  category: 'Наука о питании',
+  summary: 'Масштабное исследование связи еды и хронических заболеваний. Что 20-летний проект в Китае показал о животном белке.',
+  imageUrl: '/images/articles/9.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
-      
+
       <section>
         <p className="font-medium text-xl text-slate-600 mb-6">
-          «Завтрак — это политический акт». То, что вы кладете в рот после голодания, определит, строите вы новое тело или кормите старые болезни.
+          «Китайское исследование» — один из самых цитируемых проектов в истории нутрициологии. Двадцать лет наблюдений, 65 округов Китая, 880 миллионов участников и данные о сотнях факторов питания и здоровья. Результаты изменили представление о связи еды и болезней.
         </p>
-        <div className="bg-green-50 p-6 rounded-3xl border border-green-100">
-            <h4 className="font-bold text-green-900 mb-2">Колин Кэмпбелл доказал:</h4>
-            <p className="text-sm text-green-800/80 leading-relaxed">
-                В ходе 20-летнего исследования в Китае выяснилось: люди, потребляющие животный белок (казеин), имеют в разы выше риск онкологии и диабета. Кэмпбелл назвал животный белок «тумблером», который включает рост раковых клеток. Растительный белок этот тумблер выключает.
-            </p>
+
+        <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+          <div className="flex items-center gap-3 mb-3">
+            <BarChart3 className="w-6 h-6 text-blue-600" />
+            <h4 className="font-bold text-blue-900">Масштаб проекта</h4>
+          </div>
+          <p className="text-base text-blue-800/90 leading-relaxed">
+            Исследование проводилось в 1980-х годах совместно китайскими и американскими учёными. Китай был выбран из-за разнообразия диет — от почти вегетарианской в сельских районах до богатой животными продуктами в городах. Это позволило сравнить эффекты разных типов питания на большом массиве данных.
+          </p>
         </div>
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Мясо для слабаков?</h3>
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-red-100 text-red-600 rounded-xl">
-                <AlertOctagon className="w-6 h-6" />
-            </div>
-            <h4 className="text-xl font-bold text-slate-800">Миф о силе</h4>
+          <div className="p-2 bg-green-100 text-green-600 rounded-xl">
+            <Target className="w-6 h-6" />
+          </div>
+          <h3 className="text-2xl font-[900] text-slate-900">Основная гипотеза</h3>
         </div>
+
         <p className="mb-4">
-            Джозеф Джон в книге «Мясо для слабаков» разрушает миф о том, что мужику нужно мясо. Гладиаторы Рима были вегетарианцами (их называли «едоками ячменя»). Горилла — одно из самых сильных животных — веган.
+          Колин Кэмпбелл, руководивший проектом, исходил из простого вопроса: почему в разных регионах Китая показатели заболеваний радикально отличаются? Одни округа имели крайне низкие уровни рака и диабета, другие — высокие.
         </p>
+
+        <div className="space-y-4 mb-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h5 className="font-bold text-slate-800 mb-2">Что измеряли</h5>
+            <p className="text-base text-slate-700">
+              Участники сдавали анализы крови, мочи, отвечали на вопросы о рационе. Исследователи собирали данные о потреблении белков, жиров, углеводов, витаминов, минералов.
+            </p>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h5 className="font-bold text-slate-800 mb-2">Что сравнивали</h5>
+            <p className="text-base text-slate-700">
+              Диеты разных округов, уровни заболеваний, смертность, показатели крови. Цель — найти корреляции между тем, что люди едят, и тем, чем они болеют.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-green-50 p-6 rounded-3xl border border-green-100">
+          <h4 className="font-bold text-green-900 mb-3">Ключевой вывод</h4>
+          <p className="text-sm text-green-800/90 leading-relaxed">
+            Округи с наибольшим потреблением животных продуктов имели более высокие уровни рака, диабета, сердечно-сосудистых заболеваний. Округи с преобладанием растительной еды — наоборот.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-violet-100 text-violet-600 rounded-xl">
+            <Beaker className="w-6 h-6" />
+          </div>
+          <h3 className="text-2xl font-[900] text-slate-900">Животный белок и рак</h3>
+        </div>
+
+        <p className="mb-4">
+          Один из самых обсуждаемых результатов исследования касается животного белка, особенно казеина — основного белка молока. Лабораторные эксперименты Кэмпбелла показали интересную закономерность.
+        </p>
+
+        <div className="bg-violet-50 p-6 rounded-3xl border border-violet-100 mb-6">
+          <h4 className="font-bold text-violet-900 mb-3">Эксперимент с афлатоксином</h4>
+          <p className="text-sm text-violet-800/90 leading-relaxed mb-3">
+            Афлатоксин — канцероген, который содержится в плесневых орехах и зерне. В экспериментах на крысах выяснилось: при высоком уровне казеина в рационе афлатоксин вызывал рак печени. При низком — опухоли не развивались.
+          </p>
+          <p className="text-sm text-violet-800/90 leading-relaxed">
+            Более того, существовал пороговый эффект: при уровне казеина выше 20% калорийности опухоли росли. Ниже 5% — рост останавливался.
+          </p>
+        </div>
+
+        <p className="mb-4">
+          Критики указывали на ограничения исследования: данные были наблюдательными, не экспериментальными. Корреляция не доказывает причинность. Кроме того, генетические и экологические факторы в разных регионах Китая тоже могли влиять на результаты.
+        </p>
+
+        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+          <h4 className="font-bold text-slate-800 mb-3">Ограничения исследования</h4>
+          <ul className="space-y-2 text-sm text-slate-700">
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mt-2 shrink-0" />
+              <span>Наблюдательный дизайн не доказывает причинно-следственные связи</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mt-2 shrink-0" />
+              <span>Диеты различались не только белком, но и многими другими факторами</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mt-2 shrink-0" />
+              <span>Генетические различия между регионами могли влиять на заболеваемость</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
+            <Leaf className="w-6 h-6" />
+          </div>
+          <h3 className="text-2xl font-[900] text-slate-900">Растительное питание</h3>
+        </div>
+
+        <p className="mb-4">
+          Позитивная сторона исследования — данные о пользе растительной диеты. Округи с высоким потреблением овощей, фруктов, зерновых демонстрировали лучшие показатели здоровья.
+        </p>
+
+        <div className="space-y-4 mb-6">
+          {[
+            {
+              title: 'Более низкий уровень холестерина',
+              desc: 'Вегетарианские регионы имели значительно меньший уровень холестерина в крови.'
+            },
+            {
+              title: 'Меньшая заболеваемость раком',
+              desc: 'Особенно раком груди, простаты, кишечника.'
+            },
+            {
+              title: 'Редкий диабет',
+              desc: 'Диабет 2 типа был практически неизвестен в регионах с растительной диетой.'
+            },
+            {
+              title: 'Низкое давление',
+              desc: 'Гипертония встречалась реже при меньшем потреблении животных продуктов.'
+            }
+          ].map((item, i) => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <p className="text-base text-slate-700">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
         <p>
-            Организм тратит колоссальное количество энергии на переваривание мяса (до 60% от полученного). На растительном топливе КПД выше, а токсинов меньше.
+          Важно отметить: растительная диета в Китае того времени была не просто «без мяса». Это была традиционная диета из риса, овощей, небольшого количества рыбы или мяса по праздникам. Современный веганский фастфуд может не дать тех же эффектов.
         </p>
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Первая ступень</h3>
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
-                <Scale className="w-6 h-6" />
-            </div>
-            <h4 className="text-xl font-bold text-slate-800">Лев Толстой</h4>
+          <div className="p-2 bg-red-100 text-red-600 rounded-xl">
+            <Shield className="w-6 h-6" />
+          </div>
+          <h3 className="text-2xl font-[900] text-slate-900">Критика и контекст</h3>
         </div>
-        <p className="mb-4 italic text-slate-600 border-l-4 border-slate-300 pl-4">
-            «Пока существуют скотобойни, будут и поля битв. Вегетарианство — это первая ступень к нравственному возрождению».
+
+        <p className="mb-4">
+          «Китайское исследование» имеет как сторонников, так и критиков. Академическое сообщество разделилось в оценке значимости результатов.
         </p>
+
+        <div className="bg-red-50 p-6 rounded-3xl border border-red-100 mb-6">
+          <h4 className="font-bold text-red-900 mb-3">Основные критические замечания</h4>
+          <ul className="space-y-2 text-sm text-red-800/90">
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
+              <span>Интерпретация данных может быть слишком категоричной</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
+              <span>Корреляция не доказывает, что животный белок вызывает болезни</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
+              <span>Некоторые метаболические исследования не подтверждают все выводы</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
+              <span>Полноценный веганский рацион требует планирования (B12, железо)</span>
+            </li>
+          </ul>
+        </div>
+
         <p>
-            Невозможно очистить тело, продолжая загрязнять душу насилием. Голодание часто само приводит к отказу от мяса — организм просто перестает его принимать, чувствуя «тяжелые вибрации» продукта.
+          Другие исследования показали смешанные результаты. Некоторые мета-анализы подтверждают связь между красным мясом и определёнными болезнями, другие не находят значимых эффектов при умеренном потреблении.
         </p>
+      </section>
+
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+            <Apple className="w-6 h-6" />
+          </div>
+          <h3 className="text-2xl font-[900] text-slate-900">Практические выводы</h3>
+        </div>
+
+        <div className="space-y-4">
+          {[
+            {
+              title: 'Больше растений — меньше животных продуктов',
+              desc: 'Независимо от того, соглашаетесь ли вы с радикальными выводами Кэмпбелла, переход к более растительной диете ассоциируется с улучшением здоровья.'
+            },
+            {
+              title: 'Ограничьте переработанное мясо',
+              desc: 'Колбасы, бекон, сосиски показали более чёткую связь с болезнями, чем цельное мясо. Это консенсус большинства исследований.'
+            },
+            {
+              title: 'Смотрите на общую диету, а не на один продукт',
+              desc: 'Китайская диета была не просто «без мяса», но и богата овощами, клетчаткой, низка в сахаре. Важен общий паттерн питания.'
+            },
+            {
+              title: 'Учитывайте индивидуальные особенности',
+              desc: 'Генетика, образ жизни, окружение — всё это влияет на то, как диета влияет на здоровье. То, что работает для большинства, может не работать для вас.'
+            },
+            {
+              title: 'Не делайте радикальных выводов',
+              desc: 'Исследование показывает корреляции, но не доказывает, что животный белок «вреден». Мoderation — разумный подход.'
+            }
+          ].map((item, i) => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <p className="text-base text-slate-700">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Связь с голоданием</h3>
+
+        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+          <p className="text-base text-slate-700 leading-relaxed">
+            Практика голодания часто естественным образом приводит к снижению потребления животных продуктов. Люди, регулярно голодающие, склонны выбирать более лёгкую растительную еду для входа и выхода. Китайское исследование даёт дополнительный контекст: если после голодания вы хотите сохранить достигнутый эффект, растительная диета может быть разумным выбором.
+          </p>
+        </div>
       </section>
 
       <div className="mt-8 p-6 bg-slate-900 text-white rounded-3xl">
         <div className="flex items-center gap-3 mb-3">
-            <Leaf className="w-6 h-6 text-green-400" />
-            <h4 className="font-bold">Совет на выход</h4>
+          <BarChart3 className="w-6 h-6 text-green-400" />
+          <h4 className="font-bold">Главный урок исследования</h4>
         </div>
-        <p className="text-sm text-slate-300">
-            Попробуйте после голода продержаться на растительном питании хотя бы столько же дней, сколько длился голод. Вы почувствуете разницу в ясности ума и легкости.
+        <p className="text-sm text-slate-300 leading-relaxed">
+          «Китайское исследование» не даёт окончательного ответа на все вопросы о питании, но оно показывает, что диета с преобладанием растительных продуктов ассоциируется с лучшими показателями здоровья. Если вы практикуете голодание, переход к более растительному питанию может усилить и закрепить результаты.
         </p>
       </div>
 

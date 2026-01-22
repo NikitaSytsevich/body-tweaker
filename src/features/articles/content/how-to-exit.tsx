@@ -6,7 +6,7 @@ export const howToExit: Article = {
   title: 'Выход из голодания: Важнее, чем сам процесс',
   category: 'Безопасность',
   summary: 'Самый опасный этап. Как запустить пищеварение заново, избежать отеков и сохранить лечебный эффект.',
-  imageUrl: '/images/articles/recovery.jpg',
+  imageUrl: '/images/articles/2.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
       

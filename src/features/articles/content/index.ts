@@ -5,20 +5,29 @@ const modules = import.meta.glob('./*.tsx', {
 });
 
 /**
- * Ручная логическая карта порядка
- * (UI не трогаем, статьи не переписываем)
+ * Порядок статей: подготовка → голодание → питание → сыроедение → выход
  */
 const ORDER: Record<string, number> = {
+  // Подготовка
   'how-to-prepare': 1,
-  'fluid-biohacking': 2,
-  'water-truth': 3,
 
-  'mucusless-diet': 10,
-  'living-food': 11,
-  'china-study': 12,
-  'bombard-psychology': 13,
+  // Фундамент голодания
+  'shelton-fasting-art': 10,
+  'bragg-miracle-fasting': 11,
 
-  'how-to-exit': 20,
+  // Наука о питании
+  'china-study': 20,
+  'greger-how-not-to-die': 21,
+  'furman-eat-to-live': 22,
+
+  // Питание и этика
+  'meat-for-weaklings': 30,
+
+  // Сыроедение
+  'raw-food-monodiet': 40,
+
+  // Выход
+  'how-to-exit': 50,
 };
 
 export const articles: Article[] = Object.values(modules)
