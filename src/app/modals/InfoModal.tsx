@@ -68,7 +68,7 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
                 <div className="flex items-center gap-4">
                     {/* 👇 ЛОГОТИП */}
                     <img
-                        src="/logo.svg"
+                        src="/logo.svg?v=2"
                         alt="Logo"
                         className="w-14 h-14 rounded-2xl shadow-md border border-slate-100 dark:border-white/10"
                     />
