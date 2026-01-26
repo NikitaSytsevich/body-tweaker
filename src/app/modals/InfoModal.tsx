@@ -19,24 +19,24 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
       name: "@nikita_sytsevich",
       link: "https://t.me/nikita_sytsevich",
       icon: Code,
-      color: "bg-blue-50 text-blue-600",
-      border: "border-blue-100"
+      color: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+      border: "border-blue-100 dark:border-blue-900/30"
     },
     {
       role: "QA & Тестирование",
       name: "@inntheeairr",
       link: "https://t.me/inntheeairr",
       icon: CheckCircle2,
-      color: "bg-purple-50 text-purple-600",
-      border: "border-purple-100"
+      color: "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+      border: "border-purple-100 dark:border-purple-900/30"
     },
     {
       role: "Ведущий реабилитолог",
       name: "@bubnovzavaliebalo",
       link: "https://t.me/bubnovzavaliebalo",
       icon: Stethoscope,
-      color: "bg-emerald-50 text-emerald-600",
-      border: "border-emerald-100"
+      color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+      border: "border-emerald-100 dark:border-emerald-900/30"
     }
   ];
 
@@ -63,98 +63,111 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
 
         <div className="flex-1 overflow-y-auto pb-safe px-6 pt-2">
 
-            {/* ЛОГОТИП - БОЛЬШОЙ И ЦЕНТРАЛЬНЫЙ */}
-            <div className="flex flex-col items-center justify-center py-8">
-                <div className="relative mb-6">
-                    {/* Тень под логотипом */}
-                    <div className="absolute inset-4 bg-slate-900 dark:bg-white blur-3xl opacity-10 rounded-full" />
+            {/* БОЛЬШОЕ ЛОГО НА ВСЮ ШИРИНУ */}
+            <div className="mb-6 mt-4">
+                <div className="relative w-full h-36 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-[#2C2C2E] dark:to-slate-800 rounded-[2rem] shadow-lg overflow-hidden border-4 border-white dark:border-white/10 flex items-center justify-center gap-4">
+                    {/* Паттерн на фоне */}
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="w-full h-full" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                    </div>
 
-                    <img
-                        src="/logo.svg?v=2"
-                        alt="Body Tweaker Logo"
-                        className="w-32 h-32 rounded-[3rem] shadow-2xl relative z-10 border-4 border-white dark:border-white/10"
-                    />
+                    <div className="relative z-10">
+                        <img
+                            src="/logo.svg?v=2"
+                            alt="Body Tweaker Logo"
+                            className="w-20 h-20 rounded-2xl shadow-xl"
+                        />
+                    </div>
+
+                    <div className="relative z-10 text-center">
+                        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                            Body Tweaker
+                        </h1>
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                            Scientific Biohacking Tools
+                        </p>
+                    </div>
                 </div>
-
-                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-2">
-                    Body Tweaker
-                </h1>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Scientific Biohacking Tools
-                </p>
             </div>
 
-            {/* Разделитель */}
-            <div className="h-px bg-slate-200 dark:bg-white/10 mb-6"></div>
-
             {/* ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ */}
-            <div className="flex items-center justify-between mb-8 bg-white dark:bg-[#2C2C2E] p-4 rounded-3xl border border-slate-100 dark:border-white/10 shadow-sm">
-                <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between mb-6 bg-white dark:bg-[#2C2C2E] p-3 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-3">
                     <div className="relative">
                         {currentUser?.photo_url ? (
                             <img
                                 src={currentUser.photo_url}
                                 alt="User"
-                                className="w-12 h-12 rounded-full border-2 border-slate-50 dark:border-white/10 shadow-sm"
+                                className="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-white/10 shadow-sm"
                             />
                         ) : (
-                            <div className="w-12 h-12 bg-slate-100 dark:bg-[#3A3A3C] rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-white/10">
-                                <User className="w-6 h-6 text-slate-400 dark:text-slate-600" />
+                            <div className="w-10 h-10 bg-slate-100 dark:bg-[#3A3A3C] rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-white/10">
+                                <User className="w-5 h-5 text-slate-400 dark:text-slate-600" />
                             </div>
                         )}
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
                     </div>
 
                     <div>
-                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
-                            Вы вошли как
+                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                            Профиль
                         </p>
-                        <p className="text-base font-bold text-slate-800 dark:text-white">
+                        <p className="text-sm font-bold text-slate-800 dark:text-white">
                             {currentUser?.first_name || 'Гость'} {currentUser?.last_name || ''}
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* СПИСОК КОМАНДЫ */}
-            <div className="space-y-3 pb-10">
-                <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2 mb-2">
+            {/* КОМАНДА - КРАСИВАЯ СЕТКА 3x1 */}
+            <div className="mb-4">
+                <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2 mb-3">
                     Команда проекта
                 </h3>
 
-                {team.map((member) => (
-                    <a
-                        key={member.name}
-                        href={member.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                            "flex items-center gap-4 p-4 rounded-2xl border transition-all active:scale-98 bg-white dark:bg-[#2C2C2E] shadow-sm",
-                            member.border
-                        )}
-                    >
-                        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", member.color)}>
-                            <member.icon className="w-6 h-6" />
-                        </div>
+                <div className="grid grid-cols-3 gap-2">
+                    {team.map((member) => (
+                        <a
+                            key={member.name}
+                            href={member.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative bg-white dark:bg-[#2C2C2E] p-3 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 flex flex-col items-center text-center"
+                        >
+                            {/* Иконка роли */}
+                            <div className={cn(
+                                "w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-2 relative",
+                                member.color
+                            )}>
+                                <member.icon className="w-6 h-6" />
+                                {/* Блестящий эффект при наведении */}
+                                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </div>
 
-                        <div className="flex-1 min-w-0 pr-2">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">
+                            {/* Имя без @ */}
+                            <p className="text-xs font-bold text-slate-800 dark:text-white truncate mb-1 leading-tight">
+                                {member.name.replace('@', '')}
+                            </p>
+
+                            {/* Роль */}
+                            <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500 leading-tight line-clamp-2">
                                 {member.role}
                             </p>
-                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
-                                {member.name}
-                            </p>
-                        </div>
 
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-[#3A3A3C] flex items-center justify-center text-slate-300 dark:text-slate-600">
-                            <Send className="w-4 h-4" />
-                        </div>
-                    </a>
-                ))}
+                            {/* Индикатор ссылки - появляется при наведении */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                    <Send className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+                                </div>
+                            </div>
+                        </a>
+                    ))}
+                </div>
             </div>
 
-            <div className="text-center pb-8 opacity-50">
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+            {/* FOOTER */}
+            <div className="text-center pb-6 opacity-40">
+                <p className="text-[9px] text-slate-400 dark:text-slate-500">
                     Built with ❤️ for Biohackers
                 </p>
             </div>
