@@ -6,7 +6,7 @@ export const chinaStudy: Article = {
   title: 'Китайское исследование: Питание и болезни',
   category: 'Наука о питании',
   summary: 'Масштабное исследование связи еды и хронических заболеваний. Что 20-летний проект в Китае показал о животном белке.',
-  imageUrl: '/images/articles/9.PNG',
+  imageUrl: '/images/articles/new/IMG_0418.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
 

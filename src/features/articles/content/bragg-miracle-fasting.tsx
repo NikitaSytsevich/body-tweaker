@@ -6,7 +6,7 @@ export const braggMiracleFasting: Article = {
   title: 'Чудо голодания по Полю Брэггу',
   category: 'Фундамент голодания',
   summary: 'Классический подход к регулярному голоданию: 24-36 часов еженедельно, сыроедение и физическая активность.',
-  imageUrl: '/images/articles/3.PNG',
+  imageUrl: '/images/articles/new/IMG_0416.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
 

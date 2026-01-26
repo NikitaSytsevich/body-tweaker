@@ -6,7 +6,7 @@ export const meatForWeaklings: Article = {
   title: 'Мясо для слабаков',
   category: 'Питание и этика',
   summary: 'Разбор мифов о мясе и силе. Исторические примеры, энергетическая эффективность и практические аспекты.',
-  imageUrl: '/images/articles/6.PNG',
+  imageUrl: '/images/articles/new/IMG_0422.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
 

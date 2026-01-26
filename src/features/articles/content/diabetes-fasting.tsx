@@ -6,7 +6,7 @@ export const diabetesFasting: Article = {
   title: 'Голодание при сахарном диабете: Полное руководство',
   category: 'Здоровье',
   summary: 'Можно ли голодать при диабете 1 и 2 типа? Как безопасно проводить лечебное голодание без риска гипогликемии и кетоацидоза?',
-  imageUrl: '/11.PNG',
+  imageUrl: '/images/articles/new/IMG_0425.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
 

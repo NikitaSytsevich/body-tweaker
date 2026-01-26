@@ -6,7 +6,7 @@ export const rawFoodMonodiet: Article = {
   title: 'Сыроедческая монодиета',
   category: 'Сыроедение',
   summary: 'Фруктомонодиеты как способ глубокого очищения. Польза и риски длительного сыроедения.',
-  imageUrl: '/images/articles/7.PNG',
+  imageUrl: '/images/articles/new/IMG_0423.PNG',
   content: (
     <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
 
