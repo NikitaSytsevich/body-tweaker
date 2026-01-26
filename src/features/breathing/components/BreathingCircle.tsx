@@ -13,31 +13,31 @@ type ConfigType = {
 };
 
 export const BreathingCircle = ({ phase, timeLeft, totalDuration }: Props) => {
-  
+
   const config: ConfigType = {
-    idle: { text: "", color: "bg-slate-50 border-4 border-white shadow-inner", scale: 1 },
-    inhale: { text: "Вдох", color: "bg-cyan-100 text-cyan-600", scale: 1.5 },
-    hold: { text: "Задержка", color: "bg-violet-100 text-violet-600", scale: 1.5 },
-    exhale: { text: "Выдох", color: "bg-blue-100 text-blue-600", scale: 1 },
-    finished: { text: "Готово", color: "bg-green-100 text-green-600", scale: 1 },
+    idle: { text: "", color: "bg-slate-50 dark:bg-[#3A3A3C] border-4 border-white dark:border-white/10 shadow-inner", scale: 1 },
+    inhale: { text: "Вдох", color: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400", scale: 1.5 },
+    hold: { text: "Задержка", color: "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400", scale: 1.5 },
+    exhale: { text: "Выдох", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400", scale: 1 },
+    finished: { text: "Готово", color: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400", scale: 1 },
   };
 
   const current = config[phase];
 
   return (
     <div className="relative w-64 h-64 flex items-center justify-center">
-      
+
       {phase !== 'finished' && phase !== 'idle' && (
         <motion.div
-            animate={{ 
+            animate={{
                 scale: current.scale,
                 backgroundColor: phase === 'hold' ? '#ede9fe' : phase === 'inhale' ? '#cffafe' : '#dbeafe'
             }}
-            transition={{ 
-                duration: totalDuration > 0 ? totalDuration : 0.5, 
-                ease: "linear" 
+            transition={{
+                duration: totalDuration > 0 ? totalDuration : 0.5,
+                ease: "linear"
             }}
-            className="absolute inset-0 rounded-full opacity-50 blur-2xl"
+            className="absolute inset-0 rounded-full opacity-50 blur-2xl dark:opacity-30"
         />
       )}
 
@@ -53,7 +53,7 @@ export const BreathingCircle = ({ phase, timeLeft, totalDuration }: Props) => {
             <>
                 <span className="text-sm font-bold uppercase tracking-widest">{current.text}</span>
                 {phase !== 'finished' && (
-                    <motion.span 
+                    <motion.span
                         key={timeLeft}
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}

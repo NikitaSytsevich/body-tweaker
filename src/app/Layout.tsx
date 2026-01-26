@@ -74,11 +74,9 @@ export const Layout = () => {
 
   useEffect(() => {
     try {
-        WebApp.ready(); 
+        WebApp.ready();
         WebApp.expand();
-        WebApp.setHeaderColor('#F2F2F7'); 
-        WebApp.setBackgroundColor('#F2F2F7');
-        
+
         const checkUser = async () => {
             if (WebApp.initDataUnsafe?.user) {
                 const existingName = await storageGet('user_name');
@@ -144,18 +142,18 @@ export const Layout = () => {
   const leftStyle = useTransform(springPercent, (v) => `calc(${v}% + 8px)`);
 
   return (
-    <div className="bg-[#F2F2F7] flex justify-center font-sans text-slate-900 h-[100dvh] w-screen overflow-hidden fixed inset-0">
-      
-      <div className="w-full max-w-md bg-[#F2F2F7] h-full relative flex flex-col shadow-2xl overflow-hidden">
-        
+    <div className="bg-[#F2F2F7] dark:bg-[#1C1C1E] flex justify-center font-sans text-slate-900 dark:text-white h-[100dvh] w-screen overflow-hidden fixed inset-0">
+
+      <div className="w-full max-w-md bg-[#F2F2F7] dark:bg-[#1C1C1E] h-full relative flex flex-col shadow-2xl overflow-hidden">
+
         {/* ИЗМЕНЕНИЕ: Скрываем шапку на странице статьи */}
         {!isArticleDetail && (
-          <header className="px-6 pt-safe pb-4 bg-[#F2F2F7]/90 backdrop-blur-xl sticky top-0 z-30 flex justify-between items-center transition-all shrink-0">
+          <header className="px-6 pt-safe pb-4 bg-[#F2F2F7]/90 dark:bg-[#1C1C1E]/90 backdrop-blur-xl sticky top-0 z-30 flex justify-between items-center transition-all shrink-0">
             <div onClick={() => setIsInfoOpen(true)} className="cursor-pointer active:opacity-60 transition-opacity pt-2">
-              <h1 className="text-2xl font-[850] tracking-tight text-slate-900">Body Tweaker</h1>
-              <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-0.5">Scientific Biohacking</p>
+              <h1 className="text-2xl font-[850] tracking-tight text-slate-900 dark:text-white">Body Tweaker</h1>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase mt-0.5">Scientific Biohacking</p>
             </div>
-            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)} className="mt-2 p-2.5 text-slate-400 hover:text-slate-600 bg-white rounded-full shadow-sm border border-slate-100">
+            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)} className="mt-2 p-2.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 bg-white dark:bg-[#2C2C2E] rounded-full shadow-sm border border-slate-100 dark:border-white/10">
               <Settings className="w-5 h-5" />
             </motion.button>
           </header>
@@ -179,7 +177,7 @@ export const Layout = () => {
             {/* ИЗМЕНЕНИЕ: Отображение детальной страницы статьи */}
             <AnimatePresence>
                 {isArticleDetail && (
-                    <div className="w-full h-full absolute inset-0 z-40 bg-[#F2F2F7]">
+                    <div className="w-full h-full absolute inset-0 z-40 bg-[#F2F2F7] dark:bg-[#1C1C1E]">
                         <ArticleDetailPage />
                     </div>
                 )}
@@ -189,7 +187,7 @@ export const Layout = () => {
         {/* ИЗМЕНЕНИЕ: Скрываем навигацию на странице статьи */}
         {!isArticleDetail && (
           <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-center pointer-events-none">
-            <motion.nav 
+            <motion.nav
               ref={navRef}
               animate={{ scale: isDragging ? 0.98 : 1, y: isDragging ? 2 : 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -199,17 +197,17 @@ export const Layout = () => {
                   setIsDragging(true);
                   const rect = e.currentTarget.getBoundingClientRect();
                   const contentWidth = rect.width - 16;
-                  let relativeX = e.clientX - rect.left - 8 - (contentWidth / 8); 
+                  let relativeX = e.clientX - rect.left - 8 - (contentWidth / 8);
                   let percent = (relativeX / contentWidth) * 100;
                   xPercent.set(percent);
               }}
-              className="pointer-events-auto bg-white/90 backdrop-blur-2xl border border-white/40 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] rounded-[2.5rem] px-2 py-2 flex items-center mx-4 max-w-sm w-full relative h-20 cursor-grab active:cursor-grabbing select-none"
+              className="pointer-events-auto bg-white/90 dark:bg-[#2C2C2E]/85 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] rounded-[2.5rem] px-2 py-2 flex items-center mx-4 max-w-sm w-full relative h-20 cursor-grab active:cursor-grabbing select-none"
             >
               <motion.div
-                  className="absolute top-2 bottom-2 bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] rounded-[2rem] border border-slate-100 z-0 pointer-events-none"
+                  className="absolute top-2 bottom-2 bg-white dark:bg-[#2C2C2E] shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_15px_-3px_rgba(0,0,0,0.3)] rounded-[2rem] border border-slate-100 dark:border-white/10 z-0 pointer-events-none"
                   style={{
-                      left: leftStyle, 
-                      width: 'calc(25% - 16px)', 
+                      left: leftStyle,
+                      width: 'calc(25% - 16px)',
                       scale: isDragging ? 1.05 : 1
                   }}
               />
@@ -225,15 +223,15 @@ export const Layout = () => {
                         default: return { scale: 1.2, y: -4 };
                     }
                 };
-                
+
                 return (
                   <div key={item.id} className="relative flex-1 flex flex-col items-center justify-center h-full z-10 pointer-events-none">
                     <motion.div animate={isActive ? { ...getIconAnimation(), y: -4, scale: 1.1 } : { y: 0, scale: 1, rotate: 0 }}>
-                      <item.icon className={cn("w-6 h-6 transition-colors duration-200", isActive ? "text-blue-600 fill-blue-600/10" : "text-slate-400")} strokeWidth={isActive ? 2.5 : 2} />
+                      <item.icon className={cn("w-6 h-6 transition-colors duration-200", isActive ? "text-blue-600 dark:text-blue-500 fill-blue-600/10 dark:fill-blue-500/10" : "text-slate-400 dark:text-slate-500")} strokeWidth={isActive ? 2.5 : 2} />
                     </motion.div>
                     <AnimatePresence>
                       {isActive && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="w-1 h-1 bg-blue-600 rounded-full absolute bottom-3" />
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="w-1 h-1 bg-blue-600 dark:bg-blue-500 rounded-full absolute bottom-3" />
                       )}
                     </AnimatePresence>
                   </div>

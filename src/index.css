@@ -4,32 +4,57 @@
 
 @layer base {
   :root {
-    /* Цвета iOS */
+    /* Светлая тема */
     --bg-primary: #F2F2F7;
     --bg-secondary: #FFFFFF;
-    
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --border-subtle: #F1F5F9;
+    --glass-bg: rgba(255, 255, 255, 0.90);
+    --glass-border: rgba(255, 255, 255, 0.50);
+
     /* Отключаем дефолтные отступы */
     margin: 0;
     padding: 0;
-    
+
     /* Отключаем выделение текста (как в приложении) */
     -webkit-user-select: none;
     user-select: none;
-    
+
     /* Отключаем "резинку" при скролле всей страницы */
     overscroll-behavior-y: none;
-    
+
     /* Отключаем вызов контекстного меню долгим тапом */
     -webkit-touch-callout: none;
   }
 
+  .dark {
+    /* Тёмная тема */
+    --bg-primary: #1C1C1E;
+    --bg-secondary: #2C2C2E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #EBEBF5;
+    --text-muted: #8E8E93;
+    --border-subtle: #38383A;
+    --glass-bg: rgba(44, 44, 46, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.10);
+  }
+
   body {
-    @apply bg-[#F2F2F7] text-slate-900 antialiased;
+    @apply bg-[#F2F2F7] dark:bg-[#1C1C1E] text-slate-900 dark:text-white antialiased;
     /* Фикс высоты для мобильных браузеров (чтобы адресная строка не мешала) */
     height: 100dvh;
     width: 100vw;
     overflow: hidden; /* Скролл только внутри контейнеров */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* Плавные переходы для темы */
+  * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 300ms;
+    transition-timing-function: ease-in-out;
   }
 
   /* Убираем подсветку при тапе на мобильных */

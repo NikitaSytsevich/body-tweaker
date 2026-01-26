@@ -23,32 +23,32 @@ export const ArticleDetailPage = () => {
         onClick={() => navigate('/')}
       />
 
-      <motion.div 
-        initial={{ y: '100%' }} 
-        animate={{ y: '40px' }} 
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: '40px' }}
         exit={{ y: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed inset-x-0 bottom-0 top-0 z-[101] bg-white rounded-t-[2rem] overflow-hidden flex flex-col shadow-2xl"
+        className="fixed inset-x-0 bottom-0 top-0 z-[101] bg-white dark:bg-[#2C2C2E] rounded-t-[2rem] overflow-hidden flex flex-col shadow-2xl"
       >
-        <button 
+        <button
           onClick={() => navigate('/')}
-          className="absolute top-5 right-5 z-50 w-8 h-8 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white/90 hover:bg-black/30 transition-colors"
+          className="absolute top-5 right-5 z-50 w-8 h-8 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white/90 dark:text-slate-900/90 hover:bg-black/30 dark:hover:bg-white/30 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex-1 overflow-y-auto">
-            <div className="relative w-full h-[45vh] bg-slate-100">
+            <div className="relative w-full h-[45vh] bg-slate-100 dark:bg-[#3A3A3C]">
                 {article.imageUrl && (
-                    <img 
-                        src={article.imageUrl} 
+                    <img
+                        src={article.imageUrl}
                         alt={article.title}
                         className="w-full h-full object-cover"
                     />
                 )}
                 <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
-                
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-[#2C2C2E] via-white/80 dark:via-[#2C2C2E]/80 to-transparent pointer-events-none" />
+
                 <div className="absolute top-6 left-6 right-16">
                     <span className="text-xs font-bold text-white/95 uppercase tracking-widest drop-shadow-sm">
                         Статья: {article.category.toLowerCase()}
@@ -58,11 +58,11 @@ export const ArticleDetailPage = () => {
 
             <div className="relative px-6 -mt-6 pb-24">
                 <div className="mb-6">
-                    <h1 className="text-3xl font-[900] text-slate-900 leading-[1.1] tracking-tight">
+                    <h1 className="text-3xl font-[900] text-slate-900 dark:text-white leading-[1.1] tracking-tight">
                         {article.title}
                     </h1>
                 </div>
-                <div className="prose prose-lg prose-slate max-w-none font-medium text-slate-700 leading-relaxed">
+                <div className="prose prose-lg prose-slate dark:prose-invert max-w-none font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
                     {article.content}
                 </div>
             </div>

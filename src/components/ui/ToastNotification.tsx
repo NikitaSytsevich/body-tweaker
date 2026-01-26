@@ -37,19 +37,19 @@ export const ToastNotification = ({ isVisible, title, message, onClose, onPress 
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
           className="fixed top-4 left-4 right-4 z-[10001] flex justify-center pointer-events-none"
         >
-          <div 
-            onClick={handleClick} // 👈 Обработчик клика
-            className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-2xl shadow-blue-900/20 rounded-[2rem] p-4 pr-6 flex items-center gap-4 max-w-sm w-full pointer-events-auto cursor-pointer active:scale-95 transition-transform"
+          <div
+            onClick={handleClick}
+            className="bg-white/95 dark:bg-[#2C2C2E]/95 backdrop-blur-xl border border-white/50 dark:border-white/10 shadow-2xl shadow-blue-900/20 dark:shadow-black/40 rounded-[2rem] p-4 pr-6 flex items-center gap-4 max-w-sm w-full pointer-events-auto cursor-pointer active:scale-95 transition-transform"
           >
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
+            <div className="w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30">
                 <Sparkles className="w-6 h-6 text-white fill-current animate-pulse" />
             </div>
 
             <div className="flex-1 min-w-0 text-left">
-                <h4 className="text-sm font-bold text-slate-800 leading-tight">
+                <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-tight">
                     {title}
                 </h4>
-                <p className="text-xs text-slate-500 leading-tight mt-1 line-clamp-2 font-medium">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-1 line-clamp-2 font-medium">
                     {message}
                 </p>
             </div>

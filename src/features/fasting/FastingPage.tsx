@@ -11,9 +11,9 @@ import { useNavigate } from 'react-router-dom';
 
 // 1. Кнопка карты (стабильная)
 const MapButton = memo(({ onClick }: { onClick: () => void }) => (
-    <button 
+    <button
         onClick={onClick}
-        className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 hover:bg-slate-100 transition-all active:scale-95 text-slate-400 hover:text-blue-500"
+        className="w-12 h-12 bg-slate-50 dark:bg-[#2C2C2E] rounded-2xl flex items-center justify-center border border-slate-100 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-[#3A3A3C] transition-all active:scale-95 text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400"
     >
         <Map className="w-5 h-5" />
     </button>
@@ -35,32 +35,32 @@ const TimerVisual = memo(({
             <div className="relative shrink-0" style={{ width: size, height: size }}>
                 {/* SVG Кольцо */}
                 <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg] drop-shadow-2xl">
-                    <circle cx={center} cy={center} r={radius} fill="none" stroke="#F1F5F9" strokeWidth={stroke} strokeLinecap="round" />
-                    <circle 
-                        cx={center} cy={center} r={radius} fill="none" 
-                        stroke="currentColor" strokeWidth={stroke} 
+                    <circle cx={center} cy={center} r={radius} fill="none" stroke="#F1F5F9" className="dark:stroke-[#38383A]" strokeWidth={stroke} strokeLinecap="round" />
+                    <circle
+                        cx={center} cy={center} r={radius} fill="none"
+                        stroke="currentColor" strokeWidth={stroke}
                         strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round"
                         className={cn(
-                            "transition-all duration-1000 ease-out", 
-                            isFasting ? "text-blue-500" : "text-transparent"
+                            "transition-all duration-1000 ease-out",
+                            isFasting ? "text-blue-600 dark:text-blue-500" : "text-transparent"
                         )}
                     />
                 </svg>
 
                 {/* Контент внутри кольца */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    
+
                     {/* Время */}
-                    <div className="flex items-baseline text-slate-800 translate-y-[-5px]">
+                    <div className="flex items-baseline text-slate-800 dark:text-white translate-y-[-5px]">
                         <span className="text-[4.5rem] font-[850] font-mono tracking-tighter tabular-nums leading-none">
                             {isFasting ? elapsedFormatted.split(':')[0] : `${totalHours}`}
                             <span className="mx-1 opacity-20 relative -top-1">:</span>
                             {isFasting ? elapsedFormatted.split(':')[1] : `00`}
                         </span>
                     </div>
-                    
+
                     {/* Подпись */}
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
                         {isFasting ? elapsedFormatted.split(':')[2] : 'Часов'}
                     </span>
                 </div>
@@ -147,21 +147,21 @@ export const FastingPage = () => {
         />
 
         <div className="min-h-full flex flex-col pb-6 relative z-0">
-        
-        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 flex-1 border border-white/60 relative flex flex-col">
-            
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.03] pointer-events-none rounded-[3rem]" />
+
+        <div className="bg-white dark:bg-[#2C2C2E] rounded-[3rem] shadow-sm shadow-slate-200/50 dark:shadow-black/20 flex-1 border border-white/60 dark:border-white/10 relative flex flex-col">
+
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.03] dark:opacity-[0.05] pointer-events-none rounded-[3rem]" />
 
             {/* HEADER */}
             <div className="px-8 pt-8 flex justify-between items-start relative z-20 shrink-0">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <div className={cn("w-2 h-2 rounded-full", isFasting ? "bg-blue-500 animate-pulse" : "bg-slate-300")} />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <div className={cn("w-2 h-2 rounded-full", isFasting ? "bg-blue-600 dark:bg-blue-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600")} />
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                             {isFasting ? "Активность" : "Статус"}
                         </span>
                     </div>
-                    <h1 className="text-3xl font-[900] text-slate-800 leading-tight">
+                    <h1 className="text-3xl font-[900] text-slate-800 dark:text-white leading-tight">
                         {isFasting ? "Голодание" : "Ожидание"}
                     </h1>
                 </div>
@@ -169,8 +169,8 @@ export const FastingPage = () => {
             </div>
 
             {/* CONTENT */}
-            <TimerVisual 
-                progress={progress} 
+            <TimerVisual
+                progress={progress}
                 elapsedFormatted={elapsedFormatted}
                 totalHours={scheme.hours}
                 isFasting={isFasting}
@@ -178,22 +178,22 @@ export const FastingPage = () => {
 
             <div className="flex justify-center gap-6 shrink-0 mt-2 mb-4 relative z-20">
                 <NativeDatePicker label="Начало" icon={Sunrise} dateValue={currentStart} onChange={handleChangeStart} disabled={!isFasting} />
-                <div className="w-px bg-slate-100 h-10 self-center" />
+                <div className="w-px bg-slate-100 dark:bg-white/10 h-10 self-center" />
                 <NativeDatePicker label="Финиш" icon={Moon} dateValue={currentEnd} onChange={handleChangeEnd} disabled={!isFasting} />
             </div>
 
             {/* BUTTON */}
-            <div ref={buttonRef} className="p-6 mt-auto shrink-0 bg-white/50 backdrop-blur-sm z-20 rounded-b-[3rem]">
-                <motion.button 
+            <div ref={buttonRef} className="p-6 mt-auto shrink-0 bg-white/50 dark:bg-[#2C2C2E]/50 backdrop-blur-sm z-20 rounded-b-[3rem]">
+                <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={handleMainButtonClick}
                     className={cn(
                         "w-full py-4 rounded-2xl flex items-center justify-between px-6 shadow-lg transition-all group relative overflow-hidden",
-                        isFasting 
-                            ? "bg-white border-2 border-red-100 text-red-500 hover:bg-red-50" 
-                            : isReadyToStart 
-                                ? "bg-slate-900 text-white shadow-slate-900/30" 
-                                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                        isFasting
+                            ? "bg-white dark:bg-[#2C2C2E] border-2 border-red-100 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
+                            : isReadyToStart
+                                ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-slate-900/30 dark:shadow-black/10"
+                                : "bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#3A3A3C]"
                     )}
                 >
                     <div className="flex flex-col items-start z-10">
@@ -207,7 +207,7 @@ export const FastingPage = () => {
 
                     <div className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center transition-colors z-10",
-                        isFasting ? "bg-red-50" : isReadyToStart ? "bg-white/20" : "bg-slate-100 text-slate-400"
+                        isFasting ? "bg-red-50 dark:bg-red-900/20" : isReadyToStart ? "bg-white/20 dark:bg-slate-900/10" : "bg-slate-100 dark:bg-[#3A3A3C] text-slate-400 dark:text-slate-500"
                     )}>
                         {isFasting ? <Square className="w-4 h-4 fill-current" /> : isReadyToStart ? <Play className="w-4 h-4 fill-current ml-0.5" /> : <ListFilter className="w-4 h-4" />}
                     </div>

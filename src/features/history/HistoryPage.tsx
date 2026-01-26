@@ -89,30 +89,30 @@ export const HistoryPage = () => {
 
   return (
     <div className="min-h-full flex flex-col pb-6 relative z-0">
-      <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative overflow-hidden flex-1 flex flex-col z-10 border border-white/60">
-        
+      <div className="bg-white dark:bg-[#2C2C2E] rounded-[3rem] shadow-sm shadow-slate-200/50 dark:shadow-black/20 relative overflow-hidden flex-1 flex flex-col z-10 border border-white/60 dark:border-white/10">
+
         {/* ХЕДЕР */}
-        <div className="px-8 pt-8 pb-4 shrink-0 relative z-20 bg-white border-b border-gray-50 rounded-t-[3rem]">
+        <div className="px-8 pt-8 pb-4 shrink-0 relative z-20 bg-white dark:bg-[#2C2C2E] border-b border-gray-50 dark:border-white/5 rounded-t-[3rem]">
           <div className="flex justify-between items-start mb-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <History className="w-3 h-3 text-slate-400" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                <History className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                   Журнал
                 </span>
               </div>
-              <h1 className="text-3xl font-[900] text-slate-800 leading-tight">
+              <h1 className="text-3xl font-[900] text-slate-800 dark:text-white leading-tight">
                 {activeTab === 'fasting' ? "Голодание" : "Дыхание"}
               </h1>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                 Всего
               </span>
-              <div className="text-2xl font-black text-slate-800 leading-none mt-1">
+              <div className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-1">
                 {activeTab === 'fasting' ? totalHours : filteredRecords.length}
-                <span className="text-sm font-bold text-slate-400 ml-1">
+                <span className="text-sm font-bold text-slate-400 dark:text-slate-500 ml-1">
                   {activeTab === 'fasting' ? 'ч' : ''}
                 </span>
               </div>
@@ -120,7 +120,7 @@ export const HistoryPage = () => {
           </div>
 
           <div className="mb-2">
-            <SegmentedControl 
+            <SegmentedControl
               options={tabs}
               value={activeTab}
               onChange={(val) => setActiveTab(val as 'fasting' | 'breathing')}
@@ -133,15 +133,15 @@ export const HistoryPage = () => {
           
           {isLoading ? (
              <div className="flex flex-col items-center justify-center h-full pb-20">
-                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
              </div>
           ) : filteredRecords.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center pb-20 opacity-50">
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                <Calendar className="w-8 h-8 text-slate-300" />
+              <div className="w-20 h-20 bg-slate-50 dark:bg-[#3A3A3C] rounded-full flex items-center justify-center mb-4">
+                <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-600" />
               </div>
-              <h3 className="font-bold text-slate-700 text-lg">Пока пусто</h3>
-              <p className="text-xs text-slate-400 max-w-[200px] mt-1">
+              <h3 className="font-bold text-slate-700 dark:text-slate-300 text-lg">Пока пусто</h3>
+              <p className="text-xs text-slate-400 dark:text-slate-500 max-w-[200px] mt-1">
                 Завершите свою первую сессию, чтобы увидеть её здесь.
               </p>
             </div>
@@ -149,24 +149,24 @@ export const HistoryPage = () => {
             // Рендер групп
             Object.entries(groupedRecords).map(([month, recordsInGroup]) => (
                 <div key={month} className="mb-8 last:mb-0">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-3 sticky top-0 bg-white/95 backdrop-blur-sm py-2 z-10">
+                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-4 mb-3 sticky top-0 bg-white/95 dark:bg-[#2C2C2E]/95 backdrop-blur-sm py-2 z-10">
                         {month}
                     </h3>
-                    
+
                     <div className="space-y-3">
                         {recordsInGroup.map((record) => (
                             <motion.div
                                 layoutId={record.id}
                                 key={record.id}
                                 onClick={() => setSelectedRecord(record)}
-                                className="bg-slate-50/50 hover:bg-slate-100 p-4 rounded-[1.5rem] flex items-center gap-4 group cursor-pointer transition-colors relative overflow-hidden"
+                                className="bg-slate-50/50 dark:bg-[#3A3A3C]/50 hover:bg-slate-100 dark:hover:bg-[#4A4A4C] p-4 rounded-[1.5rem] flex items-center gap-4 group cursor-pointer transition-colors relative overflow-hidden"
                             >
                                 {/* Дата */}
-                                <div className="flex flex-col items-center justify-center w-12 shrink-0 border-r border-slate-200 pr-4">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                                <div className="flex flex-col items-center justify-center w-12 shrink-0 border-r border-slate-200 dark:border-white/10 pr-4">
+                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
                                         {dayjs(record.endTime).format('ddd')}
                                     </span>
-                                    <span className="text-xl font-black text-slate-800 leading-none mt-0.5">
+                                    <span className="text-xl font-black text-slate-800 dark:text-white leading-none mt-0.5">
                                         {dayjs(record.endTime).format('D')}
                                     </span>
                                 </div>
@@ -174,24 +174,24 @@ export const HistoryPage = () => {
                                 {/* Инфо */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="font-bold text-slate-700 truncate text-sm">
+                                        <h4 className="font-bold text-slate-700 dark:text-slate-200 truncate text-sm">
                                             {record.scheme}
                                         </h4>
                                         {record.type === 'fasting' && (
-                                            <span className="text-[9px] font-bold bg-white px-1.5 py-0.5 rounded text-slate-400 shadow-sm">
+                                            <span className="text-[9px] font-bold bg-white dark:bg-[#2C2C2E] px-1.5 py-0.5 rounded text-slate-400 dark:text-slate-500 shadow-sm">
                                                 {Math.floor(record.durationSeconds / 3600)}ч
                                             </span>
                                         )}
                                     </div>
-                                    
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+
+                                    <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                                         <Clock className="w-3 h-3" />
                                         {dayjs(record.startTime).format('HH:mm')} — {dayjs(record.endTime).format('HH:mm')}
                                     </div>
                                 </div>
 
                                 {/* Стрелка */}
-                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-300 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-0 translate-x-2">
+                                <div className="w-8 h-8 rounded-full bg-white dark:bg-[#2C2C2E] flex items-center justify-center text-slate-300 dark:text-slate-600 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-0 translate-x-2">
                                     <ChevronRight className="w-4 h-4" />
                                 </div>
 

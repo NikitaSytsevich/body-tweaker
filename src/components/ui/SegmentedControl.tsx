@@ -82,16 +82,16 @@ export function SegmentedControl<T extends string = string>({ options, value, on
   const leftStyle = useTransform(springPercent, v => `calc(${v}% + 4px)`);
 
   return (
-    <div 
+    <div
         ref={containerRef}
         onPointerDown={handlePointerDown}
-        className="bg-slate-100 p-1 rounded-2xl flex relative cursor-pointer touch-none select-none"
+        className="bg-slate-100 dark:bg-[#2C2C2E] p-1 rounded-2xl flex relative cursor-pointer touch-none select-none"
     >
         {/* ПЛАШКА (DRAG) */}
         {/* Оставляем условный рендеринг самого div, но хук leftStyle уже вычислен выше */}
         {isDragging && (
-            <motion.div 
-                className="absolute top-1 bottom-1 bg-white rounded-xl shadow-sm border border-black/5 z-10 pointer-events-none"
+            <motion.div
+                className="absolute top-1 bottom-1 bg-white dark:bg-[#3A3A3C] rounded-xl shadow-sm border border-black/5 dark:border-white/10 z-10 pointer-events-none"
                 style={{
                     left: leftStyle, // Используем вычисленное значение
                     width: `calc(${widthPercent}% - 8px)`
@@ -102,22 +102,22 @@ export function SegmentedControl<T extends string = string>({ options, value, on
         {options.map((option) => {
             const isActive = option.value === value;
             return (
-                <div 
+                <div
                     key={option.value}
                     className={cn(
                         "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold relative z-20 transition-colors pointer-events-none",
-                        isActive ? "text-slate-800" : "text-slate-400"
+                        isActive ? "text-slate-800 dark:text-white" : "text-slate-500 dark:text-slate-400"
                     )}
                 >
                     {!isDragging && isActive && (
-                        <motion.div 
+                        <motion.div
                             layoutId="segment-pill"
-                            className="absolute inset-0 bg-white rounded-xl shadow-sm border border-black/5 -z-10"
+                            className="absolute inset-0 bg-white dark:bg-[#3A3A3C] rounded-xl shadow-sm border border-black/5 dark:border-white/10 -z-10"
                             transition={{ type: "spring", stiffness: 500, damping: 30 }}
                         />
                     )}
-                    
-                    <option.icon className="w-3.5 h-3.5" /> 
+
+                    <option.icon className="w-3.5 h-3.5" />
                     {option.label}
                 </div>
             );
