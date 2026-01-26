@@ -1,7 +1,8 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, X, Code, CheckCircle2, Stethoscope } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import WebApp from '@twa-dev/sdk';
+import { createPortal } from 'react-dom';
 
 interface Props {
   isOpen: boolean;
@@ -40,27 +41,32 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
     }
   ];
 
-  return (
-    <>
+  const content = (
+    <AnimatePresence>
+      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9999]"
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
       />
 
+      {/* Modal Sheet */}
       <motion.div
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-[9999] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
       >
+        {/* Handle */}
         <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-[#1C1C1E] shrink-0" onClick={onClose}>
           <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/20 rounded-full" />
         </div>
 
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 rounded-full transition-colors z-[10000]">
+        {/* Close Button */}
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 rounded-full transition-colors z-50">
             <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
         </button>
 
+        {/* Content Container */}
         <div className="flex-1 overflow-y-auto pb-safe px-6 pt-2">
 
             {/* БОЛЬШОЕ ЛОГО НА ВСЮ ШИРИНУ */}
@@ -174,6 +180,8 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
 
         </div>
       </motion.div>
-    </>
+    </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 };
