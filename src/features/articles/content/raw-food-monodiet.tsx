@@ -18,7 +18,7 @@ export const rawFoodMonodiet: Article = {
         <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-3xl border border-green-100 dark:border-green-900/30">
           <div className="flex items-center gap-3 mb-3">
             <Sunrise className="w-6 h-6 text-green-600 dark:text-green-400" />
-            <h4 className="font-bold text-green-900">Концепция монодиеты</h4>
+            <h4 className="font-bold text-green-900 dark:text-green-100">Концепция монодиеты</h4>
           </div>
           <p className="text-base text-green-800 dark:text-green-200/90 leading-relaxed">
             Монодиета означает питание одним продуктом в течение определённого времени — от одного дня до нескольких недель. Идея в том, что упрощение состава еды снижает нагрузку на пищеварение и позволяет организму переключиться на глубокую очистку и восстановление.
@@ -62,7 +62,7 @@ export const rawFoodMonodiet: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.principle}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.principle}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.detail}</p>
             </div>
           ))}
@@ -127,7 +127,7 @@ export const rawFoodMonodiet: Article = {
                   {i + 1}
                 </div>
                 <div className="flex-1">
-                  <h5 className="font-bold text-slate-800 mb-2">{item.fruit}</h5>
+                  <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.fruit}</h5>
                   <p className="text-sm font-medium text-xl text-slate-600 dark:text-slate-300 mb-2">Длительность: {item.duration}</p>
                   <p className="text-base text-slate-700 dark:text-slate-300 mb-2">{item.benefits}</p>
                   <p className="text-sm text-orange-600 dark:text-orange-400">⚠ {item.caution}</p>
@@ -200,7 +200,7 @@ export const rawFoodMonodiet: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
@@ -343,7 +343,7 @@ export const rawFoodMonodiet: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}

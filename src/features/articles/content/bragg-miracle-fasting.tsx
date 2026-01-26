@@ -18,7 +18,7 @@ export const braggMiracleFasting: Article = {
         <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
           <div className="flex items-center gap-3 mb-3">
             <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            <h4 className="font-bold text-blue-900">Ключевое отличие</h4>
+            <h4 className="font-bold text-blue-900 dark:text-blue-100">Ключевое отличие</h4>
           </div>
           <p className="text-base text-blue-800 dark:text-blue-200/90 leading-relaxed">
             Брэгг не требовал от людей неделями отказываться от еды. Его подход — голодание 24-36 часов каждую неделю. Этого достаточно, чтобы дать отдых пищеварительной системе и запустить процессы очищения, но не настолько долго, чтобы причинить вред организму.
@@ -40,14 +40,14 @@ export const braggMiracleFasting: Article = {
 
         <div className="space-y-4 mb-6">
           <div className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-            <h5 className="font-bold text-slate-800 mb-2">Проблема постоянного питания</h5>
+            <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Проблема постоянного питания</h5>
             <p className="text-base text-slate-700 dark:text-slate-300">
               Когда организм постоянно занят перевариванием пищи, у него нет ресурса на глубокую очистку. Токсины накапливаются в тканях, особенно в жировой клетчатке.
             </p>
           </div>
 
           <div className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-            <h5 className="font-bold text-slate-800 mb-2">Решение через паузу</h5>
+            <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Решение через паузу</h5>
             <p className="text-base text-slate-700 dark:text-slate-300">
               Голодание даёт пищеварительной системе передышку. Организм переключается на внутреннее питание и начинает расщеплять накопленные отложения.
             </p>
@@ -230,7 +230,7 @@ export const braggMiracleFasting: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
@@ -294,7 +294,7 @@ export const braggMiracleFasting: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}

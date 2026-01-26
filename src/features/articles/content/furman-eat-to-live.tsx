@@ -79,7 +79,7 @@ export const furmanEatToLive: Article = {
                   {i + 1}
                 </div>
                 <div className="flex-1">
-                  <h5 className="font-bold text-slate-800 text-sm">{item.tier}</h5>
+                  <h5 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{item.tier}</h5>
                   <p className="text-base text-slate-700 dark:text-slate-300">{item.foods}</p>
                 </div>
               </div>
@@ -127,14 +127,14 @@ export const furmanEatToLive: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.problem}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.problem}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.critique}</p>
             </div>
           ))}
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
-          <p className="text-base text-blue-900 leading-relaxed">
+          <p className="text-base text-blue-900 dark:text-blue-200/90 leading-relaxed">
             Фурман утверждает: проблема не в количестве еды, а в её качестве. Когда вы получаете достаточно нутриентов, организм сам регулирует аппетит. Вы не чувствуете голода, даже если едите меньше калорий.
           </p>
         </div>
@@ -177,7 +177,7 @@ export const furmanEatToLive: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.rule}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.rule}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
@@ -242,7 +242,7 @@ export const furmanEatToLive: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
@@ -303,7 +303,7 @@ export const furmanEatToLive: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}

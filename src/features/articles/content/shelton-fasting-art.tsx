@@ -194,7 +194,7 @@ export const sheltonFastingArt: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}

@@ -18,7 +18,7 @@ export const chinaStudy: Article = {
         <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
           <div className="flex items-center gap-3 mb-3">
             <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            <h4 className="font-bold text-blue-900">Масштаб проекта</h4>
+            <h4 className="font-bold text-blue-900 dark:text-blue-100">Масштаб проекта</h4>
           </div>
           <p className="text-base text-blue-800 dark:text-blue-200/90 leading-relaxed">
             Исследование проводилось в 1980-х годах совместно китайскими и американскими учёными. Китай был выбран из-за разнообразия диет — от почти вегетарианской в сельских районах до богатой животными продуктами в городах. Это позволило сравнить эффекты разных типов питания на большом массиве данных.
@@ -40,14 +40,14 @@ export const chinaStudy: Article = {
 
         <div className="space-y-4 mb-6">
           <div className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-            <h5 className="font-bold text-slate-800 mb-2">Что измеряли</h5>
+            <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Что измеряли</h5>
             <p className="text-base text-slate-700 dark:text-slate-300">
               Участники сдавали анализы крови, мочи, отвечали на вопросы о рационе. Исследователи собирали данные о потреблении белков, жиров, углеводов, витаминов, минералов.
             </p>
           </div>
 
           <div className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-            <h5 className="font-bold text-slate-800 mb-2">Что сравнивали</h5>
+            <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">Что сравнивали</h5>
             <p className="text-base text-slate-700 dark:text-slate-300">
               Диеты разных округов, уровни заболеваний, смертность, показатели крови. Цель — найти корреляции между тем, что люди едят, и тем, чем они болеют.
             </p>
@@ -89,7 +89,7 @@ export const chinaStudy: Article = {
         </p>
 
         <div className="bg-slate-50 dark:bg-[#3A3A3C] p-6 rounded-3xl border border-slate-100 dark:border-white/10">
-          <h4 className="font-bold text-slate-800 mb-3">Ограничения исследования</h4>
+          <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-3">Ограничения исследования</h4>
           <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mt-2 shrink-0" />
@@ -139,7 +139,7 @@ export const chinaStudy: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
@@ -221,7 +221,7 @@ export const chinaStudy: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}

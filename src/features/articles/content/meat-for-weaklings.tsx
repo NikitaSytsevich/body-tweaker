@@ -18,7 +18,7 @@ export const meatForWeaklings: Article = {
         <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
           <div className="flex items-center gap-3 mb-3">
             <Dumbbell className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            <h4 className="font-bold text-blue-900">Центральный тезис</h4>
+            <h4 className="font-bold text-blue-900 dark:text-blue-100">Центральный тезис</h4>
           </div>
           <p className="text-base text-blue-800 dark:text-blue-200/90 leading-relaxed">
             Мясо не является необходимым условием для физической силы, мышечного роста или здоровья. История знает множество примеров сильных и выносливых людей, которые не потребляли мясо. Растительное питание может обеспечить все необходимые нутриенты для активной жизни.
@@ -58,7 +58,7 @@ export const meatForWeaklings: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.example}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.example}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.detail}</p>
             </div>
           ))}
@@ -159,7 +159,7 @@ export const meatForWeaklings: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.topic}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.topic}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.info}</p>
             </div>
           ))}
@@ -286,7 +286,7 @@ export const meatForWeaklings: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.step}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.step}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
@@ -324,7 +324,7 @@ export const meatForWeaklings: Article = {
             }
           ].map((item, i) => (
             <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
-              <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
+              <h5 className="font-bold text-slate-800 dark:text-slate-200 mb-2">{item.title}</h5>
               <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
