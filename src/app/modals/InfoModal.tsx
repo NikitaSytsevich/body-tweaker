@@ -63,38 +63,56 @@ export const InfoModal = ({ isOpen, onClose }: Props) => {
 
         <div className="flex-1 overflow-y-auto pb-safe px-6 pt-2">
 
-            {/* ХЕДЕР */}
-            <div className="flex items-center justify-between mb-8 mt-4 bg-white dark:bg-[#2C2C2E] p-4 rounded-3xl border border-slate-100 dark:border-white/10 shadow-sm">
-                <div className="flex items-center gap-4">
-                    {/* 👇 ЛОГОТИП */}
+            {/* ЛОГОТИП - БОЛЬШОЙ И ЦЕНТРАЛЬНЫЙ */}
+            <div className="flex flex-col items-center justify-center py-8">
+                <div className="relative mb-6">
+                    {/* Тень под логотипом */}
+                    <div className="absolute inset-4 bg-slate-900 dark:bg-white blur-3xl opacity-10 rounded-full" />
+
                     <img
                         src="/logo.svg?v=2"
-                        alt="Logo"
-                        className="w-14 h-14 rounded-2xl shadow-md border border-slate-100 dark:border-white/10"
+                        alt="Body Tweaker Logo"
+                        className="w-32 h-32 rounded-[3rem] shadow-2xl relative z-10 border-4 border-white dark:border-white/10"
                     />
-                    <div>
-                        <h2 className="text-xl font-[900] text-slate-800 dark:text-white tracking-tight leading-none">
-                            Body Tweaker
-                        </h2>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                            Версия 2.0
-                        </p>
-                    </div>
                 </div>
 
-                <div className="relative">
-                    {currentUser?.photo_url ? (
-                        <img
-                            src={currentUser.photo_url}
-                            alt="User"
-                            className="w-10 h-10 rounded-full border-2 border-slate-50 dark:border-white/10 shadow-sm"
-                        />
-                    ) : (
-                        <div className="w-10 h-10 bg-slate-100 dark:bg-[#3A3A3C] rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-white/10">
-                            <User className="w-5 h-5 text-slate-400 dark:text-slate-600" />
-                        </div>
-                    )}
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none mb-2">
+                    Body Tweaker
+                </h1>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    Scientific Biohacking Tools
+                </p>
+            </div>
+
+            {/* Разделитель */}
+            <div className="h-px bg-slate-200 dark:bg-white/10 mb-6"></div>
+
+            {/* ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ */}
+            <div className="flex items-center justify-between mb-8 bg-white dark:bg-[#2C2C2E] p-4 rounded-3xl border border-slate-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        {currentUser?.photo_url ? (
+                            <img
+                                src={currentUser.photo_url}
+                                alt="User"
+                                className="w-12 h-12 rounded-full border-2 border-slate-50 dark:border-white/10 shadow-sm"
+                            />
+                        ) : (
+                            <div className="w-12 h-12 bg-slate-100 dark:bg-[#3A3A3C] rounded-full flex items-center justify-center border-2 border-slate-50 dark:border-white/10">
+                                <User className="w-6 h-6 text-slate-400 dark:text-slate-600" />
+                            </div>
+                        )}
+                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
+                            Вы вошли как
+                        </p>
+                        <p className="text-base font-bold text-slate-800 dark:text-white">
+                            {currentUser?.first_name || 'Гость'} {currentUser?.last_name || ''}
+                        </p>
+                    </div>
                 </div>
             </div>
 
