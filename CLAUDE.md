@@ -30,6 +30,9 @@ npm run lint         # Run ESLint
 
 # Preview
 npm run preview      # Preview production build
+
+# Generate Icons
+npm run generate-icons  # Generate PWA icons from source
 ```
 
 ## Architecture
@@ -54,6 +57,8 @@ src/
 │   ├── biorhythm/          # Biorhythm charts
 │   ├── history/            # Activity history
 │   └── articles/           # Educational articles
+├── contexts/
+│   └── ThemeContext.tsx    # Dark mode theme management
 ├── hooks/
 │   ├── useStorage.ts       # React hook for persistent storage
 │   └── useAddToHomeScreen.ts
@@ -118,3 +123,32 @@ Common UI components in `src/components/ui/`:
 - `DatePicker.tsx` - Date selection
 - `SegmentedControl.tsx` - Segmented control
 - `ToastNotification.tsx` - Toast notifications
+
+### Theme System
+
+The app uses a custom `ThemeProvider` (ThemeContext.tsx) that:
+- Auto-detects Telegram's theme (light/dark)
+- Syncs with Telegram's theme changes via `WebApp.onEvent('themeChanged')`
+- Updates Telegram header/background colors to match
+- Applies `dark` class to document root
+
+### Build Configuration
+
+The Vite config includes:
+- **Bundle Splitting**: Separates React, Framer Motion, icons, charts, Telegram SDK, and utilities into separate chunks
+- **PWA Support**: Service worker with caching for fonts, images, and Telegram assets
+- **Terser Optimization**: Removes console.log, debugger, dead code, and comments in production
+- **Bundle Analysis**: Generates `dist/stats.html` for bundle inspection
+
+### Storage Implementation Details
+
+**Encryption:**
+- All data is encrypted using AES-256 before storage
+- Keys are namespaced with `bt_app_` prefix
+- Automatic fallback from Telegram Cloud to localStorage
+
+**History Chunking:**
+- Each chunk holds 8 records (~400 bytes each, under 4096 byte limit)
+- Supports up to 400 history records (50 chunks)
+- Automatic migration from legacy non-chunked format
+- Empty chunks are automatically deleted to save space

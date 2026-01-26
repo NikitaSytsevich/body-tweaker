@@ -2,21 +2,22 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Trash2, ShieldCheck, Download, Upload, X, Loader2, Smartphone } from 'lucide-react';
+import { Bell, Trash2, ShieldCheck, Download, Upload, X, Loader2, Smartphone, Sun, Moon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 // Хуки и утилиты
 import { useStorage } from '../../hooks/useStorage';
 import { useAddToHomeScreen } from '../../hooks/useAddToHomeScreen';
-import { 
-  storageGet, 
-  storageRemove, 
-  storageGetJSON, 
-  storageSetJSON, 
-  storageSet 
+import {
+  storageGet,
+  storageRemove,
+  storageGetJSON,
+  storageSetJSON,
+  storageSet
 } from '../../utils/storage';
 import type { NotificationSettings } from '../../utils/types';
 import WebApp from '@twa-dev/sdk';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Компоненты
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
@@ -30,7 +31,8 @@ interface Props {
 
 export const SettingsModal = ({ isOpen, onClose }: Props) => {
   const user = WebApp.initDataUnsafe?.user;
-  
+  const { mode, setMode } = useTheme();
+
   // Состояния UI
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
@@ -304,6 +306,65 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                             )}
                         </div>
 
+                    </div>
+                </section>
+
+                {/* ТЕМА */}
+                <section>
+                    <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-1">Оформление</h4>
+                    <div className="bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="flex items-center justify-between p-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-500 dark:text-amber-400">
+                                    {mode === 'light' ? <Sun className="w-4 h-4" /> : mode === 'dark' ? <Moon className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
+                                </div>
+                                <div className="text-left">
+                                    <span className="text-sm font-bold text-slate-800 dark:text-white block leading-tight">
+                                        Тема приложения
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                        {mode === 'light' ? 'Светлая' : mode === 'dark' ? 'Тёмная' : 'Авто'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Segmented Control */}
+                            <div className="flex bg-slate-100 dark:bg-[#3A3A3C] rounded-lg p-1 gap-1">
+                                <button
+                                    onClick={() => setMode('light')}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all",
+                                        mode === 'light'
+                                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                                    )}
+                                >
+                                    <Sun className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => setMode('dark')}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all",
+                                        mode === 'dark'
+                                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                                    )}
+                                >
+                                    <Moon className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => setMode('auto')}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all",
+                                        mode === 'auto'
+                                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                                    )}
+                                >
+                                    AUTO
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

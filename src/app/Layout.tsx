@@ -1,12 +1,10 @@
 // src/app/Layout.tsx
 import { useState, useRef, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Map, Timer, Wind, History, Settings } from 'lucide-react';
+import { Map, Timer, Wind, History } from 'lucide-react';
 import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import type { Variants } from 'framer-motion';
 import { cn } from '../utils/cn';
-import { SettingsModal } from './modals/SettingsModal';
-import { InfoModal } from './modals/InfoModal';
 import { storageGet, storageSet } from '../utils/storage';
 import WebApp from '@twa-dev/sdk';
 
@@ -38,9 +36,6 @@ const PageView = memo(({ isActive, children }: { isActive: boolean, children: Re
 export const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const { notification, closeNotification, setPhaseToOpen } = useFastingTimerContext();
 
@@ -146,19 +141,6 @@ export const Layout = () => {
 
       <div className="w-full max-w-md bg-[#F2F2F7] dark:bg-[#1C1C1E] h-full relative flex flex-col shadow-2xl overflow-hidden">
 
-        {/* ИЗМЕНЕНИЕ: Скрываем шапку на странице статьи */}
-        {!isArticleDetail && (
-          <header className="px-6 pt-safe pb-4 bg-[#F2F2F7]/90 dark:bg-[#1C1C1E]/90 backdrop-blur-xl sticky top-0 z-30 flex justify-between items-center transition-all shrink-0">
-            <div onClick={() => setIsInfoOpen(true)} className="cursor-pointer active:opacity-60 transition-opacity pt-2">
-              <h1 className="text-2xl font-[850] tracking-tight text-slate-900 dark:text-white">Body Tweaker</h1>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase mt-0.5">Scientific Biohacking</p>
-            </div>
-            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsSettingsOpen(true)} className="mt-2 p-2.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 bg-white dark:bg-[#2C2C2E] rounded-full shadow-sm border border-slate-100 dark:border-white/10">
-              <Settings className="w-5 h-5" />
-            </motion.button>
-          </header>
-        )}
-
         <main className="flex-1 relative w-full overflow-hidden">
             {/* ИЗМЕНЕНИЕ: Скрываем основные экраны, если открыта статья */}
             <PageView isActive={!isArticleDetail && (location.pathname === '/' || location.pathname === '')}>
@@ -241,16 +223,13 @@ export const Layout = () => {
           </div>
         )}
 
-        <ToastNotification 
-            isVisible={!!notification} 
-            title={notification?.title || ""} 
-            message={notification?.message || ""} 
-            onClose={closeNotification} 
+        <ToastNotification
+            isVisible={!!notification}
+            title={notification?.title || ""}
+            message={notification?.message || ""}
+            onClose={closeNotification}
             onPress={handleNotificationClick}
         />
-
-        {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
-        {isInfoOpen && <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />}
 
       </div>
     </div>

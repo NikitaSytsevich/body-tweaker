@@ -1,16 +1,18 @@
 // src/features/history/HistoryPage.tsx
 import { useState, useEffect, useMemo } from 'react';
-import { History, Calendar, Clock, Wind, Flame, ChevronRight, Loader2 } from 'lucide-react';
+import { History, Calendar, Clock, Wind, Flame, ChevronRight, Loader2, Info, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
-import { 
+import {
   storageGetHistory, // 👈 CHANGED
   storageSaveHistory // 👈 CHANGED
 } from '../../utils/storage';
 import type { HistoryRecord } from '../../utils/types';
+import { SettingsModal } from '../../app/modals/SettingsModal';
+import { InfoModal } from '../../app/modals/InfoModal';
 
 dayjs.locale('ru');
 
@@ -19,6 +21,10 @@ export const HistoryPage = () => {
   const [records, setRecords] = useState<HistoryRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Состояния для модалок
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // Загрузка данных
   useEffect(() => {
@@ -106,7 +112,29 @@ export const HistoryPage = () => {
               </h1>
             </div>
 
-            <div className="text-right">
+            <div className="flex items-center gap-2">
+              {/* Кнопка Info */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsInfoOpen(true)}
+                className="p-2.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 bg-white dark:bg-[#2C2C2E] rounded-full shadow-sm border border-slate-100 dark:border-white/10"
+              >
+                <Info className="w-5 h-5" />
+              </motion.button>
+
+              {/* Кнопка Settings */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 bg-white dark:bg-[#2C2C2E] rounded-full shadow-sm border border-slate-100 dark:border-white/10"
+              >
+                <Settings className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-end mb-2">
+            <div>
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                 Всего
               </span>
@@ -206,13 +234,17 @@ export const HistoryPage = () => {
 
       {/* ШТОРКА ДЕТАЛЕЙ */}
       {selectedRecord && (
-        <RecordDetails 
-          record={selectedRecord} 
+        <RecordDetails
+          record={selectedRecord}
           onClose={() => setSelectedRecord(null)}
           onDelete={handleDelete}
           onUpdate={(updated) => handleUpdate(updated as HistoryRecord)}
         />
       )}
+
+      {/* Модалки */}
+      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
+      {isInfoOpen && <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />}
     </div>
   );
 };
