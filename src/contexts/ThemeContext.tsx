@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { storageGet, storageSet } from '../utils/storage'
@@ -25,18 +26,22 @@ interface ThemeProviderProps {
   children: React.ReactNode
 }
 
-const getSystemTheme = (): Theme => {
-  return WebApp.colorScheme === 'dark' ? 'dark' : 'light'
-}
-
-const getThemeFromMode = (mode: ThemeMode): Theme => {
-  if (mode === 'auto') {
-    return getSystemTheme()
-  }
-  return mode
-}
-
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  const getSystemTheme = (): Theme => {
+    try {
+      return WebApp.colorScheme === 'dark' ? 'dark' : 'light'
+    } catch {
+      console.warn('WebApp not ready, falling back to light theme')
+      return 'light' // Fallback если WebApp не готов
+    }
+  }
+
+  const getThemeFromMode = (mode: ThemeMode): Theme => {
+    if (mode === 'auto') {
+      return getSystemTheme()
+    }
+    return mode
+  }
   const [mode, setModeState] = useState<ThemeMode>('auto')
   const [isInitialized, setIsInitialized] = useState(false)
 
@@ -71,10 +76,16 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       root.classList.remove('dark')
     }
 
-    // Sync Telegram header and background colors
-    const headerColor = theme === 'dark' ? '#1C1C1E' : '#F2F2F7'
-    WebApp.setHeaderColor(headerColor)
-    WebApp.setBackgroundColor(headerColor)
+    // Sync Telegram header and background colors (только если WebApp готов)
+    try {
+      const headerColor = theme === 'dark' ? '#1C1C1E' : '#F2F2F7'
+      if (WebApp.setHeaderColor && WebApp.setBackgroundColor) {
+        WebApp.setHeaderColor(headerColor)
+        WebApp.setBackgroundColor(headerColor)
+      }
+    } catch {
+      // Игнорируем ошибки WebApp
+    }
   }, [theme, isInitialized])
 
   // 4. Слушаем изменения темы из Telegram (только для режима auto)
@@ -90,15 +101,29 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         root.classList.remove('dark')
       }
 
-      const headerColor = newTheme === 'dark' ? '#1C1C1E' : '#F2F2F7'
-      WebApp.setHeaderColor(headerColor)
-      WebApp.setBackgroundColor(headerColor)
+      try {
+        const headerColor = newTheme === 'dark' ? '#1C1C1E' : '#F2F2F7'
+        if (WebApp.setHeaderColor && WebApp.setBackgroundColor) {
+          WebApp.setHeaderColor(headerColor)
+          WebApp.setBackgroundColor(headerColor)
+        }
+      } catch {
+        // Игнорируем ошибки WebApp
+      }
     }
 
-    WebApp.onEvent('themeChanged', handleThemeChange)
+    try {
+      WebApp.onEvent('themeChanged', handleThemeChange)
+    } catch {
+      // Игнорируем ошибки WebApp
+    }
 
     return () => {
-      WebApp.offEvent('themeChanged', handleThemeChange)
+      try {
+        WebApp.offEvent('themeChanged', handleThemeChange)
+      } catch {
+        // Игнорируем ошибки WebApp
+      }
     }
   }, [mode])
 

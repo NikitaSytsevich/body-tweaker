@@ -17,7 +17,7 @@ export const BiorhythmChart = ({ data }: Props) => {
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" className="dark:stroke-[#38383A]" />
-          <XAxis dataKey="date" tick={{fontSize: 10, fill: '#9ca3af'}} tickClassName="dark:fill-[#8E8E93]" axisLine={false} tickLine={false} interval={2} />
+          <XAxis dataKey="date" tick={{fontSize: 10, fill: '#9ca3af'}} axisLine={false} tickLine={false} interval={2} />
           <YAxis domain={[-100, 100]} hide />
           <ReferenceLine y={0} stroke="#e5e7eb" className="dark:stroke-[#38383A]" strokeDasharray="3 3" />
           <Tooltip
