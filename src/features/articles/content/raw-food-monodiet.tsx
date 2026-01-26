@@ -8,19 +8,19 @@ export const rawFoodMonodiet: Article = {
   summary: 'Фруктомонодиеты как способ глубокого очищения. Польза и риски длительного сыроедения.',
   imageUrl: '/images/articles/new/IMG_0423.PNG',
   content: (
-    <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
+    <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 
       <section>
-        <p className="font-medium text-xl text-slate-600 mb-6">
+        <p className="font-medium text-xl text-slate-600 dark:text-slate-300 mb-6">
           Сыроедение — практика питания продуктами без термической обработки. Книга «Сыроедческая монодиета» фокусируется на особом подходе: временном питании одним типом сырых продуктов, обычно фруктов, для глубокого очищения организма.
         </p>
 
-        <div className="bg-green-50 p-6 rounded-3xl border border-green-100">
+        <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-3xl border border-green-100 dark:border-green-900/30">
           <div className="flex items-center gap-3 mb-3">
-            <Sunrise className="w-6 h-6 text-green-600" />
+            <Sunrise className="w-6 h-6 text-green-600 dark:text-green-400" />
             <h4 className="font-bold text-green-900">Концепция монодиеты</h4>
           </div>
-          <p className="text-base text-green-800/90 leading-relaxed">
+          <p className="text-base text-green-800 dark:text-green-200/90 leading-relaxed">
             Монодиета означает питание одним продуктом в течение определённого времени — от одного дня до нескольких недель. Идея в том, что упрощение состава еды снижает нагрузку на пищеварение и позволяет организму переключиться на глубокую очистку и восстановление.
           </p>
         </div>
@@ -28,10 +28,10 @@ export const rawFoodMonodiet: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
+          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
             <Leaf className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Основы сыроедения</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Основы сыроедения</h3>
         </div>
 
         <p className="mb-4">
@@ -61,14 +61,14 @@ export const rawFoodMonodiet: Article = {
               detail: 'Много объёма, мало калорий. Легше поддерживать здоровый вес.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.principle}</h5>
-              <p className="text-base text-slate-700">{item.detail}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.detail}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-900/30">
           <p className="text-base text-emerald-900 leading-relaxed">
             Сыроедение — это не только салаты. Включает фрукты, овощи, орехи, семена, проростки, иногда сырые яйца или рыбу (если не вегетарианское сыроедение). Основой обычно являются фрукты и овощи.
           </p>
@@ -77,10 +77,10 @@ export const rawFoodMonodiet: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-violet-100 text-violet-600 rounded-xl">
+          <div className="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
             <Grape className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Фруктомонодиеты</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Фруктомонодиеты</h3>
         </div>
 
         <p className="mb-4">
@@ -121,25 +121,25 @@ export const rawFoodMonodiet: Article = {
               caution: 'Больше 3 дней не рекомендуется'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xl shrink-0">
+                <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center font-bold text-xl shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-1">
                   <h5 className="font-bold text-slate-800 mb-2">{item.fruit}</h5>
-                  <p className="text-sm text-slate-600 mb-2">Длительность: {item.duration}</p>
-                  <p className="text-base text-slate-700 mb-2">{item.benefits}</p>
-                  <p className="text-sm text-orange-600">⚠ {item.caution}</p>
+                  <p className="text-sm font-medium text-xl text-slate-600 dark:text-slate-300 mb-2">Длительность: {item.duration}</p>
+                  <p className="text-base text-slate-700 dark:text-slate-300 mb-2">{item.benefits}</p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400">⚠ {item.caution}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="bg-violet-50 p-6 rounded-3xl border border-violet-100">
-          <h4 className="font-bold text-violet-900 mb-3">Правила фруктомонодиеты</h4>
-          <ul className="space-y-2 text-sm text-violet-800/90">
+        <div className="bg-violet-50 dark:bg-violet-900/20 p-6 rounded-3xl border border-violet-100 dark:border-violet-900/30">
+          <h4 className="font-bold text-violet-900 dark:text-violet-100 mb-3">Правила фруктомонодиеты</h4>
+          <ul className="space-y-2 text-sm text-violet-800 dark:text-violet-200/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-2 shrink-0" />
               <span>Ешьте один фрукт до насыщения, когда голодны</span>
@@ -166,10 +166,10 @@ export const rawFoodMonodiet: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+          <div className="p-2 bg-blue-100 rounded-xl">
             <Droplet className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Механизм действия</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Механизм действия</h3>
         </div>
 
         <p className="mb-4">
@@ -199,9 +199,9 @@ export const rawFoodMonodiet: Article = {
               desc: 'Фрукты на 80-95% вода. Это гидратация на клеточном уровне, что помогает выводить токсины.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -209,10 +209,10 @@ export const rawFoodMonodiet: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
             <Salad className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Долгосрочное сыроедение</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Долгосрочное сыроедение</h3>
         </div>
 
         <p className="mb-4">
@@ -239,16 +239,16 @@ export const rawFoodMonodiet: Article = {
               desc: 'Только фрукты, орехи, семена. Самое ограничительное направление'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-              <h5 className="font-bold text-slate-800">{item.type}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
+              <h5 className="font-bold text-slate-800 dark:text-slate-200">{item.type}</h5>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-          <h4 className="font-bold text-amber-900 mb-3">Типичный день сыроеда</h4>
-          <ul className="space-y-2 text-sm text-amber-800/90">
+        <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/30">
+          <h4 className="font-bold text-amber-900 dark:text-amber-100 mb-3">Типичный день сыроеда</h4>
+          <ul className="space-y-2 text-sm text-amber-800 dark:text-amber-200/90">
             <li className="flex items-start gap-2">
               <span className="font-bold text-amber-600 shrink-0">•</span>
               <span><strong>Утро:</strong> Свежие фрукты, смузи, фруктовый салат</span>
@@ -274,15 +274,15 @@ export const rawFoodMonodiet: Article = {
           <div className="p-2 bg-red-100 text-red-600 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Риски и ограничения</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Риски и ограничения</h3>
         </div>
 
         <p className="mb-4">
           Сыроедение и монодиеты имеют реальные риски, особенно при длительной практике без подготовки.
         </p>
 
-        <div className="bg-red-50 p-6 rounded-3xl border border-red-100">
-          <h4 className="font-bold text-red-900 mb-3">Основные риски</h4>
+        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
+          <h4 className="font-bold text-red-900 dark:text-red-100 mb-3">Основные риски</h4>
           <ul className="space-y-2 text-sm text-red-800/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
@@ -313,7 +313,7 @@ export const rawFoodMonodiet: Article = {
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Практические выводы</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Практические выводы</h3>
 
         <div className="space-y-4">
           {[
@@ -342,19 +342,19 @@ export const rawFoodMonodiet: Article = {
               desc: 'Фруктомонодиеты — временные практики для очищения, а не постоянный образ питания.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Связь с голоданием</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Связь с голоданием</h3>
 
-        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-          <p className="text-base text-slate-700 leading-relaxed">
+        <div className="bg-slate-50 dark:bg-[#3A3A3C] p-6 rounded-3xl border border-slate-100 dark:border-white/10">
+          <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed">
             Сыроедение и голодание — родственные практики. Обе дают отдых пищеварительной системе и способствуют очищению. Монодиеты можно рассматривать как «мягкое голодание» — вы едите, но очень упрощённую пищу. После голодания фрукты — идеальный первый приём еды: они легко усваиваются, дают энергию и не перегружают систему. Многие люди, регулярно голодающие, естественным образом переходят к более сыроедческому питанию между голоданиями.
           </p>
         </div>
@@ -362,14 +362,14 @@ export const rawFoodMonodiet: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-orange-100 text-orange-600 rounded-xl">
+          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Критический взгляд</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Критический взгляд</h3>
         </div>
 
-        <div className="bg-orange-50 p-6 rounded-3xl border border-orange-100">
-          <ul className="space-y-2 text-sm text-orange-800/90">
+        <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-3xl border border-orange-100 dark:border-orange-900/30">
+          <ul className="space-y-2 text-sm text-orange-800 dark:text-orange-200/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 shrink-0" />
               <span>Научные доказательства преимуществ сыроедения ограничены и часто противоречивы</span>

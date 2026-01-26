@@ -8,19 +8,19 @@ export const furmanEatToLive: Article = {
   summary: 'Потеря веса через плотность нутриентов. Формула: Здоровье = Нутриенты / Калории. 6-недельный план.',
   imageUrl: '/images/articles/new/IMG_0420.PNG',
   content: (
-    <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
+    <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 
       <section>
-        <p className="font-medium text-xl text-slate-600 mb-6">
+        <p className="font-medium text-xl text-slate-600 dark:text-slate-300 mb-6">
           Доктор Джоэл Фурман — врач, специализирующийся на потере веса и профилактике заболеваний через питание. Его подход отличается от большинства диет: вместо подсчёта калорий или ограничений макронутриентов он предлагает фокусироваться на плотности микронутриентов.
         </p>
 
-        <div className="bg-green-50 p-6 rounded-3xl border border-green-100">
+        <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-3xl border border-green-100 dark:border-green-900/30">
           <div className="flex items-center gap-3 mb-3">
-            <Calculator className="w-6 h-6 text-green-600" />
+            <Calculator className="w-6 h-6 text-green-600 dark:text-green-400" />
             <h4 className="font-bold text-green-900">Ключевая формула</h4>
           </div>
-          <p className="text-base text-green-800/90 leading-relaxed">
+          <p className="text-base text-green-800 dark:text-green-200/90 leading-relaxed">
             Фурман предлагает простую формулу: <strong>Здоровье = Нутриенты / Калории</strong>. Продукты с высоким соотношением нутриентов к калориям должны составлять основу рациона. Это позволяет съедать больше объёма еды, получая меньше калорий и больше полезных веществ.
           </p>
         </div>
@@ -28,10 +28,10 @@ export const furmanEatToLive: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
+          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
             <Salad className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Плотность нутриентов</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Плотность нутриентов</h3>
         </div>
 
         <p className="mb-4">
@@ -67,7 +67,7 @@ export const furmanEatToLive: Article = {
               foods: 'Масла, сахар, переработанная еда, фастфуд'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white text-sm font-bold ${
                   item.color === 'green' ? 'bg-green-500' :
@@ -80,16 +80,16 @@ export const furmanEatToLive: Article = {
                 </div>
                 <div className="flex-1">
                   <h5 className="font-bold text-slate-800 text-sm">{item.tier}</h5>
-                  <p className="text-base text-slate-700">{item.foods}</p>
+                  <p className="text-base text-slate-700 dark:text-slate-300">{item.foods}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100">
-          <h4 className="font-bold text-emerald-900 mb-3">Логика подхода</h4>
-          <p className="text-sm text-emerald-800/90 leading-relaxed">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-900/30">
+          <h4 className="font-bold text-emerald-900 dark:text-emerald-100 mb-3">Логика подхода</h4>
+          <p className="text-sm text-emerald-800 dark:text-emerald-200/90 leading-relaxed">
             Если вы заполняете желудок продуктами Tier 1 и 2, вы физически не съедите много калорий. Объём еды создаёт сытость, а высокая концентрация нутриентов снижает аппетит и улучшает метаболизм.
           </p>
         </div>
@@ -97,10 +97,10 @@ export const furmanEatToLive: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+          <div className="p-2 bg-blue-100 rounded-xl">
             <Scale className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Почему обычные диеты не работают</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Почему обычные диеты не работают</h3>
         </div>
 
         <p className="mb-4">
@@ -126,14 +126,14 @@ export const furmanEatToLive: Article = {
               critique: 'Маленькие порции «пустой» еды не насыщают. Вы голодны и сорваетесь.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.problem}</h5>
-              <p className="text-base text-slate-700">{item.critique}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.critique}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
           <p className="text-base text-blue-900 leading-relaxed">
             Фурман утверждает: проблема не в количестве еды, а в её качестве. Когда вы получаете достаточно нутриентов, организм сам регулирует аппетит. Вы не чувствуете голода, даже если едите меньше калорий.
           </p>
@@ -142,10 +142,10 @@ export const furmanEatToLive: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-violet-100 text-violet-600 rounded-xl">
+          <div className="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
             <Target className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">6-недельный план</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">6-недельный план</h3>
         </div>
 
         <p className="mb-4">
@@ -176,16 +176,16 @@ export const furmanEatToLive: Article = {
               desc: 'Ягоды и фрукты — сладость с витаминами, не пустой сахар.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.rule}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-violet-50 p-6 rounded-3xl border border-violet-100">
-          <h4 className="font-bold text-violet-900 mb-3">Пример дня</h4>
-          <ul className="space-y-2 text-sm text-violet-800/90">
+        <div className="bg-violet-50 dark:bg-violet-900/20 p-6 rounded-3xl border border-violet-100 dark:border-violet-900/30">
+          <h4 className="font-bold text-violet-900 dark:text-violet-100 mb-3">Пример дня</h4>
+          <ul className="space-y-2 text-sm text-violet-800 dark:text-violet-200/90">
             <li className="flex items-start gap-2">
               <span className="font-bold text-violet-600 shrink-0">•</span>
               <span><strong>Завтрак:</strong> Овсянка с ягодами и семенами</span>
@@ -208,10 +208,10 @@ export const furmanEatToLive: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
             <TrendingDown className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Механизм потери веса</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Механизм потери веса</h3>
         </div>
 
         <p className="mb-4">
@@ -241,9 +241,9 @@ export const furmanEatToLive: Article = {
               desc: 'Питательные продукты улучшают функцию митохондрий, щитовидной железы, чувствительность к инсулину.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -254,15 +254,15 @@ export const furmanEatToLive: Article = {
           <div className="p-2 bg-red-100 text-red-600 rounded-xl">
             <Activity className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Добавки и «здоровые» продукты</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Добавки и «здоровые» продукты</h3>
         </div>
 
         <p className="mb-4">
           Фурман критикует индустрию «здоровых» добавок и объясняет, почему цельная еда превосходит таблетки.
         </p>
 
-        <div className="bg-red-50 p-6 rounded-3xl border border-red-100">
-          <h4 className="font-bold text-red-900 mb-3">Синергия нутриентов</h4>
+        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
+          <h4 className="font-bold text-red-900 dark:text-red-100 mb-3">Синергия нутриентов</h4>
           <p className="text-sm text-red-800/90 leading-relaxed mb-3">
             В цельных продуктах витамины, минералы и фитоchemicals работают вместе. Изолированный additive в таблетке не даёт того же эффекта. Например, витамин C из апельсина лучше усваивается, чем из таблетки, благодаря сопровождающим соединениям.
           </p>
@@ -273,7 +273,7 @@ export const furmanEatToLive: Article = {
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Практические выводы</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Практические выводы</h3>
 
         <div className="space-y-4">
           {[
@@ -302,19 +302,19 @@ export const furmanEatToLive: Article = {
               desc: 'Проблема не в углеводах, а в типе углеводов. Цельные зерновые и овощи — хорошие углеводы.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Связь с голоданием</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Связь с голоданием</h3>
 
-        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-          <p className="text-base text-slate-700 leading-relaxed">
+        <div className="bg-slate-50 dark:bg-[#3A3A3C] p-6 rounded-3xl border border-slate-100 dark:border-white/10">
+          <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed">
             Подход Фурмана хорошо сочетается с практикой голодания. Высокая плотность нутриентов в еде помогает быстрее восстановиться после голодания и обеспечить организм необходимыми ресурсами. Продукты Tier 1 (зелёные овощи) идеально подходят для первого приема пищи после голодания — они легко усваиваются и дают максимум нутриентов при минимальной нагрузке на пищеварение.
           </p>
         </div>
@@ -322,14 +322,14 @@ export const furmanEatToLive: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-orange-100 text-orange-600 rounded-xl">
+          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Риски и ограничения</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Риски и ограничения</h3>
         </div>
 
-        <div className="bg-orange-50 p-6 rounded-3xl border border-orange-100">
-          <ul className="space-y-2 text-sm text-orange-800/90">
+        <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-3xl border border-orange-100 dark:border-orange-900/30">
+          <ul className="space-y-2 text-sm text-orange-800 dark:text-orange-200/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 shrink-0" />
               <span>Резкий переход к высококлетчаточной диете может вызвать вздутие и дискомфорт. Увеличивайте количество клетчатки постепенно.</span>

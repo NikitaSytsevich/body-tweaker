@@ -8,19 +8,19 @@ export const braggMiracleFasting: Article = {
   summary: 'Классический подход к регулярному голоданию: 24-36 часов еженедельно, сыроедение и физическая активность.',
   imageUrl: '/images/articles/new/IMG_0416.PNG',
   content: (
-    <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
+    <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 
       <section>
-        <p className="font-medium text-xl text-slate-600 mb-6">
+        <p className="font-medium text-xl text-slate-600 dark:text-slate-300 mb-6">
           Поль Брэгг — один из самых известных пропагандистов голодания в XX веке. В отличие от Шелтона, который фокусировался на длительном лечебном голодании, Брэгг продвигал идею регулярных коротких голоданий как части здорового образа жизни.
         </p>
 
-        <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
           <div className="flex items-center gap-3 mb-3">
-            <Activity className="w-6 h-6 text-blue-600" />
+            <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             <h4 className="font-bold text-blue-900">Ключевое отличие</h4>
           </div>
-          <p className="text-base text-blue-800/90 leading-relaxed">
+          <p className="text-base text-blue-800 dark:text-blue-200/90 leading-relaxed">
             Брэгг не требовал от людей неделями отказываться от еды. Его подход — голодание 24-36 часов каждую неделю. Этого достаточно, чтобы дать отдых пищеварительной системе и запустить процессы очищения, но не настолько долго, чтобы причинить вред организму.
           </p>
         </div>
@@ -28,10 +28,10 @@ export const braggMiracleFasting: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-green-100 text-green-600 rounded-xl">
+          <div className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl">
             <Sunrise className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Почему голодание работает</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Почему голодание работает</h3>
         </div>
 
         <p className="mb-4">
@@ -39,24 +39,24 @@ export const braggMiracleFasting: Article = {
         </p>
 
         <div className="space-y-4 mb-6">
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
             <h5 className="font-bold text-slate-800 mb-2">Проблема постоянного питания</h5>
-            <p className="text-base text-slate-700">
+            <p className="text-base text-slate-700 dark:text-slate-300">
               Когда организм постоянно занят перевариванием пищи, у него нет ресурса на глубокую очистку. Токсины накапливаются в тканях, особенно в жировой клетчатке.
             </p>
           </div>
 
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
             <h5 className="font-bold text-slate-800 mb-2">Решение через паузу</h5>
-            <p className="text-base text-slate-700">
+            <p className="text-base text-slate-700 dark:text-slate-300">
               Голодание даёт пищеварительной системе передышку. Организм переключается на внутреннее питание и начинает расщеплять накопленные отложения.
             </p>
           </div>
         </div>
 
-        <div className="bg-green-50 p-6 rounded-3xl border border-green-100">
-          <h4 className="font-bold text-green-900 mb-3">Эффекты, которые описывал Брэгг</h4>
-          <ul className="space-y-2 text-sm text-green-800/90">
+        <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-3xl border border-green-100 dark:border-green-900/30">
+          <h4 className="font-bold text-green-900 dark:text-green-100 mb-3">Эффекты, которые описывал Брэгг</h4>
+          <ul className="space-y-2 text-sm text-green-800 dark:text-green-200/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0" />
               <span>Снижение веса без потери мышечной массы</span>
@@ -79,10 +79,10 @@ export const braggMiracleFasting: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-violet-100 text-violet-600 rounded-xl">
+          <div className="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
             <Target className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Протокол Брэгга</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Протокол Брэгга</h3>
         </div>
 
         <p className="mb-4">
@@ -108,19 +108,19 @@ export const braggMiracleFasting: Article = {
               desc: 'От ужина до завтрака через день. Более глубокое очищение, требует подготовки.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <h5 className="font-bold text-slate-800">{item.type}</h5>
-                <span className="text-xs px-2 py-1 bg-violet-100 text-violet-700 rounded-full">{item.difficulty}</span>
+                <h5 className="font-bold text-slate-800 dark:text-slate-200">{item.type}</h5>
+                <span className="text-xs px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 rounded-full">{item.difficulty}</span>
               </div>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
 
         <h4 className="font-bold text-xl mb-3">Правила голодания по Брэггу</h4>
-        <div className="bg-violet-50 p-6 rounded-3xl border border-violet-100">
-          <ul className="space-y-3 text-sm text-violet-800/90">
+        <div className="bg-violet-50 dark:bg-violet-900/20 p-6 rounded-3xl border border-violet-100 dark:border-violet-900/30">
+          <ul className="space-y-3 text-sm text-violet-800 dark:text-violet-200/90">
             <li className="flex items-start gap-3">
               <span className="font-bold text-violet-600 shrink-0">•</span>
               <span><strong>Только вода:</strong> Во время голодания пейте дистиллированную или чистую воду в достаточном количестве.</span>
@@ -143,19 +143,19 @@ export const braggMiracleFasting: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
+          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
             <Apple className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Питание между голоданиями</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Питание между голоданиями</h3>
         </div>
 
         <p className="mb-4">
           Голодание — только часть системы Брэгга. Не менее важное значение он придавал повседневному питанию. Его подход близок к современному сыроедению.
         </p>
 
-        <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 mb-6">
-          <h4 className="font-bold text-emerald-900 mb-3">Принципы питания по Брэггу</h4>
-          <ul className="space-y-3 text-sm text-emerald-800/90">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl border border-emerald-100 mb-6">
+          <h4 className="font-bold text-emerald-900 dark:text-emerald-100 mb-3">Принципы питания по Брэггу</h4>
+          <ul className="space-y-3 text-sm text-emerald-800 dark:text-emerald-200/90">
             <li className="flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
               <span><strong>70% сырой еды:</strong> Большая часть рациона — свежие фрукты, овощи, орехи, семена.</span>
@@ -182,21 +182,21 @@ export const braggMiracleFasting: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
             <Zap className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Физическая активность</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Физическая активность</h3>
         </div>
 
         <p className="mb-4">
           Брэгг был убеждённым сторонником активного образа жизни. Сам он занимался бегом, плаванием, ходьбой и тренировками с отягощениями до глубокой старости.
         </p>
 
-        <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
+        <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/30">
           <p className="text-base text-amber-900 leading-relaxed mb-3">
             Голодание и движение — идеальная комбинация. Во время голодания организм более эффективно использует энергию, а физическая активность усиливает циркуляцию лимфы и крови, помогая выведению токсинов.
           </p>
-          <p className="text-sm text-amber-800/90">
+          <p className="text-sm text-amber-800 dark:text-amber-200/90">
             Брэгг не рекомендовал интенсивные тренировки во время голодания, но настаивал на том, чтобы не вести малоподвижный образ жизни. Лёгкая прогулка, растяжка или йога подходят идеально.
           </p>
         </div>
@@ -204,10 +204,10 @@ export const braggMiracleFasting: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+          <div className="p-2 bg-blue-100 rounded-xl">
             <Droplets className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Вода и детокс</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Вода и детокс</h3>
         </div>
 
         <p className="mb-4">
@@ -229,9 +229,9 @@ export const braggMiracleFasting: Article = {
               desc: 'Он также рекомендовал пить воду в течение дня, а не только во время голодания.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -242,10 +242,10 @@ export const braggMiracleFasting: Article = {
           <div className="p-2 bg-red-100 text-red-600 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Риски и противопоказания</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Риски и противопоказания</h3>
         </div>
 
-        <div className="bg-red-50 p-6 rounded-3xl border border-red-100">
+        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
           <ul className="space-y-3 text-sm text-red-800/90">
             <li className="flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
@@ -268,7 +268,7 @@ export const braggMiracleFasting: Article = {
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Практические выводы</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Практические выводы</h3>
 
         <div className="space-y-4">
           {[
@@ -293,9 +293,9 @@ export const braggMiracleFasting: Article = {
               desc: 'Брэгг считал, что сыроедение между голоданиями усиливает эффект. Старайтесь есть больше сырой еды.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>

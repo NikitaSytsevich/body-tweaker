@@ -8,29 +8,29 @@ export const howToPrepare: Article = {
   summary: 'Полное руководство по входу: питание за 3 дня до старта, процедура очищения и психологический настрой.',
   imageUrl: '/images/articles/new/IMG_0413.PNG',
   content: (
-    <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
+    <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
       
       {/* Вступление */}
-      <p className="font-medium text-xl text-slate-600">
+      <p className="font-medium text-xl text-slate-600 dark:text-slate-300">
         Успех голодания на 90% зависит от того, что вы делали за три дня до его начала. Резкий вход «с места в карьер» — главная ошибка, ведущая к тошноте, головным болям и срывам.
       </p>
 
-      <hr className="border-slate-200" />
+      <hr className="border-slate-200 dark:border-white/10" />
 
       {/* Блок 1: Питание */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-green-100 text-green-600 rounded-xl">
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl">
                 <Leaf className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl font-[900] text-slate-900">Правило 3-х дней</h3>
+            <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Правило 3-х дней</h3>
         </div>
         <p className="mb-4">
             За трое суток до старта необходимо полностью изменить рацион. Ваша задача — разгрузить печень и почки, чтобы они могли заниматься выводом токсинов, а не перевариванием тяжелой пищи.
         </p>
         
-        <div className="bg-slate-50 p-6 rounded-3xl space-y-4">
-            <h4 className="font-bold text-slate-700 uppercase tracking-widest text-xs">Строго исключить</h4>
+        <div className="bg-slate-50 dark:bg-[#3A3A3C] p-6 rounded-3xl space-y-4">
+            <h4 className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest text-xs">Строго исключить</h4>
             <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2.5 shrink-0" />
@@ -55,19 +55,19 @@ export const howToPrepare: Article = {
       {/* Блок 2: Процедура очищения */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 text-blue-600 rounded-xl">
+            <div className="p-2 bg-blue-100 rounded-xl">
                 <Droplets className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl font-[900] text-slate-900">«Выключение» голода</h3>
+            <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">«Выключение» голода</h3>
         </div>
         <p className="mb-4">
             Особенность классического (советского) подхода РДТ — принудительное очищение кишечника перед стартом. Это делается не просто для чистоты.
         </p>
-        <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
-            <p className="font-medium text-blue-900 mb-2">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
+            <p className="font-medium text-blue-900 dark:text-blue-100 mb-2">
                 Пока в кишечнике есть остатки пищи, организм продолжает требовать еду.
             </p>
-            <p className="text-blue-800/80 text-base">
+            <p className="text-blue-800 dark:text-blue-200/80 text-base">
                 Как только кишечник становится абсолютно пустым (после приема сульфата магния или клизмы), пищевой центр в мозгу «засыпает». Чувство голода исчезает практически полностью.
             </p>
         </div>
@@ -84,10 +84,10 @@ export const howToPrepare: Article = {
       {/* Блок 3: Психология */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-violet-100 text-violet-600 rounded-xl">
+            <div className="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
                 <Brain className="w-6 h-6" />
             </div>
-            <h3 className="text-2xl font-[900] text-slate-900">Настройка сознания</h3>
+            <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Настройка сознания</h3>
         </div>
         <p>
             Голодание — это стресс только если вы воспринимаете его как лишение. Поменяйте установку.
@@ -104,7 +104,7 @@ export const howToPrepare: Article = {
 
       {/* Блок 4: Чек-лист */}
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Чек-лист готовности</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Чек-лист готовности</h3>
         <div className="space-y-4">
             {[
                 "Я исключил мясо и кофе за 3 дня до старта",
@@ -113,16 +113,16 @@ export const howToPrepare: Article = {
                 "Я предупредил близких, чтобы меня не дразнили едой",
                 "Я пью не менее 2 литров воды в день"
             ].map((item, i) => (
-                <div key={i} className="flex gap-4 items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <div key={i} className="flex gap-4 items-center bg-white dark:bg-[#3A3A3C] p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
                     <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
-                    <span className="font-medium text-slate-700 text-base">{item}</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300 text-base">{item}</span>
                 </div>
             ))}
         </div>
       </section>
 
       {/* Важное предупреждение */}
-      <div className="bg-orange-50 p-6 rounded-3xl border border-orange-100 flex gap-4 mt-8">
+      <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-3xl border border-orange-100 dark:border-orange-900/30 flex gap-4 mt-8">
         <AlertTriangle className="w-8 h-8 text-orange-500 shrink-0" />
         <div>
             <h4 className="font-bold text-orange-800 mb-1">Противопоказания</h4>

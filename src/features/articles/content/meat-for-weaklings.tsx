@@ -8,19 +8,19 @@ export const meatForWeaklings: Article = {
   summary: 'Разбор мифов о мясе и силе. Исторические примеры, энергетическая эффективность и практические аспекты.',
   imageUrl: '/images/articles/new/IMG_0422.PNG',
   content: (
-    <div className="space-y-8 text-slate-800 text-lg leading-relaxed pb-10">
+    <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 
       <section>
-        <p className="font-medium text-xl text-slate-600 mb-6">
+        <p className="font-medium text-xl text-slate-600 dark:text-slate-300 mb-6">
           Книга Боба и Дженн «Мясо для слабаков» исследует распространённый миф: для силы и здоровья обязательно нужно есть мясо. Авторы собирают исторические, биологические и практические данные, которые показывают более сложную картину.
         </p>
 
-        <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
           <div className="flex items-center gap-3 mb-3">
-            <Dumbbell className="w-6 h-6 text-blue-600" />
+            <Dumbbell className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             <h4 className="font-bold text-blue-900">Центральный тезис</h4>
           </div>
-          <p className="text-base text-blue-800/90 leading-relaxed">
+          <p className="text-base text-blue-800 dark:text-blue-200/90 leading-relaxed">
             Мясо не является необходимым условием для физической силы, мышечного роста или здоровья. История знает множество примеров сильных и выносливых людей, которые не потребляли мясо. Растительное питание может обеспечить все необходимые нутриенты для активной жизни.
           </p>
         </div>
@@ -28,10 +28,10 @@ export const meatForWeaklings: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
             <Activity className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Исторические примеры</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Исторические примеры</h3>
         </div>
 
         <p className="mb-4">
@@ -57,14 +57,14 @@ export const meatForWeaklings: Article = {
               detail: 'Множество чемпионов по бодибилдингу, силовым видам спорта, ультрамарафонцам — вегетарианцы.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.example}</h5>
-              <p className="text-base text-slate-700">{item.detail}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.detail}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
+        <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/30">
           <p className="text-base text-amber-900 leading-relaxed">
             Корреляция между потреблением мяса и физической силой не подтверждается ни исторически, ни биологически. Сила зависит от тренировок, генетики, общего питания и восстановления, а не от присутствия мяса в рационе.
           </p>
@@ -73,22 +73,22 @@ export const meatForWeaklings: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-green-100 text-green-600 rounded-xl">
+          <div className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl">
             <Zap className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Энергетическая эффективность</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Энергетическая эффективность</h3>
         </div>
 
         <p className="mb-4">
           Биологический argument против необходимости мяса связан с энергетической эффективностью питания.
         </p>
 
-        <div className="bg-green-50 p-6 rounded-3xl border border-green-100 mb-6">
-          <h4 className="font-bold text-green-900 mb-3">Энергетическая цепочка</h4>
-          <p className="text-sm text-green-800/90 leading-relaxed mb-3">
+        <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-3xl border border-green-100 mb-6">
+          <h4 className="font-bold text-green-900 dark:text-green-100 mb-3">Энергетическая цепочка</h4>
+          <p className="text-sm text-green-800 dark:text-green-200/90 leading-relaxed mb-3">
             Когда человек ест мясо, он получает энергию, которая уже прошла через один цикл переработки. Растение → животное → человек. На каждом этапе теряется около 90% энергии.
           </p>
-          <p className="text-sm text-green-800/90 leading-relaxed">
+          <p className="text-sm text-green-800 dark:text-green-200/90 leading-relaxed">
             Когда человек ест растения напрямую, он получает энергию первого цикла. Растение → человек. Это более эффективно и требует меньше пищеварительных затрат.
           </p>
         </div>
@@ -112,13 +112,13 @@ export const meatForWeaklings: Article = {
               detail: 'Ускоряет прохождение пищи, улучшает пищеварение, снижает net затраты энергии.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <h5 className="font-bold text-slate-800">{item.food}</h5>
-                  <p className="text-sm text-slate-600">{item.detail}</p>
+                  <h5 className="font-bold text-slate-800 dark:text-slate-200">{item.food}</h5>
+                  <p className="text-sm font-medium text-xl text-slate-600 dark:text-slate-300">{item.detail}</p>
                 </div>
-                <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+                <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 rounded-full text-sm font-semibold">
                   {item.effort}
                 </div>
               </div>
@@ -132,7 +132,7 @@ export const meatForWeaklings: Article = {
           <div className="p-2 bg-red-100 text-red-600 rounded-xl">
             <Heart className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Здоровье и заболевания</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Здоровье и заболевания</h3>
         </div>
 
         <p className="mb-4">
@@ -158,14 +158,14 @@ export const meatForWeaklings: Article = {
               info: 'Мясо, особенно жареное, содержит продукты гликации и другие воспалительные соединения. Растительная еда содержит противовоспалительные фитоchemicals.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.topic}</h5>
-              <p className="text-base text-slate-700">{item.info}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.info}</p>
             </div>
           ))}
         </div>
 
-        <div className="bg-red-50 p-6 rounded-3xl border border-red-100">
+        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
           <p className="text-base text-red-900 leading-relaxed">
             Важно понимать: корреляция не доказывает причинность. Исследования по питанию часто наблюдательные. Однако общий паттерн ясен: большие количества мяса, особенно переработанного, ассоциируются с повышенным риском хронических заболеваний.
           </p>
@@ -174,10 +174,10 @@ export const meatForWeaklings: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-violet-100 text-violet-600 rounded-xl">
+          <div className="p-2 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-xl">
             <Leaf className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Практические аспекты вегетарианства</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Практические аспекты вегетарианства</h3>
         </div>
 
         <p className="mb-4">
@@ -213,13 +213,13 @@ export const meatForWeaklings: Article = {
               note: 'Брокколи, шпинат — дополнение'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <h5 className="font-bold text-slate-800">{item.source}</h5>
-                  <p className="text-sm text-slate-600">{item.note}</p>
+                  <h5 className="font-bold text-slate-800 dark:text-slate-200">{item.source}</h5>
+                  <p className="text-sm font-medium text-xl text-slate-600 dark:text-slate-300">{item.note}</p>
                 </div>
-                <div className="text-sm font-semibold text-violet-600">
+                <div className="text-sm font-semibold text-violet-600 dark:text-violet-400">
                   {item.protein}
                 </div>
               </div>
@@ -228,8 +228,8 @@ export const meatForWeaklings: Article = {
         </div>
 
         <h4 className="font-bold text-xl mb-3">Нутриенты, требующие внимания</h4>
-        <div className="bg-violet-50 p-6 rounded-3xl border border-violet-100">
-          <ul className="space-y-2 text-sm text-violet-800/90">
+        <div className="bg-violet-50 dark:bg-violet-900/20 p-6 rounded-3xl border border-violet-100 dark:border-violet-900/30">
+          <ul className="space-y-2 text-sm text-violet-800 dark:text-violet-200/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-2 shrink-0" />
               <span><strong>Витамин B12:</strong> Не содержится в растениях. Вегетарианцам нужно добавлять.</span>
@@ -256,10 +256,10 @@ export const meatForWeaklings: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
+          <div className="p-2 bg-slate-100 font-medium text-xl text-slate-600 dark:text-slate-300 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Переход к растительному питанию</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Переход к растительному питанию</h3>
         </div>
 
         <p className="mb-4">
@@ -285,16 +285,16 @@ export const meatForWeaklings: Article = {
               desc: 'Найдите баланс, который работает для вас. Некоторые люди сохраняют небольшое количество мяса, другие переходят полностью.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.step}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Практические выводы</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Практические выводы</h3>
 
         <div className="space-y-4">
           {[
@@ -323,19 +323,19 @@ export const meatForWeaklings: Article = {
               desc: 'Вегетарианец может питаться нездорово (чипсы, сладости, фастфуд без мяса). Качество еды имеет значение.'
             }
           ].map((item, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <div key={i} className="bg-white dark:bg-[#3A3A3C] p-5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm">
               <h5 className="font-bold text-slate-800 mb-2">{item.title}</h5>
-              <p className="text-base text-slate-700">{item.desc}</p>
+              <p className="text-base text-slate-700 dark:text-slate-300">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section>
-        <h3 className="text-2xl font-[900] text-slate-900 mb-6">Связь с голоданием</h3>
+        <h3 className="text-2xl font-[900] text-slate-900 dark:text-white mb-6">Связь с голоданием</h3>
 
-        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-          <p className="text-base text-slate-700 leading-relaxed">
+        <div className="bg-slate-50 dark:bg-[#3A3A3C] p-6 rounded-3xl border border-slate-100 dark:border-white/10">
+          <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed">
             Многие люди, практикующие голодание, отмечают, что после отказа от еды мясо становится менее привлекательным. Организм инстинктивно выбирает более лёгкую растительную пищу. Если вы голодали, это может быть естественным моментом для перехода к более растительному питанию. Продукты, рекомендуемые в книге (бобовые, овощи, фрукты), идеально подходят для здорового питания между голоданиями.
           </p>
         </div>
@@ -343,14 +343,14 @@ export const meatForWeaklings: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-orange-100 text-orange-600 rounded-xl">
+          <div className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-2xl font-[900] text-slate-900">Критика и ограничения</h3>
+          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Критика и ограничения</h3>
         </div>
 
-        <div className="bg-orange-50 p-6 rounded-3xl border border-orange-100">
-          <ul className="space-y-2 text-sm text-orange-800/90">
+        <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-3xl border border-orange-100 dark:border-orange-900/30">
+          <ul className="space-y-2 text-sm text-orange-800 dark:text-orange-200/90">
             <li className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 shrink-0" />
               <span>Исторические примеры selective — не все сильные люди были вегетарианцами</span>
