@@ -213,12 +213,12 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
       >
         {/* Handle */}
         <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-[#1C1C1E] shrink-0 cursor-pointer" onClick={onClose}>
-          <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/20 rounded-full" />
+          <div className="w-12 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full" />
         </div>
 
         {/* Close Button */}
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 rounded-full transition-colors z-50">
-            <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-slate-200/50 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-full transition-colors z-50">
+            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
         </button>
 
         {/* Content Container */}

@@ -29,14 +29,14 @@ export const InfoSheet = ({ onClose }: Props) => {
         >
           {/* Хендл */}
           <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-[#1C1C1E] shrink-0" onClick={onClose}>
-            <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/20 rounded-full" />
+            <div className="w-12 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full" />
           </div>
 
           <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 rounded-full transition-colors z-50"
+              className="absolute top-4 right-4 p-2 bg-slate-200/50 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-full transition-colors z-50"
           >
-              <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
+              <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </button>
 
           <div className="flex-1 overflow-y-auto pb-safe px-4 pt-2">
@@ -48,14 +48,14 @@ export const InfoSheet = ({ onClose }: Props) => {
               <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight">
                   О Практике
               </h2>
-              <p className="text-sm font-medium text-gray-400 dark:text-slate-500 mt-1 uppercase tracking-wide">
+              <p className="text-sm font-medium text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wide">
                   Гиповентиляция
               </p>
             </div>
 
             <div className="space-y-4 pb-10">
               <div className="bg-white dark:bg-[#2C2C2E] rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3 border-b border-gray-100 dark:border-white/10 pb-2">
+                  <div className="flex items-center gap-2 mb-3 border-b border-slate-100 dark:border-white/10 pb-2">
                       <Sparkles className="w-5 h-5 text-emerald-500" />
                       <h3 className="font-bold text-slate-800 dark:text-white">Подготовка</h3>
                   </div>
@@ -86,7 +86,7 @@ export const InfoSheet = ({ onClose }: Props) => {
               </div>
 
               <div className="bg-white dark:bg-[#2C2C2E] rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3 border-b border-gray-100 dark:border-white/10 pb-2">
+                  <div className="flex items-center gap-2 mb-3 border-b border-slate-100 dark:border-white/10 pb-2">
                       <Brain className="w-5 h-5 text-violet-500" />
                       <h3 className="font-bold text-slate-800 dark:text-white">Перезагрузка мозга</h3>
                   </div>

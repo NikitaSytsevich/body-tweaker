@@ -47,7 +47,7 @@ export const StatsGrid = ({ stats }: Props) => {
   return (
     <div className="grid grid-cols-1 gap-3 mt-6">
       {cards.map((card) => (
-        <div key={card.id} className="bg-white dark:bg-[#2C2C2E] p-4 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm flex items-center gap-4">
+        <div key={card.id} className="bg-white dark:bg-[#2C2C2E] p-4 rounded-2xl border border-slate-100 dark:border-white/10 shadow-sm flex items-center gap-4">
 
           <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", card.bg)}>
             <card.icon className={cn("w-6 h-6", card.color)} />
@@ -55,12 +55,12 @@ export const StatsGrid = ({ stats }: Props) => {
 
           <div className="flex-1">
             <div className="flex justify-between items-center mb-1">
-              <h3 className="font-bold text-gray-700 dark:text-slate-200">{card.label}</h3>
+              <h3 className="font-bold text-slate-700 dark:text-slate-200">{card.label}</h3>
               <span className={cn("font-black text-lg", card.color)}>{card.value}%</span>
             </div>
 
             {/* Прогресс бар */}
-            <div className="w-full h-2 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden relative">
+            <div className="w-full h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden relative">
                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white dark:bg-[#2C2C2E] z-10" />
                <div
                   className={cn("h-full transition-all duration-1000", card.bar)}
@@ -68,7 +68,7 @@ export const StatsGrid = ({ stats }: Props) => {
                />
             </div>
 
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">{card.desc}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{card.desc}</p>
           </div>
         </div>
       ))}

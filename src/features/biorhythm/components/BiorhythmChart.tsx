@@ -13,7 +13,7 @@ interface Props {
 
 export const BiorhythmChart = ({ data }: Props) => {
   return (
-    <div className="w-full h-64 mt-4 bg-white dark:bg-[#2C2C2E] rounded-2xl p-2 shadow-sm border border-gray-100 dark:border-white/10">
+    <div className="w-full h-64 mt-4 bg-white dark:bg-[#2C2C2E] rounded-2xl p-2 shadow-sm border border-slate-100 dark:border-white/10">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" className="dark:stroke-[#38383A]" />
