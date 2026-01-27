@@ -9,6 +9,13 @@ import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
+interface TimerVisualProps {
+    progress: number;
+    elapsedFormatted: string;
+    totalHours: number;
+    isFasting: boolean;
+}
+
 // 1. Кнопка карты (стабильная)
 const MapButton = memo(({ onClick }: { onClick: () => void }) => (
     <button
@@ -20,9 +27,9 @@ const MapButton = memo(({ onClick }: { onClick: () => void }) => (
 ));
 
 // 2. Визуализация таймера (Минималистичная: Кольцо + Время)
-const TimerVisual = memo(({ 
-    progress, elapsedFormatted, totalHours, isFasting 
-}: any) => {
+const TimerVisual = memo(({
+    progress, elapsedFormatted, totalHours, isFasting
+}: TimerVisualProps) => {
     const size = 280;
     const stroke = 8;
     const center = size / 2;

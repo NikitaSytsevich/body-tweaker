@@ -64,8 +64,8 @@ export function SegmentedControl<T extends string = string>({ options, value, on
       const padding = 4;
       const width = rect.width - (padding * 2);
       const itemWidth = width / options.length;
-      
-      let relativeX = clientX - rect.left - padding - (itemWidth / 2);
+
+      const relativeX = clientX - rect.left - padding - (itemWidth / 2);
       let percent = (relativeX / width) * 100;
       
       if (percent < 0) percent = percent / 4;

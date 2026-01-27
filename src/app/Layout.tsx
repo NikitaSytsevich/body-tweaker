@@ -82,7 +82,7 @@ export const Layout = () => {
         };
         checkUser();
 
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }, []);
 
   const handleNotificationClick = () => {
@@ -98,8 +98,8 @@ export const Layout = () => {
       const rect = navRef.current.getBoundingClientRect();
       const contentWidth = rect.width - 16;
       if (contentWidth <= 0) return;
-      let relativeX = e.clientX - rect.left - 8 - (contentWidth / 8); 
-      let percent = (relativeX / contentWidth) * 100;
+      const relativeX = e.clientX - rect.left - 8 - (contentWidth / 8);
+      const percent = (relativeX / contentWidth) * 100;
       xPercent.set(percent);
     };
 
@@ -179,8 +179,8 @@ export const Layout = () => {
                   setIsDragging(true);
                   const rect = e.currentTarget.getBoundingClientRect();
                   const contentWidth = rect.width - 16;
-                  let relativeX = e.clientX - rect.left - 8 - (contentWidth / 8);
-                  let percent = (relativeX / contentWidth) * 100;
+                  const relativeX = e.clientX - rect.left - 8 - (contentWidth / 8);
+                  const percent = (relativeX / contentWidth) * 100;
                   xPercent.set(percent);
               }}
               className="pointer-events-auto bg-white/90 dark:bg-[#2C2C2E]/85 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] rounded-[2.5rem] px-2 py-2 flex items-center mx-4 max-w-sm w-full relative h-20 cursor-grab active:cursor-grabbing select-none"

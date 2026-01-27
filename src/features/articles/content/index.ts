@@ -35,9 +35,10 @@ const ORDER: Record<string, number> = {
 };
 
 export const articles: Article[] = Object.values(modules)
-  .map((mod: any) => {
-    if (mod.default) return mod.default;
-    return Object.values(mod)[0];
+  .map((mod) => {
+    const module = mod as Record<string, unknown>;
+    if (module.default) return module.default as Article;
+    return Object.values(module)[0] as Article;
   })
   .filter((article): article is Article => Boolean(article && article.id))
   .sort((a, b) => {
