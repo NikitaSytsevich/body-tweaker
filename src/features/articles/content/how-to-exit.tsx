@@ -16,7 +16,7 @@ export const howToExit: Article = {
       </p>
 
       {/* Блок Опасности */}
-      <div className="bg-red-50 dark:bg-red-950/80 p-6 rounded-3xl border border-red-100 dark:border-red-800/50 flex gap-4 mt-2">
+      <div className="bg-red-50 dark:bg-gradient-to-br dark:from-red-950/40 dark:to-rose-950/30 p-6 rounded-3xl border border-red-100 dark:border dark:border-red-500/20 dark:border-l-4 dark:border-l-red-500 dark:border-y-0 dark:border-r-0 dark:shadow-[0_0_30px_-10px_rgba(239,68,68,0.3)] flex gap-4 mt-2">
         <AlertTriangle className="w-10 h-10 text-red-500 shrink-0" />
         <div>
             <h4 className="font-bold text-red-800 dark:text-rose-300 mb-1 text-lg">Синдром рефидинга</h4>
