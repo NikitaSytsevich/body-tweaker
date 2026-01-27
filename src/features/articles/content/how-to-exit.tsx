@@ -16,11 +16,11 @@ export const howToExit: Article = {
       </p>
 
       {/* Блок Опасности */}
-      <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30 flex gap-4 mt-2">
+      <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30 flex gap-4 mt-2">
         <AlertTriangle className="w-10 h-10 text-red-500 shrink-0" />
         <div>
-            <h4 className="font-bold text-red-800 dark:text-red-100 mb-1 text-lg">Синдром рефидинга</h4>
-            <p className="text-sm text-red-800/80 dark:text-red-200/80 leading-snug">
+            <h4 className="font-bold text-red-800 dark:text-rose-300 mb-1 text-lg">Синдром рефидинга</h4>
+            <p className="text-sm text-red-800/80 dark:text-rose-200/80 leading-snug">
                 Резкий прием углеводов или соли после голода вызывает мощный выброс инсулина. Это задерживает воду (сильные отеки) и вымывает электролиты, что может привести к остановке сердца. Это не шутка.
             </p>
         </div>

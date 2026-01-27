@@ -16,11 +16,11 @@ export const smokingAndFasting: Article = {
       </p>
 
       {/* Главное предупреждение */}
-      <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30 flex gap-4">
+      <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30 flex gap-4">
         <AlertTriangle className="w-10 h-10 text-red-500 shrink-0" />
         <div>
-            <h4 className="font-bold text-red-800 dark:text-red-100 mb-1 text-lg">Краткий ответ</h4>
-            <p className="text-sm text-red-800/80 dark:text-red-200/80 leading-snug">
+            <h4 className="font-bold text-red-800 dark:text-rose-300 mb-1 text-lg">Краткий ответ</h4>
+            <p className="text-sm text-red-800/80 dark:text-rose-200/80 leading-snug">
                 <strong>Нет, курить нельзя.</strong> Ни обычные сигареты, ни вейпы, ни кальян. Это противоречит самой сути голодания и наносит дополнительный вред.
             </p>
         </div>
@@ -122,9 +122,9 @@ export const smokingAndFasting: Article = {
             </p>
         </div>
 
-        <div className="mt-6 bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
-            <h4 className="font-bold text-red-900 mb-2">Влияние на легкие</h4>
-            <p className="text-sm text-red-800 dark:text-red-100">
+        <div className="mt-6 bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30">
+            <h4 className="font-bold text-red-900 dark:text-rose-300 mb-2">Влияние на легкие</h4>
+            <p className="text-sm text-red-800 dark:text-rose-300">
                 Исследования 2022 года показали, что вейпинг вызывает воспаление дыхательных путей, снижает функцию легких и повышает susceptibility к респираторным инфекциям — именно то, чего нужно избегать при голодании.
             </p>
         </div>

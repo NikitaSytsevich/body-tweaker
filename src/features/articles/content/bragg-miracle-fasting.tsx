@@ -245,7 +245,7 @@ export const braggMiracleFasting: Article = {
           <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Риски и противопоказания</h3>
         </div>
 
-        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
+        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30">
           <ul className="space-y-3 text-sm text-red-800/90">
             <li className="flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />

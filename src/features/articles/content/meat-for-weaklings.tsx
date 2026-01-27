@@ -165,8 +165,8 @@ export const meatForWeaklings: Article = {
           ))}
         </div>
 
-        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-3xl border border-red-100 dark:border-red-900/30">
-          <p className="text-base text-red-900 leading-relaxed">
+        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30">
+          <p className="text-base text-red-900 dark:text-rose-300 leading-relaxed">
             Важно понимать: корреляция не доказывает причинность. Исследования по питанию часто наблюдательные. Однако общий паттерн ясен: большие количества мяса, особенно переработанного, ассоциируются с повышенным риском хронических заболеваний.
           </p>
         </div>
