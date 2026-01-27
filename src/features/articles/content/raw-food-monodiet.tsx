@@ -281,7 +281,7 @@ export const rawFoodMonodiet: Article = {
           Сыроедение и монодиеты имеют реальные риски, особенно при длительной практике без подготовки.
         </p>
 
-        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30">
+        <div className="bg-red-50 dark:bg-red-950/80 p-6 rounded-3xl border border-red-100 dark:border-red-800/50">
           <h4 className="font-bold text-red-900 dark:text-rose-300 mb-3">Основные риски</h4>
           <ul className="space-y-2 text-sm text-red-800/90">
             <li className="flex items-start gap-2">

@@ -261,7 +261,7 @@ export const furmanEatToLive: Article = {
           Фурман критикует индустрию «здоровых» добавок и объясняет, почему цельная еда превосходит таблетки.
         </p>
 
-        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30">
+        <div className="bg-red-50 dark:bg-red-950/80 p-6 rounded-3xl border border-red-100 dark:border-red-800/50">
           <h4 className="font-bold text-red-900 dark:text-rose-300 mb-3">Синергия нутриентов</h4>
           <p className="text-sm text-red-800/90 leading-relaxed mb-3">
             В цельных продуктах витамины, минералы и фитоchemicals работают вместе. Изолированный additive в таблетке не даёт того же эффекта. Например, витамин C из апельсина лучше усваивается, чем из таблетки, благодаря сопровождающим соединениям.

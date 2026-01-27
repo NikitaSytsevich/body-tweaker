@@ -162,7 +162,7 @@ export const chinaStudy: Article = {
           «Китайское исследование» имеет как сторонников, так и критиков. Академическое сообщество разделилось в оценке значимости результатов.
         </p>
 
-        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 mb-6">
+        <div className="bg-red-50 dark:bg-red-950/80 p-6 rounded-3xl border border-red-100 dark:border-red-800/50 mb-6">
           <h4 className="font-bold text-red-900 dark:text-rose-300 mb-3">Основные критические замечания</h4>
           <ul className="space-y-2 text-sm text-red-800/90">
             <li className="flex items-start gap-2">

@@ -89,7 +89,7 @@ export const sheltonFastingArt: Article = {
           Значительная часть книги посвящена критике современного образа питания. Шелтон утверждал, что большинство хронических заболеваний вызваны не тем, что мы едим, а тем, сколько мы едим.
         </p>
 
-        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 mb-6">
+        <div className="bg-red-50 dark:bg-red-950/80 p-6 rounded-3xl border border-red-100 dark:border-red-800/50 mb-6">
           <h4 className="font-bold text-red-900 dark:text-rose-300 mb-3">Основные ошибки питания</h4>
           <ul className="space-y-3 text-sm text-red-800/90">
             <li className="flex items-start gap-3">

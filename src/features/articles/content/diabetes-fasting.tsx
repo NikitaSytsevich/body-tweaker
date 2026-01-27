@@ -40,7 +40,7 @@ export const diabetesFasting: Article = {
             Для людей с диабетом 1 типа классическое длительное голодание <strong>противопоказано</strong>. Организм не вырабатывает инсулин, и при отсутствии поступления углеводов риск кетоацидоза резко возрастает.
         </p>
 
-        <div className="bg-red-50 dark:bg-rose-900/20 p-6 rounded-3xl border border-red-100 dark:border-rose-900/30">
+        <div className="bg-red-50 dark:bg-red-950/80 p-6 rounded-3xl border border-red-100 dark:border-red-800/50">
             <h4 className="font-bold text-red-900 dark:text-rose-300 mb-3">Почему это опасно?</h4>
             <ul className="space-y-3 text-sm text-red-800 dark:text-rose-200">
                 <li className="flex items-start gap-3">
