@@ -6,7 +6,7 @@ export const smokingAndFasting: Article = {
   title: 'Курение и вейпы при голодании: Полная правда',
   category: 'Безопасность',
   summary: 'Как никотин и пары влияют на процесс очищения организма? Можно ли курить во время голодания и к каким последствиям это приводит?',
-  imageUrl: '/10.webp',
+  imageUrl: '/images/articles/1.webp',
   content: (
     <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 
