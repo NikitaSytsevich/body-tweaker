@@ -6,7 +6,7 @@ export const gregerHowNotToDie: Article = {
   title: 'Как не умереть раньше времени',
   category: 'Наука о питании',
   summary: 'Доказательный подход к питанию: 15 причин смерти и как еда влияет на риск заболеваний. Ежедневная порция (Daily Dozen).',
-  imageUrl: '/images/articles/new/IMG_0419.PNG',
+  imageUrl: '/images/articles/new/IMG_0419.webp',
   content: (
     <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 

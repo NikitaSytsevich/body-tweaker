@@ -6,7 +6,7 @@ export const howToPrepare: Article = {
   title: 'Как правильно подготовиться к голоданию',
   category: 'Гайд',
   summary: 'Полное руководство по входу: питание за 3 дня до старта, процедура очищения и психологический настрой.',
-  imageUrl: '/images/articles/new/IMG_0413.PNG',
+  imageUrl: '/images/articles/new/IMG_0413.webp',
   content: (
     <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
       

@@ -32,3 +32,9 @@ dist-ssr
 *.py
 project_dump/
 *.tmp
+
+# Dev builds
+dev-dist/
+
+# Generated icons (temporary)
+public/images/body-tweaker--*.svg

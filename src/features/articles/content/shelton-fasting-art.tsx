@@ -6,7 +6,7 @@ export const sheltonFastingArt: Article = {
   title: 'Голодание и искусство есть по Шелтону',
   category: 'Фундамент голодания',
   summary: 'Классика лечебного голодания: физиология аутолиза, почему переедание убивает, и как правильно выходить.',
-  imageUrl: '/images/articles/new/IMG_0382 (2).PNG',
+  imageUrl: '/images/articles/new/IMG_0382 (2).webp',
   content: (
     <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 

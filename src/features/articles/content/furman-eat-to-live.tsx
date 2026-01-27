@@ -6,7 +6,7 @@ export const furmanEatToLive: Article = {
   title: 'Ешь и худей по Фурману',
   category: 'Наука о питании',
   summary: 'Потеря веса через плотность нутриентов. Формула: Здоровье = Нутриенты / Калории. 6-недельный план.',
-  imageUrl: '/images/articles/new/IMG_0420.PNG',
+  imageUrl: '/images/articles/new/IMG_0420.webp',
   content: (
     <div className="space-y-8 text-slate-800 dark:text-slate-200 text-lg leading-relaxed pb-10">
 
