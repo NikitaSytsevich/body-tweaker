@@ -20,19 +20,21 @@ Body Tweaker is a Telegram Mini Web App for scientific biohacking. It helps user
 
 ```bash
 # Development
-npm run dev          # Start dev server
+npm run dev          # Start dev server (http://localhost:5173)
 
-# Build
-npm run build        # TypeScript check + Vite build
+# Build & Type Check
+npm run build        # Run TypeScript check + Vite build
+tsc -b              # TypeScript check only (without build)
 
-# Lint
+# Code Quality
 npm run lint         # Run ESLint
 
-# Preview
-npm run preview      # Preview production build
+# Preview & Analysis
+npm run preview      # Preview production build locally
+# After build, open dist/stats.html for bundle analysis
 
-# Generate Icons
-npm run generate-icons  # Generate PWA icons from source
+# Assets
+npm run generate-icons  # Generate PWA icons from source SVG
 ```
 
 ## Architecture
@@ -93,9 +95,14 @@ Each feature (fasting, breathing, biorhythm, articles) is self-contained with:
 - Phase change detection and notifications
 - History recording on completion
 
-**4. Custom Navigation**
+**4. Custom Navigation (Draggable Dock)**
 
-The app uses a custom draggable bottom navigation implemented in `Layout.tsx`. It's not using standard React Router navigation but instead manages page visibility with the `PageView` component.
+The app uses a custom draggable bottom navigation implemented in `Layout.tsx`. Key implementation details:
+- Not using standard React Router navigation - instead manages page visibility with the `PageView` component
+- Navigation state is controlled by dragging a floating dock with spring animations (Framer Motion)
+- All four main pages (Map, Timer, Breathing, History) are mounted simultaneously, with visibility toggled via CSS
+- Article detail pages (`/articles/*`) are handled differently and hide the main navigation
+- Navigation position persists across page reloads via storage
 
 **5. First-Run Flow**
 
@@ -105,9 +112,10 @@ The app uses a custom draggable bottom navigation implemented in `Layout.tsx`. I
 
 - **Environment Variable**: `VITE_STORAGE_KEY` is used for encryption. Must be set in production builds.
 - **History Chunking**: History records are split into chunks of 8 items to bypass Telegram's 4096 byte storage limit.
-- **Telegram SDK**: Initialized in `main.tsx` with header/background color configuration.
+- **Telegram SDK**: Initialized in `main.tsx` with header/background color configuration. Always call `WebApp.ready()` and `WebApp.expand()` to ensure proper Telegram integration.
 - **Route Handling**: Special handling for article detail pages (`/articles/*`) which hide the main navigation and header.
 - **Notifications**: Phase change notifications are handled through `TimerContext` and displayed via `ToastNotification` component.
+- **No Test Suite**: This project does not currently have automated tests.
 
 ### Data Flow
 
@@ -134,16 +142,16 @@ The app uses a custom `ThemeProvider` (ThemeContext.tsx) that:
 
 ### Build Configuration
 
-The Vite config includes:
-- **Bundle Splitting**: Separates React, Framer Motion, icons, charts, Telegram SDK, and utilities into separate chunks
+The Vite config (`vite.config.ts`) includes:
+- **Bundle Splitting**: Separates React, Framer Motion, icons, charts, Telegram SDK, and utilities into separate chunks for optimal caching
 - **PWA Support**: Service worker with caching for fonts, images, and Telegram assets
 - **Terser Optimization**: Removes console.log, debugger, dead code, and comments in production
-- **Bundle Analysis**: Generates `dist/stats.html` for bundle inspection
+- **Bundle Analysis**: Generates `dist/stats.html` after build - open this file to inspect bundle size and composition
 
 ### Storage Implementation Details
 
 **Encryption:**
-- All data is encrypted using AES-256 before storage
+- All data is encrypted using AES-256 before storage via crypto-js
 - Keys are namespaced with `bt_app_` prefix
 - Automatic fallback from Telegram Cloud to localStorage
 
@@ -152,3 +160,34 @@ The Vite config includes:
 - Supports up to 400 history records (50 chunks)
 - Automatic migration from legacy non-chunked format
 - Empty chunks are automatically deleted to save space
+
+**Working with Storage:**
+```typescript
+// Always use the storage utilities, never direct localStorage/WebAPI calls
+import { storageGet, storageSet, storageGetJSON, storageSetJSON } from '@/utils/storage';
+
+// For history records
+import { storageSaveHistory, storageGetHistory } from '@/utils/storage';
+```
+
+## Common Patterns & Gotchas
+
+**Telegram SDK Integration:**
+- The app runs both inside Telegram (via Mini App) and standalone as PWA
+- Always check `WebApp.initDataUnsafe?.user` before accessing user data
+- Theme colors must be synced with Telegram using `WebApp.setHeaderColor()` and `WebApp.setBackgroundColor()`
+
+**Navigation Gotchas:**
+- Do not use `<Link>` or `useNavigate()` for main page navigation - it won't work with the custom dock
+- Use `useNavigate()` only for article detail pages and modal routes
+- Main pages are switched via visibility toggling in `Layout.tsx`
+
+**Styling:**
+- Use the `cn()` utility (from `src/utils/cn.ts`) for conditional className merging
+- Tailwind classes are available - prefer utility classes over custom CSS
+- Dark mode is handled automatically via ThemeContext - use `dark:` prefix for dark mode styles
+
+**Component Organization:**
+- Feature components should be co-located with their feature in `src/features/*/`
+- Reusable UI components go in `src/components/ui/`
+- Keep components small and focused - extract complex logic into custom hooks

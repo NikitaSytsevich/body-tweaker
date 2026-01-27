@@ -41,11 +41,11 @@ export const ProtocolSelector = ({ onSelect, onClose, currentSchemeId }: Props) 
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] rounded-t-[2.5rem] h-[85vh] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden max-w-md mx-auto border-t border-white/50"
+        className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-slate-900 rounded-t-[2.5rem] h-[85vh] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden max-w-md mx-auto border-t border-white/50 dark:border-slate-700"
       >
-        
-        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] shrink-0 cursor-pointer" onClick={onClose}>
-          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+
+        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-slate-900 shrink-0 cursor-pointer" onClick={onClose}>
+          <div className="w-12 h-1.5 bg-gray-300 dark:bg-slate-600 rounded-full" />
         </div>
 
         <AnimatePresence mode="wait">
@@ -68,19 +68,19 @@ export const ProtocolSelector = ({ onSelect, onClose, currentSchemeId }: Props) 
                     transition={{ duration: 0.2 }}
                     className="flex flex-col h-full"
                 >
-                    <div className="px-6 pt-2 pb-6 flex justify-between items-end bg-[#F2F2F7] shrink-0">
+                    <div className="px-6 pt-2 pb-6 flex justify-between items-end bg-[#F2F2F7] dark:bg-slate-900 shrink-0">
                         <div>
-                            <h2 className="text-2xl font-[900] text-slate-800 leading-none">
+                            <h2 className="text-2xl font-[900] text-slate-800 dark:text-slate-100 leading-none">
                                 Протокол
                             </h2>
-                            <p className="text-xs font-bold text-slate-400 mt-1.5 uppercase tracking-wide">
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-wide">
                                 Выберите цель
                             </p>
                         </div>
-                        
-                        <button 
+
+                        <button
                             onClick={onClose}
-                            className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-400 hover:text-slate-600 active:scale-95 transition-transform"
+                            className="w-9 h-9 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 active:scale-95 transition-transform"
                         >
                             <ChevronDown className="w-5 h-5" />
                         </button>
@@ -99,25 +99,25 @@ export const ProtocolSelector = ({ onSelect, onClose, currentSchemeId }: Props) 
                                     onClick={() => handlePreview(s.id)}
                                     className={cn(
                                         "w-full flex items-center gap-4 p-3 rounded-[1.5rem] border text-left transition-all relative overflow-hidden group",
-                                        isSelected 
-                                            ? "bg-white border-blue-200 shadow-md ring-1 ring-blue-100" 
-                                            : "bg-white border-slate-100/50 shadow-sm hover:border-slate-200"
+                                        isSelected
+                                            ? "bg-white dark:bg-slate-800 border-blue-200 dark:border-blue-900 shadow-md ring-1 ring-blue-100 dark:ring-blue-900/50"
+                                            : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm hover:border-slate-200 dark:hover:border-slate-600"
                                     )}
                                 >
                                     {/* Иконка: Меньше и аккуратнее */}
                                     <div className={cn(
                                         "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                                        "bg-slate-50 group-hover:bg-slate-100"
+                                        "bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700"
                                     )}>
                                         <s.icon className={cn("w-5 h-5 opacity-80", s.color)} />
                                     </div>
 
                                     {/* Инфо: Только название и время */}
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                        <h3 className="font-bold text-[15px] text-slate-800 leading-tight">
+                                        <h3 className="font-bold text-[15px] text-slate-800 dark:text-slate-100 leading-tight">
                                             {titleClean}
                                         </h3>
-                                        <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                                        <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
                                             {s.hours} часов
                                         </p>
                                     </div>
@@ -129,7 +129,7 @@ export const ProtocolSelector = ({ onSelect, onClose, currentSchemeId }: Props) 
                                                 <Check className="w-3 h-3" />
                                             </div>
                                         ) : (
-                                            <ChevronRight className="w-4 h-4 text-slate-300" />
+                                            <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
                                         )}
                                     </div>
 
