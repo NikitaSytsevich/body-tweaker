@@ -35,6 +35,9 @@ npm run preview      # Preview production build locally
 
 # Assets
 npm run generate-icons  # Generate PWA icons from source SVG
+
+# Audit (for sharing with AI tools)
+npm run audit           # Generate code audit files in audit-output/
 ```
 
 ## Architecture
@@ -52,11 +55,13 @@ src/
 │   │   ├── context/TimerContext.tsx    # Global timer state
 │   │   ├── hooks/useFastingTimer.ts    # Timer hook
 │   │   ├── data/schemes.ts             # Protocol definitions
-│   │   └── data/stages.ts              # Metabolic phases
+│   │   ├── data/stages.ts              # Metabolic phases
+│   │   └── data/preparationSteps.ts    # Pre-fast preparation guide
 │   ├── breathing/           # Breathing exercises
 │   │   ├── data/patterns.ts            # Exercise patterns
 │   │   └── hooks/useBreathingSession.ts
 │   ├── biorhythm/          # Biorhythm charts
+│   │   └── hooks/useBiorhythms.ts      # Biorhythm calculations
 │   ├── history/            # Activity history
 │   └── articles/           # Educational articles
 ├── contexts/
@@ -91,18 +96,18 @@ Each feature (fasting, breathing, biorhythm, articles) is self-contained with:
 **3. Global State with Context**
 
 `TimerContext.tsx` provides global fasting timer state across the app. It handles:
-- Timer state and persistence
+- Timer state and persistence (async initialization with `isLoading` flag)
 - Phase change detection and notifications
 - History recording on completion
 
 **4. Custom Navigation (Draggable Dock)**
 
 The app uses a custom draggable bottom navigation implemented in `Layout.tsx`. Key implementation details:
-- Not using standard React Router navigation - instead manages page visibility with the `PageView` component
+- Not using standard React Router navigation for main pages - instead manages page visibility with the `PageView` component
 - Navigation state is controlled by dragging a floating dock with spring animations (Framer Motion)
 - All four main pages (Map, Timer, Breathing, History) are mounted simultaneously, with visibility toggled via CSS
 - Article detail pages (`/articles/*`) are handled differently and hide the main navigation
-- Navigation position persists across page reloads via storage
+- Navigation position is determined by current URL path (via React Router), not by stored state
 
 **5. First-Run Flow**
 
@@ -111,7 +116,7 @@ The app uses a custom draggable bottom navigation implemented in `Layout.tsx`. K
 ### Important Details
 
 - **Environment Variable**: `VITE_STORAGE_KEY` is used for encryption. Must be set in production builds.
-- **History Chunking**: History records are split into chunks of 8 items to bypass Telegram's 4096 byte storage limit.
+- **History Chunking**: History records are split into chunks of 8 items (HISTORY_CHUNK_SIZE) to bypass Telegram's 4096 byte storage limit. Supports up to 1000 records (HISTORY_MAX_CHUNKS = 125).
 - **Telegram SDK**: Initialized in `main.tsx` with header/background color configuration. Always call `WebApp.ready()` and `WebApp.expand()` to ensure proper Telegram integration.
 - **Route Handling**: Special handling for article detail pages (`/articles/*`) which hide the main navigation and header.
 - **Notifications**: Phase change notifications are handled through `TimerContext` and displayed via `ToastNotification` component.
@@ -157,7 +162,7 @@ The Vite config (`vite.config.ts`) includes:
 
 **History Chunking:**
 - Each chunk holds 8 records (~400 bytes each, under 4096 byte limit)
-- Supports up to 400 history records (50 chunks)
+- Supports up to 1000 history records (125 chunks, configurable via HISTORY_MAX_CHUNKS)
 - Automatic migration from legacy non-chunked format
 - Empty chunks are automatically deleted to save space
 
@@ -166,8 +171,12 @@ The Vite config (`vite.config.ts`) includes:
 // Always use the storage utilities, never direct localStorage/WebAPI calls
 import { storageGet, storageSet, storageGetJSON, storageSetJSON } from '@/utils/storage';
 
-// For history records
-import { storageSaveHistory, storageGetHistory } from '@/utils/storage';
+// For history records (chunked storage)
+import { storageSaveHistory, storageGetHistory, storageUpdateHistory } from '@/utils/storage';
+
+// All storage operations are async - always await or handle promises
+await storageSet('key', 'value');
+const data = await storageGetJSON('key', defaultValue);
 ```
 
 ## Common Patterns & Gotchas
