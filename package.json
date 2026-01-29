@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-icons": "node generate-icons.js"
+    "generate-icons": "node generate-icons.js",
+    "audit": "node scripts/generate-audit.js"
   },
   "dependencies": {
     "@twa-dev/sdk": "^8.0.2",

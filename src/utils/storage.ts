@@ -2,15 +2,27 @@ import WebApp from '@twa-dev/sdk';
 import AES from 'crypto-js/aes';
 import encUtf8 from 'crypto-js/enc-utf8';
 
+// ================= SECURITY CHECK =================
 // Берем ключ из .env файла
-const STORAGE_KEY = import.meta.env.VITE_STORAGE_KEY || 'dev-key-change-in-prod-build';
+const STORAGE_KEY = import.meta.env.VITE_STORAGE_KEY;
+
+// SECURITY: В продакшене обязательно должен быть задан VITE_STORAGE_KEY
+if (import.meta.env.PROD && (!STORAGE_KEY || STORAGE_KEY === 'dev-key-change-in-prod-build')) {
+  throw new Error(
+    '[Security] VITE_STORAGE_KEY must be set in production builds. ' +
+    'Add it to your .env.production file or build environment variables.'
+  );
+}
+
+// Фолбек для разработки
+const STORAGE_KEY_FINAL = STORAGE_KEY || 'dev-key-change-in-prod-build';
 
 // Префикс, чтобы ключи не пересекались с другими приложениями
 const KEY_PREFIX = 'bt_app_';
 
 // Константы для чанкинга (8 записей * ~400 байт < 4096 байт)
 const HISTORY_CHUNK_SIZE = 8;
-const HISTORY_MAX_CHUNKS = 50; // Хватит на 400 записей
+const HISTORY_MAX_CHUNKS = 125; // Поддержка до 1000 записей (125 * 8 = 1000)
 
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
 
@@ -26,7 +38,7 @@ const isCloudAvailable = () => {
  */
 const encrypt = (value: string): string => {
   try {
-    return AES.encrypt(value, STORAGE_KEY).toString();
+    return AES.encrypt(value, STORAGE_KEY_FINAL).toString();
   } catch (e) {
     console.error('Encryption error:', e);
     return value;
@@ -39,9 +51,9 @@ const encrypt = (value: string): string => {
 const decrypt = (value: string): string | null => {
   if (!value) return null;
   try {
-    const bytes = AES.decrypt(value, STORAGE_KEY);
+    const bytes = AES.decrypt(value, STORAGE_KEY_FINAL);
     const decryptedData = bytes.toString(encUtf8);
-    
+
     if (!decryptedData && value.length > 0) {
       return value.startsWith('{') || value.startsWith('[') ? value : null;
     }
@@ -88,7 +100,7 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
 
   try {
     localStorage.setItem(namespacedKey, encrypted);
-  } catch (e) { /* ignore quota */ }
+  } catch { /* ignore quota errors */ }
 
   if (isCloudAvailable()) {
     return new Promise((resolve) => {
@@ -169,24 +181,38 @@ export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
 
   // 2. Чтение чанков
   const chunks = await Promise.all(
-    Array.from({ length: HISTORY_MAX_CHUNKS }, (_, i) => 
+    Array.from({ length: HISTORY_MAX_CHUNKS }, (_, i) =>
       storageGetJSON<T[]>(`${baseKey}_${i}`, [])
     )
   );
 
-  return chunks.flat();
+  // 3. DATA SAFETY: Фильтрация null/undefined записей
+  const allRecords = chunks.flat();
+  return allRecords.filter((item): item is T => item != null);
 }
 
 /**
  * Сохранение истории в чанки
+ * Строго соблюдает лимит HISTORY_MAX_CHUNKS
  */
 export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise<boolean> {
+  const maxItems = HISTORY_MAX_CHUNKS * HISTORY_CHUNK_SIZE;
+
+  // Warn and truncate if list exceeds maximum
+  if (list.length > maxItems) {
+    console.warn(
+      `[Storage] History list exceeds maximum capacity (${list.length} > ${maxItems}). ` +
+      `Truncating to ${maxItems} items. Consider increasing HISTORY_MAX_CHUNKS.`
+    );
+    list = list.slice(0, maxItems);
+  }
+
   let success = true;
-  
+
   for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
     const chunk = list.slice(i * HISTORY_CHUNK_SIZE, (i + 1) * HISTORY_CHUNK_SIZE);
     const key = `${baseKey}_${i}`;
-    
+
     if (chunk.length > 0) {
       const res = await storageSetJSON(key, chunk);
       if (!res) success = false;

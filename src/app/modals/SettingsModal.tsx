@@ -2,19 +2,27 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Trash2, ShieldCheck, Download, Upload, X, Loader2, Smartphone, Sun, Moon } from 'lucide-react';
+import { 
+  Bell, 
+  Trash2, 
+  Download, 
+  Upload, 
+  X, 
+  Loader2, 
+  Smartphone, 
+  Sun, 
+  Moon, 
+  Monitor,
+  UserCircle2,
+  ChevronRight,
+  ShieldCheck
+} from 'lucide-react';
 import { cn } from '../../utils/cn';
 
-// Хуки и утилиты
+// Хуки
 import { useStorage } from '../../hooks/useStorage';
 import { useAddToHomeScreen } from '../../hooks/useAddToHomeScreen';
-import {
-  storageGet,
-  storageRemove,
-  storageGetJSON,
-  storageSetJSON,
-  storageSet
-} from '../../utils/storage';
+import { storageGet, storageRemove, storageGetJSON, storageSetJSON, storageSet } from '../../utils/storage';
 import type { NotificationSettings } from '../../utils/types';
 import WebApp from '@twa-dev/sdk';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -33,51 +41,37 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
   const user = WebApp.initDataUnsafe?.user;
   const { mode, setMode } = useTheme();
 
-  // Состояния UI
+  // State
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showExportToast, setShowExportToast] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // 1. Асинхронные настройки (Cloud)
-  const { 
-    value: notifications, 
-    setValue: setNotifications, 
-    isLoading: isSettingsLoading 
-  } = useStorage<NotificationSettings>('user_settings', { fasting: true });
+  // Settings
+  const { value: notifications, setValue: setNotifications, isLoading: isSettingsLoading } = 
+    useStorage<NotificationSettings>('user_settings', { fasting: true });
 
-  // 2. Логика PWA (Browser & Telegram)
+  // PWA
   const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
-  
-  // Проверяем поддержку нативного метода в Telegram (v8.0+)
   const isTelegramNativeInstallSupported = WebApp.isVersionAtLeast('8.0');
-
-  // Условие показа кнопки установки:
-  // (Telegram Native ИЛИ iOS ИЛИ Android Prompt) И (Не установлено)
   const canInstall = !isStandalone && (isTelegramNativeInstallSupported || isIOS || !!deferredPrompt);
 
   // --- HANDLERS ---
-
-  const toggleNotification = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setNotifications((prev) => ({ ...prev, fasting: !prev.fasting }));
+  const toggleNotification = () => {
+      if (!isSettingsLoading) {
+          setNotifications((prev) => ({ ...prev, fasting: !prev.fasting }));
+      }
   };
 
   const handleInstallClick = () => {
-      // 1. Приоритет: Нативный метод Telegram
       if (isTelegramNativeInstallSupported) {
           WebApp.addToHomeScreen();
-          return;
-      }
-
-      // 2. Фолбэки для браузеров
-      if (isIOS) {
+      } else if (isIOS) {
           setShowInstallGuide(true);
       } else if (deferredPrompt) {
           promptInstall();
       } else {
-          // Если открыто в старом Telegram или Desktop
           alert('Функция установки доступна в мобильных браузерах или обновите Telegram.');
       }
   };
@@ -139,12 +133,10 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
 
-          setToastMessage({ title: 'Бэкап создан', message: 'Файл готов к сохранению' });
+          setToastMessage({ title: 'Бэкап создан', message: 'Файл сохранен' });
           setShowExportToast(true);
       } catch (e) {
           console.error("Export failed", e);
-          setToastMessage({ title: 'Ошибка', message: 'Не удалось создать бэкап' });
-          setShowExportToast(true);
       } finally {
           setIsProcessing(false);
       }
@@ -160,8 +152,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
           try {
               const content = e.target?.result as string;
               const parsed = JSON.parse(content);
-
-              if (!parsed.data) throw new Error('Invalid backup format');
+              if (!parsed.data) throw new Error('Invalid backup');
               const { data } = parsed;
 
               const promises = [];
@@ -169,16 +160,11 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
               if (data.user_settings) promises.push(storageSetJSON('user_settings', data.user_settings));
               if (data.fasting_startTime) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
               if (data.fasting_scheme) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
-              if (data.user_name) promises.push(storageSet('user_name', data.user_name));
-              if (data.has_accepted_terms) promises.push(storageSet('has_accepted_terms', data.has_accepted_terms));
               
               await Promise.all(promises);
-
-              alert('Данные восстановлены! Приложение будет перезагружено.');
               window.location.reload();
           } catch (error) {
-              console.error(error);
-              alert('Ошибка: Неверный формат файла бэкапа');
+              alert('Ошибка формата файла');
           } finally {
               setIsProcessing(false);
           }
@@ -187,250 +173,196 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
       event.target.value = ''; 
   };
 
-  // Данные пользователя
+  // User Data
   const firstName = user?.first_name || 'Гость';
-  const lastName = user?.last_name || '';
-  const username = user?.username ? `@${user.username}` : 'Локальный профиль';
+  const username = user?.username ? `@${user.username}` : '';
   const photoUrl = user?.photo_url;
-  const initials = (firstName[0] + (lastName[0] || '')).toUpperCase();
-
-  if (!isOpen) return null;
 
   const content = (
     <AnimatePresence>
-      {/* Backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
-      />
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+          />
 
-      {/* Modal Sheet */}
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
-      >
-        {/* Handle */}
-        <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-[#1C1C1E] shrink-0 cursor-pointer" onClick={onClose}>
-          <div className="w-12 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full" />
-        </div>
-
-        {/* Close Button */}
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-slate-200/50 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-full transition-colors z-50">
-            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-        </button>
-
-        {/* Content Container */}
-        <div className="flex-1 overflow-y-auto pb-safe px-6 pt-2 overscroll-contain">
-
-            <div className="mb-8 mt-2">
-                <h2 className="text-3xl font-[900] text-slate-800 dark:text-white leading-tight">Настройки</h2>
-                <p className="text-sm font-medium text-slate-400 dark:text-slate-500 mt-1">Персонализация</p>
+          <motion.div
+            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[92vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
+          >
+            {/* HEADER */}
+            <div className="px-6 pt-6 pb-2 shrink-0 bg-[#F2F2F7] dark:bg-[#1C1C1E] z-20 flex justify-between items-center">
+                <h2 className="text-3xl font-[900] text-slate-800 dark:text-white">Настройки</h2>
+                <button 
+                    onClick={onClose} 
+                    className="w-10 h-10 rounded-full bg-slate-200/50 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
 
-            <div className="space-y-6 pb-6">
+            {/* CONTENT */}
+            <div className="flex-1 overflow-y-auto pb-safe px-4 pt-2 space-y-6">
                 
-                {/* ПРОФИЛЬ */}
-                <section>
-                    <div className="bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 rounded-[2rem] p-5 shadow-sm relative overflow-hidden">
-                        <div className="flex items-center gap-4 relative z-10">
-                             <div className="relative shrink-0">
-                                {photoUrl ? (
-                                    <img src={photoUrl} alt={firstName} className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/10 shadow-sm" />
-                                ) : (
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 dark:from-blue-900/30 to-indigo-100 dark:to-indigo-900/30 flex items-center justify-center border-4 border-slate-50 dark:border-white/10 shadow-sm text-blue-600 dark:text-blue-400 font-black text-xl tracking-wider">
-                                        {initials}
-                                    </div>
-                                )}
+                {/* 1. ПРОФИЛЬ */}
+                <div className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[2rem] shadow-sm flex items-center gap-4">
+                    <div className="relative">
+                        {photoUrl ? (
+                            <img src={photoUrl} alt="User" className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5" />
+                        ) : (
+                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-400">
+                                <UserCircle2 className="w-8 h-8" />
                             </div>
-                            <div className="min-w-0">
-                                <h3 className="font-[900] text-lg text-slate-800 dark:text-white leading-tight truncate">{firstName} {lastName}</h3>
-                                <p className="text-sm font-medium text-slate-400 dark:text-slate-500 truncate">{username}</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* ПРИЛОЖЕНИЕ */}
-                <section>
-                    <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-1">Приложение</h4>
-                    <div className="bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-
-                        {/* КНОПКА УСТАНОВКИ */}
-                        {canInstall && (
-                             <button
-                                onClick={handleInstallClick}
-                                className="w-full flex items-center justify-between p-4 cursor-pointer active:bg-slate-50 dark:active:bg-[#3A3A3C] transition-colors border-b border-slate-50 dark:border-white/5"
-                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-slate-800 dark:bg-slate-100 rounded-lg text-white dark:text-slate-900">
-                                        <Smartphone className="w-4 h-4" />
-                                    </div>
-                                    <div className="text-left">
-                                        <span className="text-sm font-bold text-slate-800 dark:text-white block leading-tight">
-                                            Установить приложение
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                            Добавить на главный экран
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="bg-slate-100 dark:bg-[#3A3A3C] px-3 py-1.5 rounded-lg">
-                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
-                                        {isTelegramNativeInstallSupported ? 'Добавить' : (isIOS ? 'Инструкция' : 'Скачать')}
-                                    </span>
-                                </div>
-                             </button>
                         )}
-
-                        {/* УВЕДОМЛЕНИЯ */}
-                        <div className="flex items-center justify-between p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-500 dark:text-blue-400">
-                                    <Bell className="w-4 h-4" />
-                                </div>
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Уведомления таймера</span>
-                            </div>
-
-                            {isSettingsLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin text-slate-300 dark:text-slate-600" />
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={toggleNotification}
-                                    className={cn("w-12 h-7 rounded-full relative transition-colors duration-300", notifications.fasting ? "bg-slate-800 dark:bg-slate-100" : "bg-slate-200 dark:bg-[#3A3A3C]")}
-                                >
-                                    <div className={cn("w-5 h-5 bg-white dark:bg-slate-900 rounded-full absolute top-1 transition-transform duration-300 shadow-sm", notifications.fasting ? "left-6" : "left-1")} />
-                                </button>
-                            )}
-                        </div>
-
+                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#2C2C2E] rounded-full" />
                     </div>
-                </section>
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">{firstName}</h3>
+                        <p className="text-sm font-medium text-slate-400 dark:text-slate-500">{username || 'Локальный профиль'}</p>
+                    </div>
+                </div>
 
-                {/* ТЕМА */}
-                <section>
-                    <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-1">Оформление</h4>
-                    <div className="bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="flex items-center justify-between p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-500 dark:text-amber-400">
-                                    {mode === 'light' ? <Sun className="w-4 h-4" /> : mode === 'dark' ? <Moon className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
-                                </div>
-                                <div className="text-left">
-                                    <span className="text-sm font-bold text-slate-800 dark:text-white block leading-tight">
-                                        Тема приложения
-                                    </span>
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-                                        {mode === 'light' ? 'Светлая' : mode === 'dark' ? 'Тёмная' : 'Авто'}
-                                    </span>
-                                </div>
+                {/* 2. ВНЕШНИЙ ВИД (Theme) */}
+                <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-2">Оформление</h4>
+                    <div className="bg-white dark:bg-[#2C2C2E] p-2 rounded-[2rem] shadow-sm flex gap-2">
+                        {[
+                            { id: 'light', icon: Sun, label: 'Светлая' },
+                            { id: 'dark', icon: Moon, label: 'Тёмная' },
+                            { id: 'auto', icon: Monitor, label: 'Авто' }
+                        ].map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setMode(item.id as any)}
+                                className={cn(
+                                    "flex-1 py-4 rounded-[1.5rem] flex flex-col items-center justify-center gap-2 transition-all active:scale-95",
+                                    mode === item.id 
+                                        ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white shadow-inner" 
+                                        : "hover:bg-slate-50 dark:hover:bg-white/5 text-slate-400"
+                                )}
+                            >
+                                <item.icon className="w-6 h-6" />
+                                <span className="text-[10px] font-bold uppercase tracking-wide">{item.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 3. УВЕДОМЛЕНИЯ & PWA */}
+                <div className="space-y-3">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2">Приложение</h4>
+                    
+                    {/* Уведомления */}
+                    <div 
+                        onClick={toggleNotification}
+                        className={cn(
+                            "bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm flex items-center justify-between transition-transform cursor-pointer",
+                            isSettingsLoading ? "opacity-70 cursor-wait" : "active:scale-[0.99]"
+                        )}
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+                                <Bell className="w-5 h-5" />
                             </div>
-
-                            {/* Segmented Control */}
-                            <div className="flex bg-slate-100 dark:bg-[#3A3A3C] rounded-lg p-1 gap-1">
-                                <button
-                                    onClick={() => setMode('light')}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all",
-                                        mode === 'light'
-                                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                                    )}
-                                >
-                                    <Sun className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    onClick={() => setMode('dark')}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all",
-                                        mode === 'dark'
-                                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                                    )}
-                                >
-                                    <Moon className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    onClick={() => setMode('auto')}
-                                    className={cn(
-                                        "px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all",
-                                        mode === 'auto'
-                                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                                            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-                                    )}
-                                >
-                                    AUTO
-                                </button>
+                            <div>
+                                <p className="font-bold text-slate-800 dark:text-white text-sm">Уведомления</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">О смене фаз голодания</p>
                             </div>
                         </div>
+                        
+                        {/* Лоадер или Тумблер */}
+                        {isSettingsLoading ? (
+                            <div className="w-12 h-7 flex items-center justify-center">
+                                <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                            </div>
+                        ) : (
+                            <div className={cn("w-12 h-7 rounded-full relative transition-colors duration-300", notifications.fasting ? "bg-blue-500" : "bg-slate-200 dark:bg-white/10")}>
+                                <div className={cn("w-6 h-6 bg-white rounded-full shadow-sm absolute top-0.5 transition-transform duration-300", notifications.fasting ? "translate-x-5.5" : "translate-x-0.5")} />
+                            </div>
+                        )}
                     </div>
-                </section>
 
-                {/* ДАННЫЕ */}
-                <section>
-                    <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-1">Данные</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button onClick={handleExport} disabled={isProcessing} className="flex items-center justify-center gap-2 p-4 bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#3A3A3C] transition-colors shadow-sm active:scale-95 disabled:opacity-50">
-                            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-slate-400 dark:text-slate-500" />}
+                    {/* Установка PWA */}
+                    {canInstall && (
+                        <div 
+                            onClick={handleInstallClick}
+                            className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+                                    <Smartphone className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-800 dark:text-white text-sm">Установить App</p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">На главный экран</p>
+                                </div>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-slate-300" />
+                        </div>
+                    )}
+                </div>
+
+                {/* 4. БЭКАП И СБРОС */}
+                <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 pl-2">Данные</h4>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                        <button onClick={handleExport} disabled={isProcessing} className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] flex flex-col items-center gap-2 shadow-sm border border-slate-100 dark:border-white/5 active:scale-95 transition-all disabled:opacity-50">
+                            {isProcessing ? <Loader2 className="w-6 h-6 animate-spin text-slate-400" /> : <Download className="w-6 h-6 text-slate-600 dark:text-slate-300" />}
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Бэкап</span>
                         </button>
-
-                        <label className={cn("flex items-center justify-center gap-2 p-4 bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#3A3A3C] transition-colors shadow-sm cursor-pointer active:scale-95", isProcessing && "opacity-50 pointer-events-none")}>
-                            <input
-                                type="file"
-                                accept=".json"
-                                onChange={handleImport}
-                                className="hidden"
-                                disabled={isProcessing}
-                            />
-                            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4 text-slate-400 dark:text-slate-500" />}
+                        <label className={cn("bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] flex flex-col items-center gap-2 shadow-sm border border-slate-100 dark:border-white/5 active:scale-95 transition-all cursor-pointer", isProcessing && "opacity-50 pointer-events-none")}>
+                            <input type="file" accept=".json" onChange={handleImport} className="hidden" disabled={isProcessing} />
+                            {isProcessing ? <Loader2 className="w-6 h-6 animate-spin text-slate-400" /> : <Upload className="w-6 h-6 text-slate-600 dark:text-slate-300" />}
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Импорт</span>
                         </label>
                     </div>
-                </section>
 
-                {/* ФУТЕР (Центрированный) */}
-                <div className="flex flex-col items-center gap-4 mt-8 pb-8">
-                    <button onClick={handleReset} className="w-full flex items-center justify-center gap-2 p-4 text-red-500 dark:text-red-400 bg-red-50/50 dark:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-2xl border border-red-100/50 dark:border-red-900/30 transition-colors text-sm font-bold active:scale-98">
-                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                        Сбросить все данные
+                    <button 
+                        onClick={handleReset}
+                        className="w-full p-4 rounded-[1.8rem] bg-rose-50 dark:bg-rose-900/10 flex items-center justify-center gap-2 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/20 transition-colors active:scale-95"
+                    >
+                        <Trash2 className="w-5 h-5" />
+                        <span className="font-bold text-sm">Сбросить все данные</span>
                     </button>
+                </div>
 
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 dark:bg-[#3A3A3C] rounded-full border border-slate-100 dark:border-white/10">
-                        <ShieldCheck className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                        <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">Ver 2.0.1 (Cloud)</span>
+                {/* FOOTER INFO */}
+                <div className="pt-4 pb-8 flex justify-center opacity-40">
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-white/10 rounded-full">
+                        <ShieldCheck className="w-3 h-3 text-slate-500" />
+                        <span className="text-[10px] font-bold text-slate-500">Secure Storage</span>
                     </div>
                 </div>
 
             </div>
-        </div>
-      </motion.div>
+          </motion.div>
 
-      {/* Модальные окна (вне структуры шторки для правильного z-index) */}
-      <ConfirmModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmReset}
-        title="Сброс данных"
-        message="Удалить всю историю и настройки из облака?"
-        confirmText="Удалить"
-        cancelText="Отмена"
-        variant="danger"
-      />
+          <ConfirmModal
+            isOpen={showResetConfirm}
+            onClose={() => setShowResetConfirm(false)}
+            onConfirm={confirmReset}
+            title="Удаление данных"
+            message="Это действие необратимо удалит всю историю и настройки."
+            confirmText="Да, удалить"
+            variant="danger"
+          />
 
-      <ToastNotification
-        isVisible={showExportToast}
-        title={toastMessage.title}
-        message={toastMessage.message}
-        onClose={() => setShowExportToast(false)}
-      />
+          <ToastNotification
+            isVisible={showExportToast}
+            title={toastMessage.title}
+            message={toastMessage.message}
+            onClose={() => setShowExportToast(false)}
+          />
 
-      <InstallGuideModal 
-        isOpen={showInstallGuide} 
-        onClose={() => setShowInstallGuide(false)} 
-      />
+          <InstallGuideModal 
+            isOpen={showInstallGuide} 
+            onClose={() => setShowInstallGuide(false)} 
+          />
+        </>
+      )}
     </AnimatePresence>
   );
 

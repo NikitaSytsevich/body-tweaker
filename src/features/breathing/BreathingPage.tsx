@@ -1,11 +1,12 @@
+// src/features/breathing/BreathingPage.tsx
 import { useState, useEffect, useRef } from 'react';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
-import { Info, ChevronRight, ChevronLeft, Volume2, Loader2, Timer, CheckCircle2 } from 'lucide-react';
+import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
-import { SoundSheet } from './components/SoundSheet';
+import { SoundSheet } from './components/SoundSheet'; // 👈 Убедитесь, что импорт правильный
 import { BreathingStartModal } from './components/BreathingStartModal';
 import { soundManager } from '../../utils/sounds';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,12 +38,12 @@ export const BreathingPage = () => {
       return () => clearTimeout(timer);
   }, []);
 
-  // 👇 ЛОГИКА АВТО-СТАРТА
+  // АВТО-СТАРТ ПОСЛЕ ПОДГОТОВКИ
   useEffect(() => {
       if (showPrepModal) {
           prepTimerRef.current = window.setTimeout(() => {
               setShowPrepModal(false);
-              startSession(); // Старт после таймера
+              startSession(); 
           }, 5500);
       }
       return () => {
@@ -84,12 +85,10 @@ export const BreathingPage = () => {
     if (!isAudioReady) return;
     
     if (phase !== 'idle' && phase !== 'finished') {
-        // Стоп
         stopSession();
         setShowPrepModal(false);
         if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
     } else {
-        // Старт (через подготовку)
         soundManager.unlock(); 
         setShowPrepModal(true);
     }
@@ -107,7 +106,6 @@ export const BreathingPage = () => {
   return (
     <div className="min-h-full flex flex-col pb-6 relative z-0">
         
-        {/* Модалка подготовки (БЕЗ onComplete) */}
         <BreathingStartModal 
             isOpen={showPrepModal} 
             onClose={() => {
@@ -268,22 +266,27 @@ export const BreathingPage = () => {
         </div>
 
         {/* MODALS */}
+        {/* Info Sheet (Показываем, если showInfo = true) */}
         {showInfo && <InfoSheet onClose={() => setShowInfo(false)} />}
-        {showSound && (
-            <SoundSheet 
-                onClose={() => setShowSound(false)}
-                musicEnabled={musicEnabled}
-                sfxEnabled={sfxEnabled}
-                currentTrackId={currentTrack}
-                musicVolume={musicVol}
-                sfxVolume={sfxVol}
-                onToggleMusic={handleToggleMusic}
-                onToggleSfx={handleToggleSfx}
-                onSelectTrack={handleSelectTrack}
-                onChangeMusicVolume={handleChangeMusicVol}
-                onChangeSfxVolume={handleChangeSfxVol}
-            />
-        )}
+        
+        {/* 
+            Sound Sheet (Рендерим ВСЕГДА, но передаем isOpen={showSound}) 
+            Это нужно для корректной анимации закрытия
+        */}
+        <SoundSheet 
+            isOpen={showSound}
+            onClose={() => setShowSound(false)}
+            musicEnabled={musicEnabled}
+            sfxEnabled={sfxEnabled}
+            currentTrackId={currentTrack}
+            musicVolume={musicVol}
+            sfxVolume={sfxVol}
+            onToggleMusic={handleToggleMusic}
+            onToggleSfx={handleToggleSfx}
+            onSelectTrack={handleSelectTrack}
+            onChangeMusicVolume={handleChangeMusicVol}
+            onChangeSfxVolume={handleChangeSfxVol}
+        />
 
     </div>
   );
