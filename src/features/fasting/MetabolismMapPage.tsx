@@ -1,34 +1,77 @@
+// src/features/fasting/MetabolismMapPage.tsx
+
 import { useState, useEffect, useMemo } from 'react';
 import { useFastingTimerContext } from './context/TimerContext';
 import { FASTING_PHASES } from './data/stages';
 import type { FastingStage } from './data/stages';
 import { cn } from '../../utils/cn';
-import { Check, Lock, Navigation, Sparkles, BookOpen, Activity } from 'lucide-react';
+import { Check, BookOpen, Activity, Flame, Zap, Trophy, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhaseSheet } from './components/PhaseSheet';
 import { ArticlesPage } from '../articles/pages/ArticlesPage';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { SettingsModal } from '../../app/modals/SettingsModal';
 
-const getZoneColor = (hours: number) => {
-  if (hours < 12) return "text-orange-500";
-  if (hours < 24) return "text-blue-500";
-  if (hours < 72) return "text-violet-500";
-  return "text-emerald-500";
-};
+// Расширенный список названий для бейджей
+const STAGE_LABELS = [
+    'ПОДГОТОВКА', 
+    'ЖИРОСЖИГАНИЕ', 
+    'АУТОФАГИЯ', 
+    'ВЫХОД', 
+    'ВОССТАНОВЛЕНИЕ',
+    'КЕТОЗ',
+    'ГЛУБОКИЙ КЕТОЗ',
+    'АДАПТАЦИЯ',
+    'МАКСИМУМ',
+    'ЭКСТРИМ',
+    'ХРОНИЧЕСКИЙ',
+    'ПРЕДЕЛЬНЫЙ'
+];
+
+// Цветовые темы
+const PHASE_THEMES = [
+  { // Blue
+    light: 'bg-[#e0f2fe] text-slate-700',
+    dark: 'dark:bg-[#1C1C1E] dark:border-blue-500/30 dark:text-blue-100',
+    badge: 'bg-white/60 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300',
+    accent: 'text-blue-500 dark:text-blue-400',
+    progress: 'bg-blue-500 dark:bg-blue-400'
+  },
+  { // Green
+    light: 'bg-[#dcfce7] text-slate-700',
+    dark: 'dark:bg-[#1C1C1E] dark:border-green-500/30 dark:text-green-100',
+    badge: 'bg-white/60 text-green-600 dark:bg-green-500/20 dark:text-green-300',
+    accent: 'text-green-600 dark:text-green-400',
+    progress: 'bg-green-600 dark:bg-green-400'
+  },
+  { // Purple
+    light: 'bg-[#f3e8ff] text-slate-700',
+    dark: 'dark:bg-[#1C1C1E] dark:border-purple-500/30 dark:text-purple-100',
+    badge: 'bg-white/60 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300',
+    accent: 'text-purple-600 dark:text-purple-400',
+    progress: 'bg-purple-600 dark:bg-purple-400'
+  },
+  { // Orange
+    light: 'bg-[#ffedd5] text-slate-700',
+    dark: 'dark:bg-[#1C1C1E] dark:border-orange-500/30 dark:text-orange-100',
+    badge: 'bg-white/60 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
+    accent: 'text-orange-600 dark:text-orange-400',
+    progress: 'bg-orange-600 dark:bg-orange-400'
+  }
+];
 
 export const MetabolismMapPage = () => {
   const { isFasting, elapsed, phaseToOpen, setPhaseToOpen } = useFastingTimerContext();
   const elapsedHours = elapsed / 3600;
-
+  
   const [viewMode, setViewMode] = useState<'map' | 'articles'>('map');
+  const [selectedPhase, setSelectedPhase] = useState<FastingStage | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Авто-переключение при старте/остановке таймера
   useEffect(() => {
     setViewMode(isFasting ? 'map' : 'articles');
   }, [isFasting]);
 
-  // Обработка Deep Link (открытие фазы из уведомления)
-  const [selectedPhase, setSelectedPhase] = useState<FastingStage | null>(null);
   useEffect(() => {
       if (phaseToOpen !== null) {
           const targetPhase = FASTING_PHASES.find(p => p.id === phaseToOpen);
@@ -40,198 +83,216 @@ export const MetabolismMapPage = () => {
       }
   }, [phaseToOpen, setPhaseToOpen]);
 
-  const { activeIndex, phaseProgress } = useMemo(() => {
-    let activeIndex = 0;
-    let phaseProgress = 0;
-    for (let i = 0; i < FASTING_PHASES.length; i++) {
-      const phase = FASTING_PHASES[i];
-      const nextPhase = FASTING_PHASES[i + 1];
-      if (elapsedHours >= phase.hoursStart) {
-        activeIndex = i;
-        if (nextPhase) {
-          const duration = nextPhase.hoursStart - phase.hoursStart;
-          const passedInPhase = elapsedHours - phase.hoursStart;
-          phaseProgress = Math.min((passedInPhase / duration) * 100, 100);
-        } else {
-          phaseProgress = 100;
-        }
-      }
+  const activeIndex = useMemo(() => {
+    for (let i = FASTING_PHASES.length - 1; i >= 0; i--) {
+      if (elapsedHours >= FASTING_PHASES[i].hoursStart) return i;
     }
-    return { activeIndex, phaseProgress };
+    return 0;
   }, [elapsedHours]);
-
-  const accentColor = getZoneColor(elapsedHours);
 
   const tabs = [
     { value: 'map', label: 'Процессы', icon: Activity },
-    { value: 'articles', label: 'Знания', icon: BookOpen }
+    { value: 'articles', label: 'База знаний', icon: BookOpen }
   ];
 
   return (
     <>
-      <div className="flex flex-col pb-32 relative z-0">
+      <div className="flex flex-col pb-32 relative z-0 font-sans">
         
-        {/* БЕЛЫЙ КОНТЕЙНЕР */}
-        <div className="bg-white dark:bg-[#2C2C2E] rounded-[3rem] shadow-sm shadow-slate-200/50 dark:shadow-black/20 relative flex flex-col z-10 border border-white/60 dark:border-white/10 min-h-[80vh]">
+        {/* MAIN CONTAINER */}
+        <div className="bg-[#F9F9F9] dark:bg-[#000000] rounded-[2.5rem] shadow-sm shadow-slate-200/50 dark:shadow-none relative flex flex-col z-10 min-h-[85vh] overflow-hidden border border-white/60 dark:border-white/5">
 
-          {/* Переключатель */}
-          <div className="px-6 pt-6 pb-2 bg-white dark:bg-[#2C2C2E] rounded-t-[3rem]">
-             <SegmentedControl
-                options={tabs}
-                value={viewMode}
-                onChange={(val) => setViewMode(val as 'map' | 'articles')}
-            />
+          {/* HEADER SECTION */}
+          {/* rounded-b-[2.5rem] создает закругление "лепестком" над серым фоном контента */}
+          <div className="px-6 pt-8 pb-6 bg-white dark:bg-[#1C1C1E] z-20 relative rounded-b-[2.5rem] shadow-sm dark:shadow-white/5">
+             <div className="flex justify-between items-center mb-6">
+                 <h1 className="text-[28px] font-bold text-slate-800 dark:text-white tracking-tight">
+                     Метаболизм
+                 </h1>
+                 <button onClick={() => setIsSettingsOpen(true)} className="p-2 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-white/60 hover:bg-slate-200 transition-colors">
+                    <Settings className="w-5 h-5" />
+                 </button>
+             </div>
+
+             {/* STATS GRID */}
+             <div className="grid grid-cols-3 gap-3 mb-6">
+                {/* Card 1: Time */}
+                <div className="bg-[#dcfce7] dark:bg-[#2C2C2E] dark:border dark:border-green-500/20 p-4 rounded-[1.5rem] flex flex-col justify-between h-28 relative overflow-hidden">
+                    <div className="flex justify-between items-start">
+                        <div className="p-1.5 bg-white/40 dark:bg-green-500/20 rounded-full">
+                            <Flame className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" />
+                        </div>
+                    </div>
+                    <div>
+                        <span className="text-2xl font-[800] text-slate-800 dark:text-white">
+                            {isFasting ? Math.floor(elapsedHours) : 0}<span className="text-sm font-bold ml-0.5">ч</span>
+                        </span>
+                        <p className="text-[10px] font-bold text-green-700/70 dark:text-green-400/60 uppercase mt-1">Время</p>
+                    </div>
+                </div>
+
+                {/* Card 2: Phase Count */}
+                <div className="bg-[#f3e8ff] dark:bg-[#2C2C2E] dark:border dark:border-purple-500/20 p-4 rounded-[1.5rem] flex flex-col justify-between h-28 relative overflow-hidden">
+                    <div className="flex justify-between items-start">
+                         <div className="p-1.5 bg-white/40 dark:bg-purple-500/20 rounded-full">
+                            <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="currentColor" />
+                        </div>
+                    </div>
+                    <div>
+                        <span className="text-2xl font-[800] text-slate-800 dark:text-white">
+                           {activeIndex + 1}
+                        </span>
+                        <p className="text-[10px] font-bold text-purple-700/70 dark:text-purple-400/60 uppercase mt-1">Этап</p>
+                    </div>
+                </div>
+
+                {/* Card 3: Total */}
+                <div className="bg-[#ffedd5] dark:bg-[#2C2C2E] dark:border dark:border-orange-500/20 p-4 rounded-[1.5rem] flex flex-col justify-between h-28 relative overflow-hidden">
+                     <div className="flex justify-between items-start">
+                        <div className="p-1.5 bg-white/40 dark:bg-orange-500/20 rounded-full">
+                            <Trophy className="w-4 h-4 text-orange-600 dark:text-orange-400" fill="currentColor" />
+                        </div>
+                    </div>
+                    <div>
+                        <span className="text-2xl font-[800] text-slate-800 dark:text-white">
+                            {FASTING_PHASES.length}
+                        </span>
+                         <p className="text-[10px] font-bold text-orange-700/70 dark:text-orange-400/60 uppercase mt-1">Всего</p>
+                    </div>
+                </div>
+             </div>
+
+             {/* Segmented Control */}
+             <div className="bg-slate-100 dark:bg-[#2C2C2E] p-1 rounded-2xl">
+                 <SegmentedControl
+                    options={tabs}
+                    value={viewMode}
+                    onChange={(val) => setViewMode(val as 'map' | 'articles')}
+                />
+             </div>
           </div>
 
-          {/* Контент (без свайпов) */}
-          <div className="flex-1 flex flex-col">
+          {/* CONTENT AREA */}
+          {/* bg-transparent позволяет видеть серый фон родителя (#F9F9F9), 
+              чтобы закругление шапки было заметно */}
+          <div className="flex-1 px-4 pb-8 bg-transparent pt-6">
             <AnimatePresence mode="wait">
                 
-                {/* === РЕЖИМ 1: СТАТЬИ === */}
                 {viewMode === 'articles' ? (
                     <motion.div
                         key="articles"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ duration: 0.25 }}
-                        className="w-full min-h-[50vh]"
-                    >
-                        <div className="pt-2"> 
-                            <ArticlesPage />
-                        </div>
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                    > 
+                        <ArticlesPage />
                     </motion.div>
                 ) : (
                     
-                /* === РЕЖИМ 2: КАРТА === */
+                /* === MAP MODE === */
                 <motion.div
                     key="map"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.25 }}
-                    className="w-full flex flex-col"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="space-y-3"
                 >
-                    {/* Хедер Карты */}
-                    <div className="px-8 pt-4 pb-6 flex justify-between items-start border-b border-gray-50/50 dark:border-white/5 bg-white dark:bg-[#2C2C2E]">
-                        <div>
-                            <div className="flex items-center gap-2 mb-2">
-                                <Navigation className={cn("w-3 h-3", accentColor)} />
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                    Маршрут
-                                </span>
-                            </div>
-                            <div className="flex items-baseline gap-2">
-                                <h1 className="text-3xl font-[900] text-slate-800 dark:text-white leading-none">
-                                    {isFasting ? Math.floor(elapsedHours) : 0}
-                                </h1>
-                                <span className="text-sm font-bold text-slate-400 dark:text-slate-500">часов</span>
-                            </div>
-                        </div>
+                    {FASTING_PHASES.map((phase, index) => {
+                        const isActive = isFasting && index === activeIndex;
+                        const isPassed = isFasting && index < activeIndex;
+                        const isLocked = !isFasting && index > 0;
+                        
+                        const theme = PHASE_THEMES[index % PHASE_THEMES.length];
+                        
+                        let statusText = "Ожидание";
+                        if (isActive) statusText = "Активен";
+                        if (isPassed) statusText = "Завершено";
+                        if (isLocked) statusText = "Закрыто";
 
-                        {isFasting ? (
-                            <div className="px-3 py-1.5 bg-slate-50 dark:bg-[#3A3A3C] rounded-xl border border-slate-100 dark:border-white/10 flex items-center gap-2">
-                                <div className={cn("w-2 h-2 rounded-full bg-current", accentColor)} />
-                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                                    {elapsedHours < 12 ? "Питание" : elapsedHours < 24 ? "Кетоз" : "Аутофагия"}
-                                </span>
-                            </div>
-                        ) : (
-                            <div className="px-3 py-1.5 bg-slate-50 dark:bg-[#3A3A3C] rounded-xl border border-slate-100 dark:border-white/10">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Ожидание</span>
-                            </div>
-                        )}
-                    </div>
+                        const badgeLabel = STAGE_LABELS[index] || `ЭТАП ${index + 1}`;
 
-                    {/* Список Фаз */}
-                    <div className="px-4 py-6 relative z-10 pb-10">
-                        <div className="absolute left-[35px] top-6 bottom-10 w-0.5 bg-slate-100 dark:bg-white/10 rounded-full" />
-
-                        {FASTING_PHASES.map((phase, index) => {
-                            const isActive = isFasting && index === activeIndex;
-                            const isPassed = isFasting && index < activeIndex;
-                            const iconColor = phase.color.replace(/bg-[\w-]+\s*/, '');
-
-                            return (
-                                <div
-                                    key={index}
-                                    className={cn("relative z-10 flex gap-4 transition-all duration-500", isActive ? "mb-8 mt-2" : "mb-4")}
-                                >
-                                    <div className="flex flex-col items-center shrink-0 w-12 pt-2">
-                                        {isActive && (
-                                            <div className="absolute top-0 bottom-0 left-[23px] w-0.5 bg-slate-100 dark:bg-white/10 -z-10">
-                                                <motion.div
-                                                    initial={{ height: 0 }}
-                                                    animate={{ height: `${phaseProgress}%` }}
-                                                    transition={{ duration: 1 }}
-                                                    className="w-full bg-blue-600 dark:bg-blue-500"
-                                                />
-                                            </div>
-                                        )}
-                                        <div
-                                            onClick={() => setSelectedPhase(phase)}
-                                            className={cn(
-                                                "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 cursor-pointer border-[3px] z-20 bg-white dark:bg-[#2C2C2E]",
-                                                isActive ? "border-blue-600 dark:border-blue-500 scale-110 shadow-lg shadow-blue-500/20" : isPassed ? "border-slate-200 dark:border-white/10 text-slate-300 scale-90" : "border-slate-100 dark:border-white/5 text-slate-200 dark:text-slate-600 scale-75"
-                                            )}
-                                        >
-                                            {isPassed ? <Check className="w-4 h-4" /> : isActive ? <phase.icon className={cn("w-5 h-5", iconColor)} /> : <span className="text-[10px] font-bold font-mono">{index + 1}</span>}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        {isActive ? (
-                                            <motion.div
-                                                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
-                                                onClick={() => setSelectedPhase(phase)}
-                                                className="bg-slate-50 dark:bg-[#3A3A3C] rounded-[1.5rem] p-5 border border-slate-200 dark:border-white/10 cursor-pointer active:scale-[0.98] transition-transform relative overflow-hidden"
-                                            >
-                                                <div className="flex justify-between items-start mb-2 relative z-10">
-                                                    <span className="text-[9px] font-bold text-blue-600 dark:text-blue-500 bg-white dark:bg-[#2C2C2E] border border-blue-100 dark:border-blue-500/30 px-2 py-1 rounded-lg uppercase tracking-wide">Сейчас</span>
-                                                    <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500">{Math.round(phaseProgress)}%</span>
-                                                </div>
-                                                <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight mb-1 relative z-10">{phase.title}</h3>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed relative z-10">{phase.subtitle}</p>
-                                                <div className="h-1.5 w-full bg-slate-200 dark:bg-white/10 rounded-full mt-4 overflow-hidden relative z-10">
-                                                    <motion.div initial={{ width: 0 }} animate={{ width: `${phaseProgress}%` }} transition={{ duration: 1, delay: 0.2 }} className="h-full bg-blue-600 dark:bg-blue-500 rounded-full" />
-                                                </div>
-                                            </motion.div>
-                                        ) : isPassed ? (
-                                            <div onClick={() => setSelectedPhase(phase)} className="py-3 px-4 rounded-2xl transition-all cursor-pointer flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-[#3A3A3C]">
-                                                <span className="text-sm font-bold text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors line-through decoration-slate-300 dark:decoration-white/10">{phase.title}</span>
-                                            </div>
-                                        ) : (
-                                            <div onClick={() => setSelectedPhase(phase)} className="py-3 px-4 rounded-2xl border border-dashed border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-50 dark:hover:bg-[#3A3A3C] transition-all cursor-pointer flex items-center justify-between group mt-1">
-                                                <div>
-                                                    <span className="text-sm font-bold text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors">{phase.title}</span>
-                                                    {isFasting && <div className="text-[10px] text-slate-300 dark:text-slate-600 font-mono mt-0.5">+{Math.max(0, Math.floor(phase.hoursStart - elapsedHours))}ч</div>}
-                                                </div>
-                                                <Lock className="w-3 h-3 text-slate-200 dark:text-slate-600" />
-                                            </div>
-                                        )}
+                        return (
+                            <motion.div
+                                key={phase.id}
+                                onClick={() => setSelectedPhase(phase)}
+                                initial={false}
+                                whileTap={{ scale: 0.98 }}
+                                className={cn(
+                                    "relative p-5 rounded-[2rem] transition-all duration-300 cursor-pointer overflow-hidden min-h-[120px] flex flex-col justify-between border border-transparent",
+                                    theme.light,
+                                    theme.dark,
+                                    isLocked && "opacity-50 grayscale-[0.5] dark:opacity-30"
+                                )}
+                            >
+                                {/* Header Row */}
+                                {/* min-h-[2.5rem] предотвращает скачки высоты контента при переносе заголовка */}
+                                <div className="flex justify-between items-start gap-3 min-h-[2.5rem]">
+                                    <span className={cn(
+                                        "text-sm font-medium opacity-80 leading-snug max-w-[65%]",
+                                        "dark:text-slate-300"
+                                    )}>
+                                        {phase.title}
+                                    </span>
+                                    
+                                    <div className={cn(
+                                        "px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 whitespace-nowrap",
+                                        theme.badge
+                                    )}>
+                                        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+                                        {statusText === 'Завершено' ? 'ЗАВЕРШЕНО' : badgeLabel}
+                                        <phase.icon className="w-3 h-3 ml-1 opacity-70" />
                                     </div>
                                 </div>
-                            );
-                        })}
-                        <div className="ml-[28px] mt-4 mb-10 pl-8 relative opacity-50 flex items-center gap-2">
-                            <Sparkles className="w-4 h-4 text-emerald-500" />
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Финиш</span>
-                        </div>
-                    </div>
+
+                                {/* Main Content */}
+                                <div className="mt-2 relative z-10">
+                                    <h3 className="text-xl font-bold leading-tight mb-1 text-slate-800 dark:text-white">
+                                       {phase.subtitle}
+                                    </h3>
+                                    
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <span className={cn(
+                                            "text-xs font-bold opacity-60",
+                                            "dark:text-slate-400"
+                                        )}>
+                                           {isPassed 
+                                              ? `${phase.hoursEnd} ч • Завершено` 
+                                              : `${phase.hoursStart} - ${phase.hoursEnd || '∞'} ч`
+                                           }
+                                        </span>
+                                        {isPassed && <Check className={cn("w-4 h-4", theme.accent)} />}
+                                    </div>
+                                </div>
+
+                                {/* Active Progress Bar */}
+                                {isActive && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/5 dark:bg-white/10">
+                                        <motion.div 
+                                            layoutId="activeProgress"
+                                            className={cn("h-full", theme.progress)}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: "45%" }} 
+                                            transition={{ duration: 1 }}
+                                        />
+                                    </div>
+                                )}
+                            </motion.div>
+                        );
+                    })}
                 </motion.div>
                 )}
             </AnimatePresence>
           </div>
-
         </div>
 
         {selectedPhase && (
-            <PhaseSheet 
-                phase={selectedPhase} 
-                onClose={() => setSelectedPhase(null)} 
+            <PhaseSheet
+                phase={selectedPhase}
+                onClose={() => setSelectedPhase(null)}
             />
         )}
-
+        {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
       </div>
     </>
   );
