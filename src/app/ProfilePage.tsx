@@ -1,5 +1,5 @@
 // src/app/ProfilePage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -26,7 +26,6 @@ import { cn } from '../utils/cn';
 import WebApp from '@twa-dev/sdk';
 
 // Хуки
-import { useStorage } from '../hooks/useStorage';
 import { useAddToHomeScreen } from '../hooks/useAddToHomeScreen';
 import { storageGet, storageRemove, storageGetJSON, storageSetJSON, storageSet } from '../utils/storage';
 import type { NotificationSettings } from '../utils/types';
@@ -176,9 +175,38 @@ export const SettingsSubPage = () => {
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Settings
-  const { value: notifications, setValue: setNotifications, isLoading: isSettingsLoading } =
-    useStorage<NotificationSettings>('user_settings', { fasting: true });
+  // Settings - синхронное состояние с async sync
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [isNotificationsLoading, setIsNotificationsLoading] = useState(true);
+
+  // Загрузка настроек при монтировании
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const saved = await storageGetJSON<NotificationSettings>('user_settings', { fasting: true });
+        setNotificationsEnabled(saved.fasting ?? true);
+      } catch {
+        setNotificationsEnabled(true);
+      } finally {
+        setIsNotificationsLoading(false);
+      }
+    };
+    loadNotifications();
+  }, []);
+
+  // Сохранение при изменении
+  useEffect(() => {
+    if (!isNotificationsLoading) {
+      const saveNotifications = async () => {
+        try {
+          await storageSetJSON('user_settings', { fasting: notificationsEnabled });
+        } catch (e) {
+          console.error('Failed to save notification settings:', e);
+        }
+      };
+      saveNotifications();
+    }
+  }, [notificationsEnabled, isNotificationsLoading]);
 
   // PWA
   const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
@@ -187,8 +215,8 @@ export const SettingsSubPage = () => {
 
   // --- HANDLERS ---
   const toggleNotification = () => {
-      if (!isSettingsLoading) {
-          setNotifications((prev) => ({ ...prev, fasting: !prev.fasting }));
+      if (!isNotificationsLoading) {
+          setNotificationsEnabled(prev => !prev);
       }
   };
 
@@ -373,8 +401,8 @@ export const SettingsSubPage = () => {
                 <div
                     onClick={toggleNotification}
                     className={cn(
-                        "bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm flex items-center justify-between transition-transform cursor-pointer",
-                        isSettingsLoading && "opacity-70 cursor-wait"
+                        "bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm flex items-center justify-between transition-transform cursor-pointer active:scale-[0.99]",
+                        isNotificationsLoading && "opacity-70 cursor-wait"
                     )}
                 >
                     <div className="flex items-center gap-4">
@@ -388,13 +416,13 @@ export const SettingsSubPage = () => {
                     </div>
 
                     {/* Лоадер или Тумблер */}
-                    {isSettingsLoading ? (
+                    {isNotificationsLoading ? (
                         <div className="w-12 h-7 flex items-center justify-center">
                             <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
                         </div>
                     ) : (
-                        <div className={cn("w-12 h-7 rounded-full relative transition-colors duration-300", notifications.fasting ? "bg-blue-500" : "bg-slate-200 dark:bg-white/10")}>
-                            <div className={cn("w-6 h-6 bg-white rounded-full shadow-sm absolute top-0.5 transition-transform duration-300", notifications.fasting ? "translate-x-5.5" : "translate-x-0.5")} />
+                        <div className={cn("w-12 h-7 rounded-full relative transition-colors duration-300", notificationsEnabled ? "bg-blue-500" : "bg-slate-200 dark:bg-white/10")}>
+                            <div className={cn("w-6 h-6 bg-white rounded-full shadow-sm absolute top-0.5 transition-transform duration-300", notificationsEnabled ? "translate-x-5.5" : "translate-x-0.5")} />
                         </div>
                     )}
                 </div>

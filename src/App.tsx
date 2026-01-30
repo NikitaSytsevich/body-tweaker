@@ -8,6 +8,13 @@ import { ProfilePage, SettingsSubPage, AboutSubPage } from './app/ProfilePage';
 import { ArticleDetailPage } from './features/articles/pages/ArticleDetailPage';
 import { storageGet } from './utils/storage';
 
+// Контейнер для профильных страниц с правильной высотой
+const ProfileLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="h-[100dvh] w-screen overflow-hidden bg-[#F2F2F7] dark:bg-[#1C1C1E]">
+    {children}
+  </div>
+);
+
 function App() {
   const [showWelcome, setShowWelcome] = useState<boolean | null>(null);
 
@@ -35,9 +42,9 @@ function App() {
           <Route path="/timer" element={<Layout />} />
           <Route path="/breathing" element={<Layout />} />
           <Route path="/history" element={<Layout />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/settings" element={<SettingsSubPage />} />
-          <Route path="/profile/about" element={<AboutSubPage />} />
+          <Route path="/profile" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
+          <Route path="/profile/settings" element={<ProfileLayout><SettingsSubPage /></ProfileLayout>} />
+          <Route path="/profile/about" element={<ProfileLayout><AboutSubPage /></ProfileLayout>} />
           <Route path="/articles/:slug" element={<ArticleDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
