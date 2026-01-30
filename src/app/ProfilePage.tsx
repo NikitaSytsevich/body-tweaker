@@ -5,9 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Settings as SettingsIcon,
   Info as InfoIcon,
-  UserCircle2,
   ShieldCheck,
-  User,
   ChevronRight,
   Sparkles,
   Bell,
@@ -42,7 +40,6 @@ const TEAM = [
     name: "Никита Сыцевич",
     handle: "@nikita_sytsevich",
     url: "https://t.me/nikita_sytsevich",
-    photoUrl: "https://t.me/i/userpic/320/nikita_sytsevich.jpg",
     color: "text-emerald-600 dark:text-emerald-400",
     bg: "bg-emerald-50 dark:bg-emerald-900/20"
   },
@@ -51,7 +48,6 @@ const TEAM = [
     name: "Александр Якимчик",
     handle: "@Alex_Yakimchyk",
     url: "https://t.me/Alex_Yakimchyk",
-    photoUrl: "https://t.me/i/userpic/320/Alex_Yakimchyk.jpg",
     color: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-50 dark:bg-blue-900/20"
   },
@@ -60,7 +56,6 @@ const TEAM = [
     name: "Кирилл Бубнов",
     handle: "@bubnovzavaliebalo",
     url: "https://t.me/bubnovzavaliebalo",
-    photoUrl: "https://t.me/i/userpic/320/bubnovzavaliebalo.jpg",
     color: "text-amber-600 dark:text-amber-400",
     bg: "bg-amber-50 dark:bg-amber-900/20"
   },
@@ -69,7 +64,6 @@ const TEAM = [
     name: "Мария Сыцевич",
     handle: "@maria_sytsevich",
     url: "https://t.me/maria_sytsevich",
-    photoUrl: "https://t.me/i/userpic/320/maria_sytsevich.jpg",
     color: "text-rose-600 dark:text-rose-400",
     bg: "bg-rose-50 dark:bg-rose-900/20"
   }
@@ -81,6 +75,9 @@ export const ProfilePage = () => {
   const firstName = user?.first_name || 'Гость';
   const username = user?.username ? `@${user.username}` : '';
   const photoUrl = user?.photo_url;
+  const [imageError, setImageError] = useState(false);
+
+  const initials = firstName ? firstName.charAt(0).toUpperCase() : '?';
 
   return (
     <div className="min-h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] px-4 pt-4 pb-24">
@@ -98,11 +95,16 @@ export const ProfilePage = () => {
       {/* USER CARD */}
       <div className="bg-white dark:bg-[#2C2C2E] p-5 rounded-[2rem] shadow-sm flex items-center gap-4 mb-6">
         <div className="relative">
-          {photoUrl ? (
-            <img src={photoUrl} alt="User" className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5" />
+          {photoUrl && !imageError ? (
+            <img
+              src={photoUrl}
+              alt="User"
+              className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5"
+              onError={() => setImageError(true)}
+            />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-400">
-              <UserCircle2 className="w-8 h-8" />
+            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500">
+              <span className="text-xl font-bold">{initials}</span>
             </div>
           )}
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#2C2C2E] rounded-full" />
@@ -173,6 +175,7 @@ export const SettingsSubPage = () => {
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [profileImageError, setProfileImageError] = useState(false);
 
   // Settings - синхронное состояние с async sync
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -332,6 +335,7 @@ export const SettingsSubPage = () => {
   const firstName = user?.first_name || 'Гость';
   const username = user?.username ? `@${user.username}` : '';
   const photoUrl = user?.photo_url;
+  const initials = firstName ? firstName.charAt(0).toUpperCase() : '?';
 
   return (
     <>
@@ -351,11 +355,16 @@ export const SettingsSubPage = () => {
             {/* 1. ПРОФИЛЬ */}
             <div className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[2rem] shadow-sm flex items-center gap-4">
                 <div className="relative">
-                    {photoUrl ? (
-                        <img src={photoUrl} alt="User" className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5" />
+                    {photoUrl && !profileImageError ? (
+                        <img
+                            src={photoUrl}
+                            alt="User"
+                            className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5"
+                            onError={() => setProfileImageError(true)}
+                        />
                     ) : (
-                        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-400">
-                            <UserCircle2 className="w-8 h-8" />
+                        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500">
+                            <span className="text-xl font-bold">{initials}</span>
                         </div>
                     )}
                     <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#2C2C2E] rounded-full" />
@@ -560,43 +569,38 @@ export const AboutSubPage = () => {
           Команда проекта
         </h3>
         <div className="space-y-3">
-          {TEAM.map((member) => (
-            <a
-              key={member.name}
-              href={member.url}
-              target="_blank"
-              rel="noreferrer"
-              className="block bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.99] transition-transform"
-            >
-              <div className="flex items-center gap-4">
-                {/* Avatar or fallback icon */}
-                {member.photoUrl ? (
-                  <img
-                    src={member.photoUrl}
-                    alt={member.name}
-                    className="w-12 h-12 rounded-2xl object-cover shrink-0 border-2 border-slate-100 dark:border-white/10"
-                  />
-                ) : (
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", member.bg, member.color)}>
-                    <User className="w-6 h-6" />
+          {TEAM.map((member) => {
+            const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+            return (
+              <a
+                key={member.name}
+                href={member.url}
+                target="_blank"
+                rel="noreferrer"
+                className="block bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.99] transition-transform"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Avatar with initials */}
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 font-bold text-lg", member.bg, member.color)}>
+                    {initials}
                   </div>
-                )}
 
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-slate-800 dark:text-white text-[15px] leading-tight mb-0.5">
-                    {member.name}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    {member.role}
-                  </p>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-slate-800 dark:text-white text-[15px] leading-tight mb-0.5">
+                      {member.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      {member.role}
+                    </p>
+                  </div>
 
-                <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-600">
-                  <ChevronRight className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 dark:text-slate-600">
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
                 </div>
-              </div>
-            </a>
-          ))}
+              </a>
+            );
+          })}
         </div>
       </div>
 

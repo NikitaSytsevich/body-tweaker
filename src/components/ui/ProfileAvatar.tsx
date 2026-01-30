@@ -22,12 +22,18 @@ const iconSizes = {
   lg: 'w-8 h-8'
 };
 
+const textSizes = {
+  sm: 'text-xs',
+  md: 'text-sm',
+  lg: 'text-xl'
+};
+
 export const ProfileAvatar = memo(({ onClick, size = 'md', className }: ProfileAvatarProps) => {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string>('');
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    // Инициализируем данные пользователя с небольшой задержкой для гарантии
     const timer = setTimeout(() => {
       const user = WebApp.initDataUnsafe?.user;
       if (user) {
@@ -39,10 +45,10 @@ export const ProfileAvatar = memo(({ onClick, size = 'md', className }: ProfileA
     return () => clearTimeout(timer);
   }, []);
 
-  const hasPhoto = !!photoUrl;
   const initials = firstName ? firstName.charAt(0).toUpperCase() : '?';
 
-  if (hasPhoto) {
+  // Show photo if available and no error
+  if (photoUrl && !imageError) {
     return (
       <button
         onClick={onClick}
@@ -57,6 +63,7 @@ export const ProfileAvatar = memo(({ onClick, size = 'md', className }: ProfileA
           src={photoUrl}
           alt="Profile"
           className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
         />
       </button>
     );
@@ -74,12 +81,7 @@ export const ProfileAvatar = memo(({ onClick, size = 'md', className }: ProfileA
       )}
     >
       {firstName ? (
-        <span className={cn(
-          "font-bold text-slate-600 dark:text-slate-300",
-          size === 'sm' && 'text-xs',
-          size === 'md' && 'text-sm',
-          size === 'lg' && 'text-xl'
-        )}>
+        <span className={cn("font-bold text-slate-600 dark:text-slate-300", textSizes[size])}>
           {initials}
         </span>
       ) : (
