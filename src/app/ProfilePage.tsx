@@ -308,7 +308,7 @@ export const SettingsSubPage = () => {
 
   return (
     <>
-      <div className="min-h-full bg-[#F2F2F7] dark:bg-[#1C1C1E]">
+      <div className="h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] flex flex-col">
         {/* HEADER */}
         <div className="px-6 pt-6 pb-2 shrink-0 bg-[#F2F2F7] dark:bg-[#1C1C1E] z-20 flex justify-between items-center">
             <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors">
@@ -319,7 +319,7 @@ export const SettingsSubPage = () => {
         </div>
 
         {/* CONTENT */}
-        <div className="flex-1 overflow-y-auto pb-safe px-4 pt-4 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 pt-4 space-y-6 pb-safe">
 
             {/* 1. ПРОФИЛЬ */}
             <div className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[2rem] shadow-sm flex items-center gap-4">
@@ -484,16 +484,16 @@ export const AboutSubPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] overflow-y-auto">
+    <div className="h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] flex flex-col">
       {/* HEADER */}
-      <div className="px-6 pt-6 pb-2 sticky top-0 bg-[#F2F2F7] dark:bg-[#1C1C1E] z-20 flex items-center gap-4">
+      <div className="px-6 pt-6 pb-2 shrink-0 bg-[#F2F2F7] dark:bg-[#1C1C1E] z-20 flex items-center gap-4">
         <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors">
           <X className="w-5 h-5" />
         </button>
         <h2 className="text-xl font-[900] text-slate-800 dark:text-white">О проекте</h2>
       </div>
 
-      <div className="px-4 pt-2 pb-8">
+      <div className="flex-1 overflow-y-auto px-4 pt-2 pb-8">
 
       {/* HERO */}
       <div className="relative h-48 overflow-hidden bg-emerald-50 dark:bg-[#0f291e] rounded-[2rem] mb-6">

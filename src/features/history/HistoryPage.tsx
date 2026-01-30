@@ -9,8 +9,7 @@ import {
   Trophy,
   Zap,
   Calendar as CalendarIcon,
-  Hourglass,
-  UserCircle2
+  Hourglass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
@@ -21,6 +20,7 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { HistorySkeleton } from './components/HistorySkeleton';
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 
 // Utils
 import { storageGetHistory, storageSaveHistory } from '../../utils/storage';
@@ -180,12 +180,7 @@ export const HistoryPage = () => {
           <h1 className="text-3xl font-[900] text-slate-800 dark:text-white leading-tight">
             Прогресс
           </h1>
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
-          >
-            <UserCircle2 className="w-5 h-5" />
-          </button>
+          <ProfileAvatar onClick={() => navigate('/profile')} />
       </div>
 
       <div className="px-4 mb-6">

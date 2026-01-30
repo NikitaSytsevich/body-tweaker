@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
-import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight, UserCircle2 } from 'lucide-react';
+import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet'; // 👈 Убедитесь, что импорт правильный
 import { BreathingStartModal } from './components/BreathingStartModal';
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { soundManager } from '../../utils/sounds';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,7 +37,7 @@ export const BreathingPage = () => {
   const { phase, phaseTimeLeft, totalTimeLeft, startSession, stopSession } = useBreathingSession(level, duration);
 
   useEffect(() => {
-      const timer = setTimeout(() => setIsAudioReady(true), 500);
+      const timer = setTimeout(() => setIsAudioReady(true), 50);
       return () => clearTimeout(timer);
   }, []);
 
@@ -140,9 +141,9 @@ export const BreathingPage = () => {
                 </div>
 
                 <div className="flex gap-2 relative">
-                    <button onClick={() => navigate('/profile')} className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-                        <UserCircle2 className="w-6 h-6" />
-                    </button>
+                    <div onClick={() => navigate('/profile')} className="cursor-pointer">
+                        <ProfileAvatar />
+                    </div>
                     <button onClick={() => setShowSound(true)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                         <Volume2 className="w-6 h-6" />
                     </button>

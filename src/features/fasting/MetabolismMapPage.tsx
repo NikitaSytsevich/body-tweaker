@@ -6,11 +6,12 @@ import { useFastingTimerContext } from './context/TimerContext';
 import { FASTING_PHASES } from './data/stages';
 import type { FastingStage } from './data/stages';
 import { cn } from '../../utils/cn';
-import { Check, BookOpen, Activity, Flame, Zap, Trophy, UserCircle2 } from 'lucide-react';
+import { Check, BookOpen, Activity, Flame, Zap, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhaseSheet } from './components/PhaseSheet';
 import { ArticlesPage } from '../articles/pages/ArticlesPage';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 
 // Расширенный список названий для бейджей
 const STAGE_LABELS = [
@@ -109,12 +110,7 @@ export const MetabolismMapPage = () => {
                  <h1 className="text-[28px] font-bold text-slate-800 dark:text-white tracking-tight">
                      Метаболизм
                  </h1>
-                 <button
-                   onClick={() => navigate('/profile')}
-                   className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
-                 >
-                   <UserCircle2 className="w-5 h-5" />
-                 </button>
+                 <ProfileAvatar onClick={() => navigate('/profile')} />
              </div>
 
              {/* STATS GRID */}

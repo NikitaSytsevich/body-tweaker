@@ -3,11 +3,12 @@ import { useFastingTimerContext } from './context/TimerContext';
 import { ProtocolSelector } from './components/ProtocolSelector';
 import { FastingStartModal } from './components/FastingStartModal';
 import { NativeDatePicker } from '../../components/ui/DatePicker';
-import { Play, Square, ListFilter, Sunrise, Moon, UserCircle2 } from 'lucide-react';
+import { Play, Square, ListFilter, Sunrise, Moon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 
 interface TimerVisualProps {
     progress: number;
@@ -16,17 +17,7 @@ interface TimerVisualProps {
     isFasting: boolean;
 }
 
-// 1. Кнопка профиля (стабильная)
-const ProfileButton = memo(({ onClick }: { onClick: () => void }) => (
-    <button
-        onClick={onClick}
-        className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
-    >
-        <UserCircle2 className="w-5 h-5" />
-    </button>
-));
-
-// 2. Визуализация таймера (Минималистичная: Кольцо + Время)
+// 1. Визуализация таймера (Минималистичная: Кольцо + Время)
 const TimerVisual = memo(({
     progress, elapsedFormatted, totalHours, isFasting
 }: TimerVisualProps) => {
@@ -172,7 +163,7 @@ export const FastingPage = () => {
                         {isFasting ? "Голодание" : "Ожидание"}
                     </h1>
                 </div>
-                <ProfileButton onClick={() => navigate('/profile')} />
+                <ProfileAvatar onClick={() => navigate('/profile')} />
             </div>
 
             {/* CONTENT */}
