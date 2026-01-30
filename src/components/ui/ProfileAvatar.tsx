@@ -29,34 +29,68 @@ const textSizes = {
 };
 
 export const ProfileAvatar = ({ onClick, size = 'md', className }: ProfileAvatarProps) => {
+  // Храним данные пользователя в state для реактивности
+  const [userData, setUserData] = useState(() => ({
+    photoUrl: WebApp.initDataUnsafe?.user?.photo_url || null,
+    firstName: WebApp.initDataUnsafe?.user?.first_name || ''
+  }));
   const [imageError, setImageError] = useState(false);
 
-  // Читаем напрямую из WebApp без useState, чтобы данные всегда были актуальными
-  const photoUrl = WebApp.initDataUnsafe?.user?.photo_url;
-  const firstName = WebApp.initDataUnsafe?.user?.first_name || '';
-  const initials = firstName ? firstName.charAt(0).toUpperCase() : '?';
+  const initials = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : '?';
+
+  // Подписываемся на изменения в WebApp
+  useEffect(() => {
+    const updateUserData = () => {
+      const user = WebApp.initDataUnsafe?.user;
+      if (user) {
+        setUserData({
+          photoUrl: user.photo_url || null,
+          firstName: user.first_name || ''
+        });
+        setImageError(false);
+      }
+    };
+
+    // Сразу проверяем
+    updateUserData();
+
+    // Подписываемся на событие готовности WebApp
+    if (WebApp.ready) {
+      WebApp.ready();
+      updateUserData();
+    }
+
+    // Таймер для отложенного обновления (на случай медленной загрузки)
+    const timer = setTimeout(updateUserData, 100);
+    const timer2 = setTimeout(updateUserData, 500);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(timer2);
+    };
+  }, []);
 
   // Сбрасываем ошибку когда photoUrl меняется
   useEffect(() => {
-    if (photoUrl) {
+    if (userData.photoUrl) {
       setImageError(false);
     }
-  }, [photoUrl]);
+  }, [userData.photoUrl]);
 
   // Show photo if available and no error
-  if (photoUrl && !imageError) {
+  if (userData.photoUrl && !imageError) {
     return (
       <button
         onClick={onClick}
         className={cn(
-          "rounded-full object-cover border-2 border-slate-200 dark:border-white/10 overflow-hidden transition-colors shrink-0",
+          "rounded-full overflow-hidden transition-colors shrink-0",
           sizeClasses[size],
-          onClick && "hover:border-slate-300 dark:hover:border-white/20 cursor-pointer",
+          onClick && "hover:ring-2 hover:ring-purple-500/50 cursor-pointer",
           className
         )}
       >
         <img
-          src={photoUrl}
+          src={userData.photoUrl}
           alt="Profile"
           className="w-full h-full object-cover"
           onError={() => setImageError(true)}
@@ -70,14 +104,14 @@ export const ProfileAvatar = ({ onClick, size = 'md', className }: ProfileAvatar
     <button
       onClick={onClick}
       className={cn(
-        "rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 transition-colors shrink-0",
+        "rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors shrink-0",
         sizeClasses[size],
-        onClick && "hover:bg-slate-200 dark:hover:bg-white/20 cursor-pointer",
+        onClick && "hover:ring-2 hover:ring-purple-500/50 cursor-pointer",
         className
       )}
     >
-      {firstName ? (
-        <span className={cn("font-bold text-slate-600 dark:text-slate-300", textSizes[size])}>
+      {userData.firstName ? (
+        <span className={cn("font-bold", textSizes[size])}>
           {initials}
         </span>
       ) : (
