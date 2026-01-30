@@ -145,13 +145,10 @@ export const BreathingPage = () => {
 
       {/* MAIN CARD */}
       <div className="flex-1 flex flex-col px-4 pb-4 overflow-hidden relative z-10">
-        <div className="bg-white/80 dark:bg-[#2C2C2E]/80 backdrop-blur-xl rounded-[3rem] shadow-xl shadow-purple-200/20 dark:shadow-black/40 border border-white/40 dark:border-white/10 flex-1 flex flex-col overflow-hidden relative">
-
-          {/* DECORATIVE GLOW */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-gradient-to-br from-purple-400/20 to-blue-400/20 dark:from-purple-500/10 dark:to-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="bg-white/90 dark:bg-[#2C2C2E]/90 backdrop-blur-xl rounded-[2.5rem] shadow-xl shadow-purple-200/20 dark:shadow-black/40 border border-white/60 dark:border-white/20 flex-1 flex flex-col overflow-hidden relative">
 
           {/* CIRCLE AREA */}
-          <div className="flex-1 flex flex-col items-center justify-center py-4 relative">
+          <div className="flex-1 flex flex-col items-center justify-center py-2 relative">
             {!isAudioReady ? (
               <div className="w-52 h-52 flex flex-col items-center justify-center bg-slate-50 dark:bg-[#3A3A3C] rounded-full border-2 border-slate-200 dark:border-white/10 shadow-lg">
                 <Loader2 className="w-8 h-8 text-purple-500 dark:text-purple-400 animate-spin mb-2" />
@@ -190,41 +187,41 @@ export const BreathingPage = () => {
                 </div>
 
                 {/* PATTERN INDICATORS */}
-                <div className="flex items-center justify-center gap-6 mt-4">
-                  <div className={cn("flex flex-col items-center gap-1 transition-all duration-300", phase === 'inhale' ? "opacity-100 scale-110" : "opacity-40")}>
+                <div className="flex items-center justify-center gap-5 mt-3">
+                  <div className={cn("flex flex-col items-center gap-0.5 transition-all duration-300", phase === 'inhale' ? "opacity-100 scale-110" : "opacity-40")}>
                     <div className={cn(
-                      "w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300",
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
                       phase === 'inhale'
                         ? "bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-lg shadow-cyan-500/30"
                         : "bg-slate-100 dark:bg-[#3A3A3C] text-slate-400"
                     )}>
-                      <span className="text-[10px] font-black">{level.inhale}</span>
+                      <span className="text-[9px] font-black">{level.inhale}</span>
                     </div>
-                    <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase">Вдох</span>
+                    <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 uppercase">Вдох</span>
                   </div>
 
-                  <div className={cn("flex flex-col items-center gap-1 transition-all duration-300", phase === 'hold' ? "opacity-100 scale-110" : "opacity-40")}>
+                  <div className={cn("flex flex-col items-center gap-0.5 transition-all duration-300", phase === 'hold' ? "opacity-100 scale-110" : "opacity-40")}>
                     <div className={cn(
-                      "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300",
+                      "w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300",
                       phase === 'hold'
                         ? "bg-gradient-to-br from-violet-400 to-violet-500 text-white shadow-lg shadow-violet-500/30"
                         : "bg-slate-100 dark:bg-[#3A3A3C] text-slate-400"
                     )}>
-                      <span className="text-xs font-black">{level.hold}</span>
+                      <span className="text-[10px] font-black">{level.hold}</span>
                     </div>
-                    <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase">Задержка</span>
+                    <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 uppercase">Задержка</span>
                   </div>
 
-                  <div className={cn("flex flex-col items-center gap-1 transition-all duration-300", phase === 'exhale' ? "opacity-100 scale-110" : "opacity-40")}>
+                  <div className={cn("flex flex-col items-center gap-0.5 transition-all duration-300", phase === 'exhale' ? "opacity-100 scale-110" : "opacity-40")}>
                     <div className={cn(
-                      "w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300",
+                      "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
                       phase === 'exhale'
                         ? "bg-gradient-to-br from-blue-400 to-blue-500 text-white shadow-lg shadow-blue-500/30"
                         : "bg-slate-100 dark:bg-[#3A3A3C] text-slate-400"
                     )}>
-                      <span className="text-[10px] font-black">{level.exhale}</span>
+                      <span className="text-[9px] font-black">{level.exhale}</span>
                     </div>
-                    <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase">Выдох</span>
+                    <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 uppercase">Выдох</span>
                   </div>
                 </div>
               </>
@@ -238,15 +235,15 @@ export const BreathingPage = () => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="px-6 pb-6 pt-2 space-y-3"
+                className="px-5 pb-5 pt-1 space-y-2"
               >
                 {/* Duration Control */}
-                <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Время практики</p>
-                    </div>
-                    <div className="flex items-center gap-2">
+                <div className="bg-slate-50/80 dark:bg-white/5 backdrop-blur-sm px-3 py-2 rounded-full border border-slate-100 dark:border-white/10">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      {duration === 0 ? "Без лимита" : `${duration} мин`}
+                    </span>
+                    <div className="flex items-center gap-1.5">
                       <button
                         disabled={duration === DURATION_OPTIONS[DURATION_OPTIONS.length - 1]}
                         onClick={() => {
@@ -255,15 +252,10 @@ export const BreathingPage = () => {
                             setDuration(DURATION_OPTIONS[currentIndex + 1]);
                           }
                         }}
-                        className="w-9 h-9 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        className="w-8 h-8 rounded-full bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-95"
                       >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-3.5 h-3.5" />
                       </button>
-                      <div className="w-16 text-center">
-                        <span className="text-2xl font-black bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
-                          {duration === 0 ? "∞" : duration}
-                        </span>
-                      </div>
                       <button
                         disabled={duration === DURATION_OPTIONS[0]}
                         onClick={() => {
@@ -272,39 +264,34 @@ export const BreathingPage = () => {
                             setDuration(DURATION_OPTIONS[currentIndex - 1]);
                           }
                         }}
-                        className="w-9 h-9 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        className="w-8 h-8 rounded-full bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-95"
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Level Control */}
-                <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Уровень {level.id} из {BREATH_LEVELS.length}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
+                <div className="bg-slate-50/80 dark:bg-white/5 backdrop-blur-sm px-3 py-2 rounded-full border border-slate-100 dark:border-white/10">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                      Уровень {level.id}
+                    </span>
+                    <div className="flex items-center gap-1.5">
                       <button
                         disabled={levelIndex === 0}
                         onClick={() => setLevelIndex(i => i - 1)}
-                        className="w-9 h-9 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        className="w-8 h-8 rounded-full bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-95"
                       >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-3.5 h-3.5" />
                       </button>
-                      <div className="w-16 text-center">
-                        <span className="text-2xl font-black bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
-                          {level.id}
-                        </span>
-                      </div>
                       <button
                         disabled={levelIndex === BREATH_LEVELS.length - 1}
                         onClick={() => setLevelIndex(i => i + 1)}
-                        className="w-9 h-9 rounded-xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
+                        className="w-8 h-8 rounded-full bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-95"
                       >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>

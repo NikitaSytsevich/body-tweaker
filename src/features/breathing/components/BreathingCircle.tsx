@@ -28,7 +28,7 @@ export const BreathingCircle = memo(({ phase, timeLeft, totalDuration }: Props) 
   const current = useMemo(() => config[phase], [phase]);
 
   return (
-    <div className="relative w-56 h-56 flex items-center justify-center">
+    <div className="relative w-48 h-48 flex items-center justify-center">
 
       {phase !== 'finished' && phase !== 'idle' && (
         <motion.div
@@ -48,23 +48,23 @@ export const BreathingCircle = memo(({ phase, timeLeft, totalDuration }: Props) 
         animate={{ scale: current.scale }}
         transition={{ duration: totalDuration > 0 ? totalDuration : 0.5, ease: "linear" }}
         className={cn(
-            "w-28 h-28 rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500 cursor-pointer",
+            "w-24 h-24 rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500 cursor-pointer",
             current.color
         )}
       >
         {phase === 'idle' ? (
-            <span className="text-sm font-black uppercase tracking-widest bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+            <span className="text-xs font-black uppercase tracking-widest bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
                 {current.text}
             </span>
         ) : (
             <>
-                <span className="text-xs font-bold uppercase tracking-widest">{current.text}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">{current.text}</span>
                 {phase !== 'finished' && (
                     <motion.span
                         key={timeLeft}
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-xl font-mono font-black mt-1"
+                        className="text-lg font-mono font-black mt-0.5"
                     >
                         {timeLeft}
                     </motion.span>
