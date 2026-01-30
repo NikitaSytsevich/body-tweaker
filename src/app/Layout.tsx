@@ -1,5 +1,5 @@
 // src/app/Layout.tsx
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useEffect, memo, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Map, Timer, Wind, History } from 'lucide-react';
 import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
@@ -8,27 +8,35 @@ import { cn } from '../utils/cn';
 import { storageGet, storageSet } from '../utils/storage';
 import WebApp from '@twa-dev/sdk';
 
-import { MetabolismMapPage } from '../features/fasting/MetabolismMapPage';
-import { FastingPage } from '../features/fasting/FastingPage';
-import { BreathingPage } from '../features/breathing/BreathingPage';
-import { HistoryPage } from '../features/history/HistoryPage';
-// ИЗМЕНЕНИЕ: Импорт детальной страницы
+// OPTIMIZATION: Lazy load feature pages for smaller initial bundle
+const MetabolismMapPage = lazy(() => import('../features/fasting/MetabolismMapPage').then(m => ({ default: m.MetabolismMapPage })));
+const FastingPage = lazy(() => import('../features/fasting/FastingPage').then(m => ({ default: m.FastingPage })));
+const BreathingPage = lazy(() => import('../features/breathing/BreathingPage').then(m => ({ default: m.BreathingPage })));
+const HistoryPage = lazy(() => import('../features/history/HistoryPage').then(m => ({ default: m.HistoryPage })));
+// ArticleDetailPage stays eager as it's rarely used but needs instant load
 import { ArticleDetailPage } from '../features/articles/pages/ArticleDetailPage';
 
 import { useFastingTimerContext } from '../features/fasting/context/TimerContext';
 import { ToastNotification } from '../components/ui/ToastNotification';
 
+// OPTIMIZATION: Added Suspense fallback for lazy-loaded pages
 const PageView = memo(({ isActive, children }: { isActive: boolean, children: React.ReactNode }) => {
     return (
-        <div 
+        <div
           className={cn(
-              "w-full h-full absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide", 
+              "w-full h-full absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide",
               "pb-32 px-4 pt-2",
               isActive ? "z-10 opacity-100 pointer-events-auto" : "-z-10 opacity-0 pointer-events-none"
           )}
           style={{ visibility: isActive ? 'visible' : 'hidden' }}
         >
-            {children}
+            <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                </div>
+            }>
+                {children}
+            </Suspense>
         </div>
     );
 });
@@ -197,11 +205,12 @@ export const Layout = () => {
                 const isActive = location.pathname === item.path;
                 const getIconAnimation = (): Variants | Record<string, unknown> => {
                     if (!isActive) return {};
+                    // OPTIMIZATION: Reduced animation durations for better performance
                     switch (item.id) {
-                        case 'map': return { scaleX: [1, 1.2, 0.9, 1], transition: { duration: 0.6 } };
-                        case 'timer': return { rotate: [0, 360], transition: { duration: 0.8, ease: "backOut" } };
-                        case 'breath': return { x: [0, 5, -5, 0], rotate: [0, 10, -10, 0], transition: { duration: 0.6 } };
-                        case 'history': return { rotate: [0, -20, 360, 360], transition: { duration: 1, times: [0, 0.2, 0.8, 1] } };
+                        case 'map': return { scaleX: [1, 1.2, 0.9, 1], transition: { duration: 0.3 } };
+                        case 'timer': return { rotate: [0, 360], transition: { duration: 0.4, ease: "backOut" } };
+                        case 'breath': return { x: [0, 5, -5, 0], rotate: [0, 10, -10, 0], transition: { duration: 0.3 } };
+                        case 'history': return { rotate: [0, -20, 360, 360], transition: { duration: 0.5, times: [0, 0.2, 0.8, 1] } };
                         default: return { scale: 1.2, y: -4 };
                     }
                 };

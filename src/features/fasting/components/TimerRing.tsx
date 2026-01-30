@@ -1,3 +1,4 @@
+import { useMemo, memo } from 'react';
 import { cn } from '../../../utils/cn';
 import { motion } from 'framer-motion';
 
@@ -9,14 +10,26 @@ interface Props {
   label?: string;
 }
 
-export const TimerRing = ({ progress, time, isFasting, label }: Props) => {
+// OPTIMIZATION: React.memo to prevent unnecessary re-renders
+export const TimerRing = memo(({ progress, time, isFasting, label }: Props) => {
   const size = 280;
   const center = size / 2;
-  const strokeWidth = 16; // Сделаем линию чуть толще для солидности
+  const strokeWidth = 16;
   const radius = 120;
-  
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  // OPTIMIZATION: Memoize expensive calculations
+  const circumference = useMemo(() => 2 * Math.PI * radius, []);
+  const strokeDashoffset = useMemo(() => circumference - (progress / 100) * circumference, [circumference, progress]);
+
+  // OPTIMIZATION: Memoize time parts to avoid repeated split operations
+  const timeParts = useMemo(() => {
+    const parts = time.split(':');
+    return {
+      hours: parts[0],
+      minutes: parts[1],
+      seconds: parts[2]
+    };
+  }, [time]);
 
   return (
     <div className="relative flex items-center justify-center">
@@ -71,10 +84,10 @@ export const TimerRing = ({ progress, time, isFasting, label }: Props) => {
             {/* ВРЕМЯ */}
             <div className="flex items-baseline text-slate-800 dark:text-white">
                 <span className="text-6xl font-[800] font-mono tracking-tighter tabular-nums leading-none">
-                    {time.split(':')[0]}:{time.split(':')[1]}
+                    {timeParts.hours}:{timeParts.minutes}
                 </span>
                 <span className="text-xl font-medium text-slate-300 dark:text-slate-500 ml-1">
-                    {time.split(':')[2]}
+                    {timeParts.seconds}
                 </span>
             </div>
 
@@ -95,4 +108,6 @@ export const TimerRing = ({ progress, time, isFasting, label }: Props) => {
       </div>
     </div>
   );
-};
+});
+
+TimerRing.displayName = 'TimerRing';

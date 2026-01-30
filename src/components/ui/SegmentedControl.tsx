@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import type { SegmentedControlOption } from '../../utils/types';
@@ -9,7 +9,8 @@ interface Props<T extends string = string> {
   onChange: (value: T) => void;
 }
 
-export function SegmentedControl<T extends string = string>({ options, value, onChange }: Props<T>) {
+// OPTIMIZATION: React.memo to prevent unnecessary re-renders
+function SegmentedControlInner<T extends string = string>({ options, value, onChange }: Props<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   
@@ -124,4 +125,8 @@ export function SegmentedControl<T extends string = string>({ options, value, on
         })}
     </div>
   );
-};
+}
+
+// Export memoized component with proper generic typing
+const MemoizedSegmentedControl = memo(SegmentedControlInner) as typeof SegmentedControlInner;
+export { MemoizedSegmentedControl as SegmentedControl };

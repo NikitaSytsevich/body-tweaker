@@ -28,7 +28,7 @@ export const gregerHowNotToDie: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-red-100 text-red-600 rounded-xl">
+          <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl">
             <Target className="w-6 h-6" />
           </div>
           <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">15 причин смерти</h3>
@@ -227,7 +227,7 @@ export const gregerHowNotToDie: Article = {
 
       <section>
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-red-100 text-red-600 rounded-xl">
+          <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl">
             <Shield className="w-6 h-6" />
           </div>
           <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">Продукты для ограничения</h3>

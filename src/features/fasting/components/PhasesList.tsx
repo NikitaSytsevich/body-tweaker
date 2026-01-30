@@ -34,17 +34,17 @@ export const PhasesList = ({ elapsedSeconds }: Props) => {
   return (
     <div className="w-full px-4 mt-8 mb-24 animate-in slide-in-from-bottom-10 duration-700">
       <div className="flex items-center justify-between mb-6 px-2">
-        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+        <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
           Карта метаболизма
         </h3>
-        <span className="text-[10px] font-medium text-white bg-slate-800 px-2 py-1 rounded-full">
+        <span className="text-[10px] font-medium text-white bg-slate-800 dark:bg-slate-700 px-2 py-1 rounded-full">
           Этап {activePhaseIndex + 1} / {FASTING_PHASES.length}
         </span>
       </div>
 
       <div className="relative pl-2">
         {/* Вертикальная линия (Дорога) */}
-        <div className="absolute left-[27px] top-4 bottom-10 w-0.5 bg-gradient-to-b from-blue-500 via-gray-200 to-gray-100 z-0" />
+        <div className="absolute left-[27px] top-4 bottom-10 w-0.5 bg-gradient-to-b from-blue-500 via-gray-200 dark:via-white/20 to-gray-100 dark:to-white/10 z-0" />
 
         {FASTING_PHASES.map((phase, index) => {
           // Логика состояний
@@ -69,9 +69,9 @@ export const PhasesList = ({ elapsedSeconds }: Props) => {
                     "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 shadow-sm border-2 z-20 relative",
                     // Стили маркера
                     isRealActive ? "bg-blue-500 border-blue-500 text-white shadow-blue-300 shadow-lg scale-110" :
-                    isPassed ? "bg-slate-100 border-slate-200 text-slate-400" :
-                    isSelected ? "bg-white border-blue-400 text-blue-500" :
-                    "bg-white border-gray-200 text-gray-300"
+                    isPassed ? "bg-slate-100 dark:bg-[#3A3A3C] border-slate-200 dark:border-white/20 text-slate-400 dark:text-slate-500" :
+                    isSelected ? "bg-white dark:bg-[#2C2C2E] border-blue-400 dark:border-blue-500/50 text-blue-500" :
+                    "bg-white dark:bg-[#2C2C2E] border-gray-200 dark:border-white/10 text-gray-300 dark:text-slate-600"
                   )}>
                     {isRealActive ? <Activity className="w-5 h-5 animate-pulse" /> :
                      isPassed ? <Check className="w-5 h-5" /> :
@@ -83,32 +83,32 @@ export const PhasesList = ({ elapsedSeconds }: Props) => {
                 {/* 2. Карточка контента */}
                 <div className={cn(
                   "flex-1 rounded-2xl border transition-all duration-300 overflow-hidden",
-                  isSelected 
-                    ? "bg-white border-blue-100 shadow-xl ring-1 ring-blue-500/20 translate-x-0" 
-                    : "bg-white/50 border-transparent hover:bg-white hover:shadow-sm -translate-x-2"
+                  isSelected
+                    ? "bg-white dark:bg-[#2C2C2E] border-blue-100 dark:border-blue-500/30 shadow-xl ring-1 ring-blue-500/20 translate-x-0"
+                    : "bg-white/50 dark:bg-[#2C2C2E]/50 border-transparent hover:bg-white dark:hover:bg-[#2C2C2E] hover:shadow-sm -translate-x-2"
                 )}>
-                  
+
                   {/* Заголовок (всегда виден) */}
                   <div className="p-4 flex justify-between items-start">
                     <div>
-                      <h4 className={cn("font-bold text-sm", isSelected ? "text-slate-800" : "text-slate-500")}>
+                      <h4 className={cn("font-bold text-sm", isSelected ? "text-slate-800 dark:text-white" : "text-slate-500 dark:text-slate-400")}>
                         {phase.title}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-mono text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-[#3A3A3C] px-1.5 py-0.5 rounded">
                           {phase.hoursStart}ч+
                         </span>
                         {isRealActive && (
-                          <span className="text-[10px] font-bold text-blue-600 animate-pulse">
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 animate-pulse">
                             ● Сейчас
                           </span>
                         )}
                       </div>
                     </div>
                     {isSelected ? (
-                      <ChevronDown className="w-4 h-4 text-gray-300 rotate-180 transition-transform" />
+                      <ChevronDown className="w-4 h-4 text-gray-300 dark:text-slate-600 rotate-180 transition-transform" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-300" />
+                      <ChevronDown className="w-4 h-4 text-gray-300 dark:text-slate-600" />
                     )}
                   </div>
 
@@ -117,32 +117,32 @@ export const PhasesList = ({ elapsedSeconds }: Props) => {
                     "grid transition-all duration-500 ease-in-out px-4",
                     isSelected ? "grid-rows-[1fr] pb-4 opacity-100" : "grid-rows-[0fr] pb-0 opacity-0"
                   )}>
-                    <div className="overflow-hidden space-y-4 border-t border-gray-100 pt-3">
-                      
+                    <div className="overflow-hidden space-y-4 border-t border-gray-100 dark:border-white/10 pt-3">
+
                       {/* Описание */}
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                         {phase.subtitle}
                       </p>
 
                       {/* Физиология */}
-                      <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-50">
-                        <h5 className="text-[10px] font-bold text-blue-400 uppercase mb-1 flex items-center gap-1">
+                      <div className="bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-50 dark:border-blue-500/20">
+                        <h5 className="text-[10px] font-bold text-blue-400 dark:text-blue-300 uppercase mb-1 flex items-center gap-1">
                           <Activity className="w-3 h-3"/> Что происходит
                         </h5>
-                        <p className="text-xs text-slate-600 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                           {phase.details.physiology}
                         </p>
                       </div>
 
                       {/* Ощущения */}
                       <div>
-                        <h5 className="text-[10px] font-bold text-gray-400 uppercase mb-2 flex items-center gap-1">
+                        <h5 className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase mb-2 flex items-center gap-1">
                           <Info className="w-3 h-3"/> Ощущения
                         </h5>
                         <ul className="space-y-1">
                           {phase.details.sensations.map((s, i) => (
-                            <li key={i} className="text-xs text-gray-500 flex gap-2 items-start">
-                              <span className="w-1 h-1 rounded-full bg-gray-300 mt-1.5 shrink-0"/>
+                            <li key={i} className="text-xs text-gray-500 dark:text-slate-400 flex gap-2 items-start">
+                              <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-slate-600 mt-1.5 shrink-0"/>
                               {s}
                             </li>
                           ))}
@@ -151,13 +151,13 @@ export const PhasesList = ({ elapsedSeconds }: Props) => {
 
                       {/* Внимание */}
                       {phase.precautions.length > 0 && (
-                        <div className="bg-rose-50 p-3 rounded-xl border border-rose-100">
-                           <h5 className="text-[10px] font-bold text-rose-400 uppercase mb-1 flex items-center gap-1">
+                        <div className="bg-rose-50 dark:bg-rose-900/20 p-3 rounded-xl border border-rose-100 dark:border-rose-900/30">
+                           <h5 className="text-[10px] font-bold text-rose-400 dark:text-rose-300 uppercase mb-1 flex items-center gap-1">
                               <AlertTriangle className="w-3 h-3"/> Важно
                            </h5>
                            <ul className="space-y-1">
                               {phase.precautions.map((w, i) => (
-                                <li key={i} className="text-xs text-rose-600/80">• {w}</li>
+                                <li key={i} className="text-xs text-rose-600/80 dark:text-rose-300/80">• {w}</li>
                               ))}
                            </ul>
                         </div>

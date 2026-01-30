@@ -46,7 +46,7 @@ export const VolumeSlider = ({ value, onChange, colorClass }: Props) => {
     <div
       ref={ref}
       onPointerDown={handlePointerDown}
-      className="relative h-14 w-full rounded-2xl bg-slate-100 overflow-hidden cursor-pointer touch-none select-none"
+      className="relative h-14 w-full rounded-2xl bg-slate-100 dark:bg-[#3A3A3C] overflow-hidden cursor-pointer touch-none select-none"
     >
       {/* Прогресс (GPU only) */}
       <motion.div
@@ -65,14 +65,14 @@ export const VolumeSlider = ({ value, onChange, colorClass }: Props) => {
         <Icon
           className={cn(
             'w-5 h-5 transition-colors',
-            value > 0.1 ? 'text-white' : 'text-slate-400'
+            value > 0.1 ? 'text-white' : 'text-slate-400 dark:text-slate-500'
           )}
         />
 
         <span
           className={cn(
             'text-xs font-black font-mono tracking-widest transition-colors',
-            value > 0.9 ? 'text-white/80' : 'text-slate-400'
+            value > 0.9 ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'
           )}
         >
           {Math.round(value * 100)}%

@@ -73,8 +73,8 @@ export const AnabolicState = () => {
         />
 
         <div className="min-h-full flex flex-col pb-6 relative z-0">
-        
-        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative flex-1 flex flex-col z-10 border border-white/60 overflow-hidden">
+
+        <div className="bg-white dark:bg-[#1C1C1E] rounded-[3rem] shadow-sm shadow-slate-200/50 dark:shadow-none relative flex-1 flex flex-col z-10 border border-white/60 dark:border-white/5 overflow-hidden">
             
             {/* ХЕДЕР (Прогресс) */}
             <div className="px-8 pt-8 pb-2 shrink-0 z-20">
@@ -92,9 +92,9 @@ export const AnabolicState = () => {
                             />
                         ))}
                     </div>
-                    <button 
+                    <button
                         onClick={() => setShowSovietSheet(true)}
-                        className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 active:scale-95 transition-transform"
+                        className="w-10 h-10 bg-slate-50 dark:bg-[#3A3A3C] rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 active:scale-95 transition-transform"
                     >
                         <BookOpen className="w-5 h-5" />
                     </button>
@@ -112,57 +112,57 @@ export const AnabolicState = () => {
                         transition={{ duration: 0.3, ease: "easeOut" }}
                     >
                         {/* 1. ВИЗУАЛЬНАЯ КАРТОЧКА */}
-                        <div className="relative w-full aspect-[16/9] rounded-[2rem] overflow-hidden mb-8 shadow-sm border border-slate-100 bg-white">
+                        <div className="relative w-full aspect-[16/9] rounded-[2rem] overflow-hidden mb-8 shadow-sm border border-slate-100 dark:border-white/10 bg-white dark:bg-[#2C2C2E]">
                             <div className={cn("absolute inset-0 bg-gradient-to-br opacity-40", step.gradient)} />
                             <div className="absolute inset-0">{getArt(step.theme)}</div>
-                            
+
                             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
-                                <div className="w-16 h-16 bg-white/80 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg mb-3">
+                                <div className="w-16 h-16 bg-white/80 dark:bg-[#2C2C2E]/80 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg mb-3">
                                     <step.icon className={cn("w-8 h-8", step.color)} />
                                 </div>
-                                <h2 className="text-2xl font-[900] text-slate-800 leading-none mb-1">
+                                <h2 className="text-2xl font-[900] text-slate-800 dark:text-white leading-none mb-1">
                                     {step.title}
                                 </h2>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                     {step.subtitle}
                                 </p>
                             </div>
                         </div>
 
                         {/* 2. ЦИТАТА */}
-                        <div className="mb-8 relative pl-4 border-l-4 border-slate-200">
-                            <p className="text-sm italic font-medium text-slate-500 leading-relaxed">
+                        <div className="mb-8 relative pl-4 border-l-4 border-slate-200 dark:border-white/10">
+                            <p className="text-sm italic font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
                                 {step.quote}
                             </p>
                         </div>
 
                         {/* 3. ИНТЕРАКТИВНЫЙ ЧЕК-ЛИСТ */}
                         <div className="space-y-3">
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2">
+                            <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1 mb-2">
                                 Чек-лист подготовки
                             </h3>
                             {step.checklist.map((item, idx) => {
                                 const isChecked = checkedItems[`${activeStep}-${idx}`];
                                 return (
-                                    <div 
+                                    <div
                                         key={idx}
                                         onClick={() => toggleCheck(idx)}
                                         className={cn(
                                             "p-4 rounded-2xl border transition-all duration-200 flex items-center gap-4 cursor-pointer active:scale-[0.98]",
-                                            isChecked 
-                                                ? "bg-slate-50 border-slate-200" 
-                                                : "bg-white border-slate-100 shadow-sm hover:border-blue-200"
+                                            isChecked
+                                                ? "bg-slate-50 dark:bg-[#3A3A3C] border-slate-200 dark:border-white/10"
+                                                : "bg-white dark:bg-[#2C2C2E] border-slate-100 dark:border-white/5 shadow-sm hover:border-blue-200 dark:hover:border-white/20"
                                         )}
                                     >
                                         <div className={cn(
                                             "w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                                            isChecked ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-300"
+                                            isChecked ? "bg-slate-800 dark:bg-white text-white dark:text-slate-900" : "bg-slate-100 dark:bg-[#3A3A3C] text-slate-300 dark:text-slate-600"
                                         )}>
                                             {isChecked ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
                                         </div>
                                         <span className={cn(
                                             "text-sm font-medium transition-all",
-                                            isChecked ? "text-slate-400 line-through" : "text-slate-700"
+                                            isChecked ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-700 dark:text-slate-300"
                                         )}>
                                             {item}
                                         </span>
@@ -176,33 +176,33 @@ export const AnabolicState = () => {
             </div>
 
             {/* ФУТЕР (Кнопки навигации) */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 pt-8 bg-gradient-to-t from-white via-white/90 to-transparent z-30 flex gap-3">
+            <div className="absolute bottom-0 left-0 right-0 p-6 pt-8 bg-gradient-to-t from-white dark:from-[#1C1C1E] via-white/90 dark:via-[#1C1C1E]/90 to-transparent z-30 flex gap-3">
                 {activeStep > 0 && (
-                    <button 
+                    <button
                         onClick={handlePrev}
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white border border-slate-200 text-slate-400 active:scale-95 transition-transform shrink-0 shadow-sm"
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-500 active:scale-95 transition-transform shrink-0 shadow-sm"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                 )}
-                
-                <button 
+
+                <button
                     onClick={handleNext}
                     className={cn(
                         "flex-1 h-14 rounded-2xl flex items-center justify-between px-6 shadow-xl transition-all duration-300 group active:scale-95",
                         // Если все отмечено - кнопка яркая, если нет - обычная
-                        allChecked 
-                            ? "bg-slate-900 text-white shadow-slate-900/20" 
-                            : "bg-white text-slate-400 border border-slate-200"
+                        allChecked
+                            ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-slate-900/20"
+                            : "bg-white dark:bg-[#2C2C2E] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-white/10"
                     )}
                 >
                     <span className={cn("font-bold text-sm tracking-wide pl-2", !allChecked && "font-medium")}>
                         {isLastStep ? "Начать голодание" : allChecked ? "Продолжить" : "Пропустить"}
                     </span>
-                    
+
                     <div className={cn(
                         "w-8 h-8 rounded-xl flex items-center justify-center transition-colors",
-                        allChecked ? "bg-white/20" : "bg-slate-50"
+                        allChecked ? "bg-white/20 dark:bg-slate-800/20" : "bg-slate-50 dark:bg-[#3A3A3C]"
                     )}>
                         {isLastStep ? (
                             <Play className="w-4 h-4 fill-current" />

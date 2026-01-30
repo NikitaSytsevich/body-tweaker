@@ -1,10 +1,12 @@
 // src/App.tsx
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './app/Layout';
 import { WelcomeScreen } from './app/WelcomeScreen';
 import { TimerProvider } from './features/fasting/context/TimerContext';
-import { storageGet } from './utils/storage'; // 👈 NEW
+import { ProfilePage, SettingsSubPage, AboutSubPage } from './app/ProfilePage';
+import { ArticleDetailPage } from './features/articles/pages/ArticleDetailPage';
+import { storageGet } from './utils/storage';
 
 function App() {
   const [showWelcome, setShowWelcome] = useState<boolean | null>(null);
@@ -18,8 +20,7 @@ function App() {
   }, []);
 
   if (showWelcome === null) {
-      // Можно показать лоадер, но белый экран на < 100ms тоже ок
-      return null; 
+      return null;
   }
 
   if (showWelcome) {
@@ -30,7 +31,15 @@ function App() {
     <TimerProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<Layout />} />
+          <Route path="/" element={<Layout />} />
+          <Route path="/timer" element={<Layout />} />
+          <Route path="/breathing" element={<Layout />} />
+          <Route path="/history" element={<Layout />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/settings" element={<SettingsSubPage />} />
+          <Route path="/profile/about" element={<AboutSubPage />} />
+          <Route path="/articles/:slug" element={<ArticleDetailPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </TimerProvider>

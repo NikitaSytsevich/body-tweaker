@@ -1,9 +1,10 @@
 // src/features/breathing/BreathingPage.tsx
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
-import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight, UserCircle2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet'; // 👈 Убедитесь, что импорт правильный
@@ -14,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const DURATION_OPTIONS = [5, 10, 15, 20, 30, 0];
 
 export const BreathingPage = () => {
+  const navigate = useNavigate();
   const [levelIndex, setLevelIndex] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showSound, setShowSound] = useState(false);
@@ -138,6 +140,9 @@ export const BreathingPage = () => {
                 </div>
 
                 <div className="flex gap-2 relative">
+                    <button onClick={() => navigate('/profile')} className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                        <UserCircle2 className="w-6 h-6" />
+                    </button>
                     <button onClick={() => setShowSound(true)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                         <Volume2 className="w-6 h-6" />
                     </button>

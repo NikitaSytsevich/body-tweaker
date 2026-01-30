@@ -20,6 +20,10 @@ const STORAGE_KEY_FINAL = STORAGE_KEY || 'dev-key-change-in-prod-build';
 // Префикс, чтобы ключи не пересекались с другими приложениями
 const KEY_PREFIX = 'bt_app_';
 
+// OPTIMIZATION: Simple in-memory cache for frequently accessed values
+const storageCache = new Map<string, { value: string; timestamp: number }>();
+const CACHE_TTL = 5000; // 5 seconds
+
 // Константы для чанкинга (8 записей * ~400 байт < 4096 байт)
 const HISTORY_CHUNK_SIZE = 8;
 const HISTORY_MAX_CHUNKS = 125; // Поддержка до 1000 записей (125 * 8 = 1000)
@@ -67,9 +71,16 @@ const decrypt = (value: string): string | null => {
 
 /**
  * Асинхронное получение данных
+ * OPTIMIZATION: Added caching for frequently accessed values
  */
 export async function storageGet(key: string): Promise<string | null> {
   const namespacedKey = getKey(key);
+
+  // OPTIMIZATION: Check cache first for frequently accessed values
+  const cached = storageCache.get(namespacedKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.value;
+  }
 
   if (isCloudAvailable()) {
     try {
@@ -77,9 +88,17 @@ export async function storageGet(key: string): Promise<string | null> {
         WebApp.CloudStorage.getItem(namespacedKey, (err, value) => {
           if (err) {
             console.warn('[Cloud] Get Error, falling back to local:', err);
-            resolve(decrypt(localStorage.getItem(namespacedKey) || ''));
+            const decrypted = decrypt(localStorage.getItem(namespacedKey) || '');
+            if (decrypted) {
+              storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
+            }
+            resolve(decrypted);
           } else {
-            resolve(decrypt(value || ''));
+            const decrypted = decrypt(value || '');
+            if (decrypted) {
+              storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
+            }
+            resolve(decrypted);
           }
         });
       });
@@ -88,15 +107,23 @@ export async function storageGet(key: string): Promise<string | null> {
     }
   }
 
-  return decrypt(localStorage.getItem(namespacedKey) || '');
+  const decrypted = decrypt(localStorage.getItem(namespacedKey) || '');
+  if (decrypted) {
+    storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
+  }
+  return decrypted;
 }
 
 /**
  * Асинхронное сохранение данных
+ * OPTIMIZATION: Invalidate cache on set
  */
 export async function storageSet(key: string, value: string): Promise<boolean> {
   const namespacedKey = getKey(key);
   const encrypted = encrypt(value);
+
+  // OPTIMIZATION: Update cache immediately
+  storageCache.set(namespacedKey, { value, timestamp: Date.now() });
 
   try {
     localStorage.setItem(namespacedKey, encrypted);
@@ -120,10 +147,14 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
 
 /**
  * Асинхронное удаление
+ * OPTIMIZATION: Invalidate cache on remove
  */
 export async function storageRemove(key: string): Promise<boolean> {
   const namespacedKey = getKey(key);
-  
+
+  // OPTIMIZATION: Remove from cache
+  storageCache.delete(namespacedKey);
+
   try {
     localStorage.removeItem(namespacedKey);
   } catch { /* ignore */ }

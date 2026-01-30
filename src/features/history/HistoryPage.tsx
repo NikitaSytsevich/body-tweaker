@@ -1,18 +1,16 @@
 // src/features/history/HistoryPage.tsx
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  Flame, 
-  Wind, 
-  ChevronLeft, 
-  ChevronRight, 
-  Trophy, 
-  Zap, 
-  Clock, 
+import { useNavigate } from 'react-router-dom';
+import {
+  Flame,
+  Wind,
+  ChevronLeft,
+  ChevronRight,
+  Trophy,
+  Zap,
   Calendar as CalendarIcon,
-  Info,
-  Settings,
-  Activity,
-  Hourglass
+  Hourglass,
+  UserCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
@@ -22,8 +20,6 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 // Components
 import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
-import { SettingsModal } from '../../app/modals/SettingsModal';
-import { InfoModal } from '../../app/modals/InfoModal';
 import { HistorySkeleton } from './components/HistorySkeleton';
 
 // Utils
@@ -45,7 +41,7 @@ const StatCard = ({ label, value, unit, icon: Icon, colorClass, bgClass }: any) 
        <span className={cn("text-[9px] font-bold uppercase tracking-wide", colorClass)}>{label}</span>
     </div>
     <div className="flex flex-col items-center">
-        <span className={cn("text-xl font-black leading-none mb-0.5", colorClass.replace('text-', 'text-slate-800 dark:text-'))}>
+        <span className={cn("text-xl font-black leading-none mb-0.5", colorClass)}>
             {value}
         </span>
         {unit && (
@@ -91,6 +87,7 @@ const calculateStats = (records: HistoryRecord[], type: 'fasting' | 'breathing')
 };
 
 export const HistoryPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'fasting' | 'breathing'>('fasting');
   const [allRecords, setAllRecords] = useState<HistoryRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,8 +98,6 @@ export const HistoryPage = () => {
 
   // Modals
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // LOAD DATA
   useEffect(() => {
@@ -180,19 +175,17 @@ export const HistoryPage = () => {
   return (
     <div className="min-h-full flex flex-col pb-6 relative z-0">
       
-      {/* HEADER & SETTINGS */}
-      <div className="px-6 pt-6 flex justify-between items-center mb-6">
+      {/* HEADER */}
+      <div className="px-6 pt-6 mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-[900] text-slate-800 dark:text-white leading-tight">
             Прогресс
           </h1>
-          <div className="flex gap-2">
-            <button onClick={() => setIsInfoOpen(true)} className="w-10 h-10 rounded-full bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 shadow-sm">
-                <Info className="w-5 h-5" />
-            </button>
-            <button onClick={() => setIsSettingsOpen(true)} className="w-10 h-10 rounded-full bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 shadow-sm">
-                <Settings className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
+          >
+            <UserCircle2 className="w-5 h-5" />
+          </button>
       </div>
 
       <div className="px-4 mb-6">
@@ -203,40 +196,31 @@ export const HistoryPage = () => {
         
         {/* 1. STATS ROW */}
         <div className="flex gap-2 mb-8 overflow-x-auto scrollbar-hide pb-1">
-            <StatCard 
-                label={activeTab === 'fasting' ? "Всего" : "Практика"} 
-                value={stats.totalTime} 
+            <StatCard
+                label={activeTab === 'fasting' ? "Всего" : "Практика"}
+                value={stats.totalTime}
                 unit={activeTab === 'fasting' ? "Часов" : "Минут"}
-                icon={Hourglass} 
-                bgClass="bg-blue-50 dark:bg-blue-900/20" 
-                colorClass="text-blue-500 dark:text-blue-400" 
-            />
-            
-            <StatCard 
-                label="Рекорд" 
-                value={stats.maxDuration} 
-                unit={activeTab === 'fasting' ? "Часов" : "Минут"}
-                icon={Trophy} 
-                bgClass="bg-amber-50 dark:bg-amber-900/20" 
-                colorClass="text-amber-500 dark:text-amber-400" 
+                icon={Hourglass}
+                bgClass="bg-blue-50 dark:bg-blue-900/20"
+                colorClass="text-blue-500 dark:text-blue-400"
             />
 
-            <StatCard 
-                label="Сессий" 
-                value={stats.count} 
-                unit="Всего"
-                icon={Zap} 
-                bgClass="bg-purple-50 dark:bg-purple-900/20" 
-                colorClass="text-purple-500 dark:text-purple-400" 
-            />
-            
-            <StatCard 
-                label="Среднее" 
-                value={stats.avgDuration} 
+            <StatCard
+                label="Рекорд"
+                value={stats.maxDuration}
                 unit={activeTab === 'fasting' ? "Часов" : "Минут"}
-                icon={Activity} 
-                bgClass="bg-slate-100 dark:bg-slate-800" 
-                colorClass="text-slate-500 dark:text-slate-400" 
+                icon={Trophy}
+                bgClass="bg-amber-50 dark:bg-amber-900/20"
+                colorClass="text-amber-500 dark:text-amber-400"
+            />
+
+            <StatCard
+                label="Сессий"
+                value={stats.count}
+                unit="Всего"
+                icon={Zap}
+                bgClass="bg-purple-50 dark:bg-purple-900/20"
+                colorClass="text-purple-500 dark:text-purple-400"
             />
         </div>
 
@@ -250,10 +234,10 @@ export const HistoryPage = () => {
                 </h2>
                 <div className="flex gap-1">
                     <button onClick={() => setCurrentDate(d => d.subtract(1, 'month'))} className="p-2 hover:bg-slate-50 dark:hover:bg-white/10 rounded-full transition-colors">
-                        <ChevronLeft className="w-5 h-5 text-slate-400" />
+                        <ChevronLeft className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                     </button>
                     <button onClick={() => setCurrentDate(d => d.add(1, 'month'))} className="p-2 hover:bg-slate-50 dark:hover:bg-white/10 rounded-full transition-colors">
-                        <ChevronRight className="w-5 h-5 text-slate-400" />
+                        <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                     </button>
                 </div>
             </div>
@@ -261,7 +245,7 @@ export const HistoryPage = () => {
             {/* Days Grid */}
             <div className="grid grid-cols-7 gap-y-4 mb-2">
                 {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
-                    <div key={d} className="text-center text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase">
+                    <div key={d} className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
                         {d}
                     </div>
                 ))}
@@ -326,47 +310,102 @@ export const HistoryPage = () => {
             ) : (
                 <div className="space-y-3">
                     <AnimatePresence>
-                    {recordsForSelectedDate.map(record => (
-                         <motion.div
-                            layoutId={record.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            key={record.id}
-                            onClick={() => setSelectedRecord(record)}
-                            className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.5rem] flex items-center gap-4 shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.98] transition-transform"
-                        >
-                            <div className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border border-transparent dark:border-white/5",
-                                record.type === 'fasting' 
-                                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400" 
-                                    : "bg-purple-50 dark:bg-purple-900/20 text-purple-500 dark:text-purple-400"
-                            )}>
-                                {record.type === 'fasting' ? <Flame className="w-6 h-6" /> : <Wind className="w-6 h-6" />}
-                            </div>
+                    {recordsForSelectedDate.map(record => {
+                        const isFasting = record.type === 'fasting';
+                        const hours = Math.floor(record.durationSeconds / 3600);
+                        const minutes = Math.floor((record.durationSeconds % 3600) / 60);
+                        const progress = isFasting ? Math.min((hours / 24) * 100, 100) : Math.min((record.durationSeconds / 60 / 30) * 100, 100);
 
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-slate-800 dark:text-white truncate">
-                                    {record.scheme}
-                                </h4>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
-                                        {activeTab === 'fasting' 
-                                            ? `${Math.floor(record.durationSeconds / 3600)}ч ${Math.floor((record.durationSeconds % 3600) / 60)}м`
-                                            : `${Math.floor(record.durationSeconds / 60)} мин`
-                                        }
+                        return (
+                            <motion.div
+                                layoutId={record.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                key={record.id}
+                                onClick={() => setSelectedRecord(record)}
+                                className={cn(
+                                    "relative p-4 rounded-[1.5rem] flex items-center gap-4 active:scale-[0.98] transition-transform overflow-hidden",
+                                    "bg-white dark:bg-[#2C2C2E] shadow-md border",
+                                    isFasting
+                                        ? "border-blue-100 dark:border-blue-900/30 shadow-blue-500/5"
+                                        : "border-purple-100 dark:border-purple-900/30 shadow-purple-500/5"
+                                )}
+                            >
+                                {/* Gradient overlay */}
+                                <div className={cn(
+                                    "absolute inset-0 opacity-[0.03] dark:opacity-[0.06] pointer-events-none",
+                                    isFasting
+                                        ? "bg-gradient-to-br from-blue-500 to-cyan-500"
+                                        : "bg-gradient-to-br from-purple-500 to-pink-500"
+                                )} />
+
+                                {/* Progress bar indicator */}
+                                <div className={cn(
+                                    "absolute left-0 top-4 bottom-4 w-1 rounded-full",
+                                    isFasting ? "bg-blue-500" : "bg-purple-500"
+                                )}>
+                                    <div
+                                        className={cn(
+                                            "absolute bottom-0 left-0 right-0 rounded-full transition-all",
+                                            isFasting ? "bg-blue-200 dark:bg-blue-400" : "bg-purple-200 dark:bg-purple-400"
+                                        )}
+                                        style={{ height: `${progress}%` }}
+                                    />
+                                </div>
+
+                                {/* Icon with gradient background */}
+                                <div className={cn(
+                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 relative z-10 shadow-lg",
+                                    isFasting
+                                        ? "bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 text-white"
+                                        : "bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-500 text-white"
+                                )}>
+                                    {isFasting ? <Flame className="w-7 h-7" /> : <Wind className="w-7 h-7" />}
+                                </div>
+
+                                <div className="flex-1 min-w-0 relative z-10">
+                                    <h4 className="font-bold text-slate-800 dark:text-white truncate text-sm mb-1">
+                                        {record.scheme}
+                                    </h4>
+
+                                    {/* Big duration display */}
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-xl font-black text-slate-800 dark:text-white tabular-nums">
+                                            {isFasting ? hours : Math.floor(record.durationSeconds / 60)}
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
+                                            {isFasting ? 'ч' : 'мин'}
+                                        </span>
+                                        {isFasting && minutes > 0 && (
+                                            <>
+                                                <span className="text-sm font-bold text-slate-400 dark:text-slate-500 ml-1 tabular-nums">
+                                                    {minutes}м
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Time badge */}
+                                <div className={cn(
+                                    "flex flex-col items-end gap-1 relative z-10 shrink-0",
+                                )}>
+                                    <div className={cn(
+                                        "px-2.5 py-1 rounded-xl text-xs font-bold shadow-sm whitespace-nowrap",
+                                        isFasting
+                                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                                            : "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                                    )}>
+                                        {dayjs(record.endTime).format('HH:mm')}
+                                    </div>
+                                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                                        {dayjs(record.endTime).format('D MMM')}
                                     </span>
                                 </div>
-                            </div>
-
-                            <div className="text-right">
-                                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 block">
-                                    {dayjs(record.endTime).format('HH:mm')}
-                                </span>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                     </AnimatePresence>
                 </div>
             )}
@@ -383,8 +422,6 @@ export const HistoryPage = () => {
           onUpdate={(updated) => handleUpdate(updated as HistoryRecord)}
         />
       )}
-      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
-      {isInfoOpen && <InfoModal isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />}
     </div>
   );
 };

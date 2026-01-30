@@ -55,7 +55,7 @@ export const howToPrepare: Article = {
       {/* Блок 2: Процедура очищения */}
       <section>
         <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-xl">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
                 <Droplets className="w-6 h-6" />
             </div>
             <h3 className="text-2xl font-[900] text-slate-900 dark:text-white">«Выключение» голода</h3>
