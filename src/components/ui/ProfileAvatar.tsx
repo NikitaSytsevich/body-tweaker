@@ -1,5 +1,5 @@
 // src/components/ui/ProfileAvatar.tsx
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
 import { cn } from '../../utils/cn';
@@ -28,24 +28,20 @@ const textSizes = {
   lg: 'text-xl'
 };
 
-export const ProfileAvatar = memo(({ onClick, size = 'md', className }: ProfileAvatarProps) => {
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState<string>('');
+export const ProfileAvatar = ({ onClick, size = 'md', className }: ProfileAvatarProps) => {
   const [imageError, setImageError] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const user = WebApp.initDataUnsafe?.user;
-      if (user) {
-        setPhotoUrl(user.photo_url || null);
-        setFirstName(user.first_name || '');
-      }
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, []);
-
+  // Читаем напрямую из WebApp без useState, чтобы данные всегда были актуальными
+  const photoUrl = WebApp.initDataUnsafe?.user?.photo_url;
+  const firstName = WebApp.initDataUnsafe?.user?.first_name || '';
   const initials = firstName ? firstName.charAt(0).toUpperCase() : '?';
+
+  // Сбрасываем ошибку когда photoUrl меняется
+  useEffect(() => {
+    if (photoUrl) {
+      setImageError(false);
+    }
+  }, [photoUrl]);
 
   // Show photo if available and no error
   if (photoUrl && !imageError) {
@@ -89,6 +85,4 @@ export const ProfileAvatar = memo(({ onClick, size = 'md', className }: ProfileA
       )}
     </button>
   );
-});
-
-ProfileAvatar.displayName = 'ProfileAvatar';
+};
