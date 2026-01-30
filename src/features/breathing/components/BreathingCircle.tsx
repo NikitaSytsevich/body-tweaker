@@ -15,7 +15,7 @@ type ConfigType = {
 
 // OPTIMIZATION: Move config outside component to prevent recreation on every render
 const config: ConfigType = {
-  idle: { text: "", color: "bg-slate-50 dark:bg-[#3A3A3C] border-4 border-white dark:border-white/10 shadow-inner", scale: 1 },
+  idle: { text: "СТАРТ", color: "bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/40 dark:to-blue-900/40 border-4 border-purple-200 dark:border-purple-500/30 shadow-xl", scale: 1 },
   inhale: { text: "Вдох", color: "bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400", scale: 1.5 },
   hold: { text: "Задержка", color: "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400", scale: 1.5 },
   exhale: { text: "Выдох", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400", scale: 1 },
@@ -48,11 +48,15 @@ export const BreathingCircle = memo(({ phase, timeLeft, totalDuration }: Props) 
         animate={{ scale: current.scale }}
         transition={{ duration: totalDuration > 0 ? totalDuration : 0.5, ease: "linear" }}
         className={cn(
-            "w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500",
+            "w-32 h-32 rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500 cursor-pointer",
             current.color
         )}
       >
-        {phase !== 'idle' && (
+        {phase === 'idle' ? (
+            <span className="text-base font-black uppercase tracking-widest bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+                {current.text}
+            </span>
+        ) : (
             <>
                 <span className="text-sm font-bold uppercase tracking-widest">{current.text}</span>
                 {phase !== 'finished' && (

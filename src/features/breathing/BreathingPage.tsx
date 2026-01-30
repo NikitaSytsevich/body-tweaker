@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
-import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { Info, Volume2, Loader2, Timer, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet';
@@ -167,48 +167,27 @@ export const BreathingPage = () => {
               </div>
             ) : (
               <>
-                {!isRunning ? (
-                  <div className="relative">
-                    {/* Glow effect behind circle */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 dark:from-purple-500 dark:to-blue-500 rounded-full blur-2xl opacity-30 animate-pulse" />
-
-                    {/* Breathing Circle (dimmed when idle) */}
-                    <div className="relative opacity-60">
-                      <BreathingCircle
-                        phase={phase}
-                        timeLeft={phaseTimeLeft}
-                        totalDuration={getTotalDuration()}
-                      />
-                    </div>
-
-                    {/* START BUTTON - Centered and Prominent */}
-                    <button
-                      onClick={handleToggle}
-                      className="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 dark:from-purple-600 dark:to-blue-600 text-white rounded-full shadow-xl shadow-purple-500/40 dark:shadow-purple-500/30 transition-all hover:scale-105 active:scale-95">
-                        <Play className="w-6 h-6 fill-current" />
-                        <span className="text-lg font-black uppercase tracking-wider">СТАРТ</span>
-                      </div>
-                    </button>
-                  </div>
-                ) : (
-                  <div
-                    onClick={handleToggle}
-                    className={cn(
-                      "cursor-pointer relative transition-all duration-300",
-                      "hover:scale-105 active:scale-95"
+                {/* Breathing Circle - clickable with START text inside */}
+                <div
+                  onClick={handleToggle}
+                  className={cn(
+                    "cursor-pointer relative transition-all duration-300",
+                    !isRunning && "hover:scale-105 active:scale-95"
+                  )}
+                >
+                  <div className="relative flex items-center justify-center">
+                    {/* Glow effect behind circle when idle */}
+                    {!isRunning && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-blue-400 dark:from-purple-500 dark:to-blue-500 rounded-full blur-2xl opacity-30 animate-pulse" />
                     )}
-                  >
-                    <div className="relative flex items-center justify-center">
-                      <BreathingCircle
-                        phase={phase}
-                        timeLeft={phaseTimeLeft}
-                        totalDuration={getTotalDuration()}
-                      />
-                    </div>
+
+                    <BreathingCircle
+                      phase={phase}
+                      timeLeft={phaseTimeLeft}
+                      totalDuration={getTotalDuration()}
+                    />
                   </div>
-                )}
+                </div>
 
                 {/* PATTERN INDICATORS */}
                 <div className="flex items-center justify-center gap-8 mt-6">
@@ -259,13 +238,16 @@ export const BreathingPage = () => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="px-6 pb-6 pt-2"
+                className="px-8 pb-8 pt-4 space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Duration */}
-                  <div className="bg-slate-50/80 dark:bg-[#3A3A3C]/50 backdrop-blur-sm p-4 rounded-2xl border border-slate-100 dark:border-white/10 flex flex-col">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-3">Время</p>
-                    <div className="flex-1 flex items-center justify-between gap-2">
+                {/* Duration Control */}
+                <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md p-5 rounded-3xl border border-white/40 dark:border-white/10 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Время практики</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">Выберите длительность</p>
+                    </div>
+                    <div className="flex items-center gap-3">
                       <button
                         disabled={duration === DURATION_OPTIONS[DURATION_OPTIONS.length - 1]}
                         onClick={() => {
@@ -274,14 +256,15 @@ export const BreathingPage = () => {
                             setDuration(DURATION_OPTIONS[currentIndex + 1]);
                           }
                         }}
-                        className="p-2.5 hover:bg-white dark:hover:bg-[#4A4A4C] rounded-xl disabled:opacity-30 transition-all"
+                        className="w-11 h-11 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
                       >
-                        <ChevronLeft className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        <ChevronLeft className="w-5 h-5" />
                       </button>
-                      <div className="text-center">
-                        <span className="text-2xl font-black text-slate-800 dark:text-white">
-                          {duration === 0 ? "∞" : `${duration}м`}
+                      <div className="w-20 text-center">
+                        <span className="text-3xl font-black bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+                          {duration === 0 ? "∞" : duration}
                         </span>
+                        <span className="text-sm font-bold text-slate-400 dark:text-slate-500 ml-1">мин</span>
                       </div>
                       <button
                         disabled={duration === DURATION_OPTIONS[0]}
@@ -291,33 +274,41 @@ export const BreathingPage = () => {
                             setDuration(DURATION_OPTIONS[currentIndex - 1]);
                           }
                         }}
-                        className="p-2.5 hover:bg-white dark:hover:bg-[#4A4A4C] rounded-xl disabled:opacity-30 transition-all"
+                        className="w-11 h-11 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
                       >
-                        <ChevronRight className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        <ChevronRight className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
+                </div>
 
-                  {/* Level */}
-                  <div className="bg-slate-50/80 dark:bg-[#3A3A3C]/50 backdrop-blur-sm p-4 rounded-2xl border border-slate-100 dark:border-white/10 flex flex-col">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-3">Уровень</p>
-                    <div className="flex-1 flex items-center justify-between gap-2">
+                {/* Level Control */}
+                <div className="bg-white/60 dark:bg-white/5 backdrop-blur-md p-5 rounded-3xl border border-white/40 dark:border-white/10 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Уровень сложности</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">Уровень {level.id} из {BREATH_LEVELS.length}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
                       <button
                         disabled={levelIndex === 0}
                         onClick={() => setLevelIndex(i => i - 1)}
-                        className="p-2.5 hover:bg-white dark:hover:bg-[#4A4A4C] rounded-xl disabled:opacity-30 transition-all"
+                        className="w-11 h-11 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
                       >
-                        <ChevronLeft className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        <ChevronLeft className="w-5 h-5" />
                       </button>
-                      <div className="text-center">
-                        <span className="text-2xl font-black text-slate-800 dark:text-white">{level.id}</span>
+                      <div className="w-20 text-center">
+                        <span className="text-3xl font-black bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
+                          {level.id}
+                        </span>
+                        <span className="text-sm font-bold text-slate-400 dark:text-slate-500 ml-1">ур</span>
                       </div>
                       <button
                         disabled={levelIndex === BREATH_LEVELS.length - 1}
                         onClick={() => setLevelIndex(i => i + 1)}
-                        className="p-2.5 hover:bg-white dark:hover:bg-[#4A4A4C] rounded-xl disabled:opacity-30 transition-all"
+                        className="w-11 h-11 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/20 disabled:opacity-30 disabled:hover:bg-transparent transition-all hover:scale-105 active:scale-95 shadow-sm"
                       >
-                        <ChevronRight className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        <ChevronRight className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
