@@ -7,7 +7,6 @@ import {
   Info as InfoIcon,
   UserCircle2,
   ShieldCheck,
-  Activity,
   User,
   ChevronRight,
   Sparkles,
@@ -43,7 +42,7 @@ const TEAM = [
     name: "Никита Сыцевич",
     handle: "@nikita_sytsevich",
     url: "https://t.me/nikita_sytsevich",
-    icon: Activity,
+    photoUrl: "https://t.me/i/userpic/320/nikita_sytsevich.jpg",
     color: "text-emerald-600 dark:text-emerald-400",
     bg: "bg-emerald-50 dark:bg-emerald-900/20"
   },
@@ -51,8 +50,8 @@ const TEAM = [
     role: "Реабилитолог",
     name: "Александр Якимчик",
     handle: "@Alex_Yakimchyk",
-    url: "https://t.me/",
-    icon: User,
+    url: "https://t.me/Alex_Yakimchyk",
+    photoUrl: "https://t.me/i/userpic/320/Alex_Yakimchyk.jpg",
     color: "text-blue-600 dark:text-blue-400",
     bg: "bg-blue-50 dark:bg-blue-900/20"
   },
@@ -61,7 +60,7 @@ const TEAM = [
     name: "Кирилл Бубнов",
     handle: "@bubnovzavaliebalo",
     url: "https://t.me/bubnovzavaliebalo",
-    icon: User,
+    photoUrl: "https://t.me/i/userpic/320/bubnovzavaliebalo.jpg",
     color: "text-amber-600 dark:text-amber-400",
     bg: "bg-amber-50 dark:bg-amber-900/20"
   },
@@ -70,7 +69,7 @@ const TEAM = [
     name: "Мария Сыцевич",
     handle: "@maria_sytsevich",
     url: "https://t.me/maria_sytsevich",
-    icon: User,
+    photoUrl: "https://t.me/i/userpic/320/maria_sytsevich.jpg",
     color: "text-rose-600 dark:text-rose-400",
     bg: "bg-rose-50 dark:bg-rose-900/20"
   }
@@ -570,9 +569,18 @@ export const AboutSubPage = () => {
               className="block bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.99] transition-transform"
             >
               <div className="flex items-center gap-4">
-                <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", member.bg, member.color)}>
-                  <member.icon className="w-6 h-6" />
-                </div>
+                {/* Avatar or fallback icon */}
+                {member.photoUrl ? (
+                  <img
+                    src={member.photoUrl}
+                    alt={member.name}
+                    className="w-12 h-12 rounded-2xl object-cover shrink-0 border-2 border-slate-100 dark:border-white/10"
+                  />
+                ) : (
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", member.bg, member.color)}>
+                    <User className="w-6 h-6" />
+                  </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-slate-800 dark:text-white text-[15px] leading-tight mb-0.5">
