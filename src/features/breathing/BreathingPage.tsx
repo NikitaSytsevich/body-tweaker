@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
-import { Info, Volume2, Wind, Clock, Target, Flame, Sparkles } from 'lucide-react';
+import { Info, Volume2, Wind, Clock, Target, Flame } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet';
@@ -202,11 +202,8 @@ export const BreathingPage = () => {
                   <span className="text-sm font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-white bg-clip-text text-transparent">
                     {level.name}
                   </span>
-                  <div className="flex items-center justify-center gap-1 mt-0.5">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                      {level.inhale}-{level.hold}-{level.exhale}
-                    </span>
-                    <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                    {level.inhale}-{level.hold}-{level.exhale}
                   </div>
                 </div>
                 <button
@@ -288,18 +285,6 @@ export const BreathingPage = () => {
                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Выдох</span>
               </div>
             </div>
-
-            {/* Instructions - Elegant */}
-            {!isRunning && (
-              <div className="mt-6 text-center px-6 z-10">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-white/5 backdrop-blur-sm rounded-full shadow-lg border border-slate-200/50 dark:border-white/10">
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
-                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                    Нажмите на <span className="font-bold bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">круг</span> для старта
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
