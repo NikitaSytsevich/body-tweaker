@@ -1,5 +1,5 @@
 // src/components/ui/ProfileAvatar.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
 import { cn } from '../../utils/cn';
@@ -8,6 +8,8 @@ interface ProfileAvatarProps {
   onClick?: () => void;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  // Добавляем callback для принудительного обновления
+  onUpdate?: (data: { photoUrl: string | null; firstName: string }) => void;
 }
 
 const sizeClasses = {
@@ -28,47 +30,73 @@ const textSizes = {
   lg: 'text-xl'
 };
 
-export const ProfileAvatar = ({ onClick, size = 'md', className }: ProfileAvatarProps) => {
-  // Храним данные пользователя в state для реактивности
-  const [userData, setUserData] = useState(() => ({
-    photoUrl: WebApp.initDataUnsafe?.user?.photo_url || null,
-    firstName: WebApp.initDataUnsafe?.user?.first_name || ''
-  }));
+// Кеш для хранения данных пользователя между экземплярами компонента
+let globalAvatarCache: { photoUrl: string | null; firstName: string; timestamp: number } | null = null;
+const CACHE_DURATION = 5000; // 5 секунд
+
+// Функция для получения актуальных данных
+const fetchUserData = () => {
+  // Проверяем кеш сначала
+  if (globalAvatarCache && Date.now() - globalAvatarCache.timestamp < CACHE_DURATION) {
+    return {
+      photoUrl: globalAvatarCache.photoUrl,
+      firstName: globalAvatarCache.firstName
+    };
+  }
+
+  const user = WebApp.initDataUnsafe?.user;
+  const data = {
+    photoUrl: user?.photo_url || null,
+    firstName: user?.first_name || ''
+  };
+
+  // Обновляем кеш
+  globalAvatarCache = { ...data, timestamp: Date.now() };
+
+  return data;
+};
+
+export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: ProfileAvatarProps) => {
+  const [userData, setUserData] = useState(() => fetchUserData());
   const [imageError, setImageError] = useState(false);
+  const hasMounted = useRef(false);
 
   const initials = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : '?';
 
-  // Подписываемся на изменения в WebApp
-  useEffect(() => {
-    const updateUserData = () => {
-      const user = WebApp.initDataUnsafe?.user;
-      if (user) {
-        setUserData({
-          photoUrl: user.photo_url || null,
-          firstName: user.first_name || ''
-        });
-        setImageError(false);
-      }
-    };
-
-    // Сразу проверяем
-    updateUserData();
-
-    // Подписываемся на событие готовности WebApp
-    if (WebApp.ready) {
-      WebApp.ready();
-      updateUserData();
+  // Функция обновления данных
+  const refreshData = useCallback(() => {
+    const newData = fetchUserData();
+    if (newData.photoUrl !== userData.photoUrl || newData.firstName !== userData.firstName) {
+      setUserData(newData);
+      setImageError(false);
     }
+    // Уведомляем родительский компонент
+    if (onUpdate) {
+      onUpdate(newData);
+    }
+  }, [userData.photoUrl, userData.firstName, onUpdate]);
 
-    // Таймер для отложенного обновления (на случай медленной загрузки)
-    const timer = setTimeout(updateUserData, 100);
-    const timer2 = setTimeout(updateUserData, 500);
+  // Основной useEffect для инициализации и подписки на события
+  useEffect(() => {
+    hasMounted.current = true;
+
+    // Сразу обновляем несколько раз с задержками для надежности
+    refreshData();
+    const t1 = setTimeout(refreshData, 100);
+    const t2 = setTimeout(refreshData, 500);
+    const t3 = setTimeout(refreshData, 1500);
+
+    // Периодическая проверка для надежности
+    const interval = setInterval(refreshData, 3000);
 
     return () => {
-      clearTimeout(timer);
-      clearTimeout(timer2);
+      hasMounted.current = false;
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearInterval(interval);
     };
-  }, []);
+  }, [refreshData]);
 
   // Сбрасываем ошибку когда photoUrl меняется
   useEffect(() => {
@@ -94,6 +122,15 @@ export const ProfileAvatar = ({ onClick, size = 'md', className }: ProfileAvatar
           alt="Profile"
           className="w-full h-full object-cover"
           onError={() => setImageError(true)}
+          onLoad={(e) => {
+            // Убедимся что изображение загрузилось корректно
+            const img = e.currentTarget;
+            if (img.naturalWidth === 0) {
+              setImageError(true);
+            }
+          }}
+          crossOrigin="anonymous"
+          referrerPolicy="no-referrer"
         />
       </button>
     );
@@ -119,4 +156,11 @@ export const ProfileAvatar = ({ onClick, size = 'md', className }: ProfileAvatar
       )}
     </button>
   );
+};
+
+// Экспорт функции для принудительного обновления всех аватаров
+export const refreshAllAvatars = () => {
+  globalAvatarCache = null; // Сбрасываем кеш
+  const data = fetchUserData();
+  return data;
 };

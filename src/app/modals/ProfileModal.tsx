@@ -96,6 +96,7 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Settings
   const { value: notifications, setValue: setNotifications, isLoading: isSettingsLoading } =
@@ -262,8 +263,15 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
               {/* USER PROFILE CARD */}
               <div className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[2rem] shadow-sm flex items-center gap-4">
                 <div className="relative">
-                  {photoUrl ? (
-                    <img src={photoUrl} alt="User" className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5" />
+                  {photoUrl && !imageError ? (
+                    <img
+                      src={photoUrl}
+                      alt="User"
+                      className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5"
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      onError={() => setImageError(true)}
+                    />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-400">
                       <UserCircle2 className="w-8 h-8" />

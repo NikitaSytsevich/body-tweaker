@@ -100,6 +100,8 @@ export const ProfilePage = () => {
               src={photoUrl}
               alt="User"
               className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
               onError={() => setImageError(true)}
             />
           ) : (
@@ -360,6 +362,8 @@ export const SettingsSubPage = () => {
                             src={photoUrl}
                             alt="User"
                             className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5"
+                            crossOrigin="anonymous"
+                            referrerPolicy="no-referrer"
                             onError={() => setProfileImageError(true)}
                         />
                     ) : (
