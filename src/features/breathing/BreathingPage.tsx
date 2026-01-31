@@ -128,46 +128,40 @@ export const BreathingPage = () => {
             {/* STATS GRID - Beautiful cards */}
             <div className="grid grid-cols-3 gap-3">
               {/* Card 1: Cycles */}
-              <div className="relative overflow-hidden rounded-3xl p-3 text-center shadow-xl shadow-cyan-500/10 dark:shadow-cyan-500/5 group transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-3xl p-2.5 shadow-xl shadow-cyan-500/10 dark:shadow-cyan-500/5 group transition-all duration-300 hover:scale-105">
                 <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 via-cyan-500 to-blue-500 opacity-90" />
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <div className="relative z-10">
-                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full mb-1.5">
+                <div className="relative z-10 h-full flex flex-col items-center justify-between min-h-[88px]">
+                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
                     <Flame className="w-3.5 h-3.5 text-white" fill="currentColor" />
                   </div>
                   <div className="text-2xl font-[900] text-white tabular-nums leading-none">
                     {cycles}
                   </div>
-                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider mt-1">Циклов</p>
+                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider">Циклов</p>
                 </div>
                 {/* Sparkle effect */}
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/30 rounded-full blur-lg group-hover:scale-150 transition-transform duration-500" />
               </div>
 
               {/* Card 2: Phase/Level */}
-              <div className="relative overflow-hidden rounded-3xl p-3 text-center shadow-xl shadow-violet-500/10 dark:shadow-violet-500/5 group transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-3xl p-2.5 shadow-xl shadow-violet-500/10 dark:shadow-violet-500/5 group transition-all duration-300 hover:scale-105">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-400 via-violet-500 to-purple-500 opacity-90" />
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <div className="relative z-10">
-                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full mb-1.5">
+                <div className="relative z-10 h-full flex flex-col items-center justify-between min-h-[88px]">
+                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
                     {isRunning && phase === 'inhale' && <Wind className="w-3.5 h-3.5 text-white" fill="currentColor" />}
                     {isRunning && phase === 'hold' && <Clock className="w-3.5 h-3.5 text-white" fill="currentColor" />}
                     {isRunning && phase === 'exhale' && <Wind className="w-3.5 h-3.5 text-white" fill="currentColor" />}
                     {!isRunning && <Target className="w-3.5 h-3.5 text-white" fill="currentColor" />}
                   </div>
-                  <div className="text-base font-[900] text-white leading-tight">
-                    {isRunning ? (
-                      phase === 'inhale' && 'Вдох'
-                    ) : null}
-                    {isRunning ? (
-                      phase === 'hold' && 'Задержка'
-                    ) : null}
-                    {isRunning ? (
-                      phase === 'exhale' && 'Выдох'
-                    ) : null}
+                  <div className="text-lg font-[900] text-white leading-none">
+                    {isRunning && phase === 'inhale' && 'Вдох'}
+                    {isRunning && phase === 'hold' && 'Задержка'}
+                    {isRunning && phase === 'exhale' && 'Выдох'}
                     {!isRunning && level.id}
                   </div>
-                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider mt-1">
+                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider">
                     {isRunning ? 'Фаза' : 'Уровень'}
                   </p>
                 </div>
@@ -175,17 +169,17 @@ export const BreathingPage = () => {
               </div>
 
               {/* Card 3: Timer */}
-              <div className="relative overflow-hidden rounded-3xl p-3 text-center shadow-xl shadow-pink-500/10 dark:shadow-pink-500/5 group transition-all duration-300 hover:scale-105">
+              <div className="relative overflow-hidden rounded-3xl p-2.5 shadow-xl shadow-pink-500/10 dark:shadow-pink-500/5 group transition-all duration-300 hover:scale-105">
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-rose-500 to-orange-500 opacity-90" />
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <div className="relative z-10">
-                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full mb-1.5">
+                <div className="relative z-10 h-full flex flex-col items-center justify-between min-h-[88px]">
+                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
                     <Clock className="w-3.5 h-3.5 text-white" fill="currentColor" />
                   </div>
                   <div className="text-2xl font-[900] text-white tabular-nums leading-none">
                     {isRunning ? phaseTimeLeft : level.inhale + level.hold + level.exhale}
                   </div>
-                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider mt-1">
+                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider">
                     {isRunning ? 'Сек' : 'Сек/цикл'}
                   </p>
                 </div>
