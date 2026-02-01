@@ -1,25 +1,26 @@
-// src/features/breathing/BreathingPage.tsx
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
-import { Info, Volume2, Wind, Clock, Target, Flame } from 'lucide-react';
+import { Info, ChevronRight, ChevronLeft, Volume2, Loader2, Timer, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet';
 import { BreathingStartModal } from './components/BreathingStartModal';
-import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { soundManager } from '../../utils/sounds';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const DURATION_OPTIONS = [5, 10, 15, 20, 30, 0];
 
 export const BreathingPage = () => {
-  const navigate = useNavigate();
   const [levelIndex, setLevelIndex] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showSound, setShowSound] = useState(false);
   const [showPrepModal, setShowPrepModal] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
 
+  const [duration, setDuration] = useState(10);
+  const [isAudioReady, setIsAudioReady] = useState(false);
+  
   const [musicEnabled, setMusicEnabled] = useState(soundManager.isMusicEnabled);
   const [sfxEnabled, setSfxEnabled] = useState(soundManager.isSfxEnabled);
   const [currentTrack, setCurrentTrack] = useState(soundManager.getCurrentTrackId());
@@ -29,48 +30,47 @@ export const BreathingPage = () => {
   const prepTimerRef = useRef<number | null>(null);
 
   const level = BREATH_LEVELS[levelIndex];
-  const { phase, phaseTimeLeft, cycles, startSession, stopSession } = useBreathingSession(level, 0);
+  const { phase, phaseTimeLeft, totalTimeLeft, startSession, stopSession } = useBreathingSession(level, duration);
 
   useEffect(() => {
-    if (showPrepModal) {
-      prepTimerRef.current = window.setTimeout(() => {
-        setShowPrepModal(false);
-        setIsRunning(true);
-        startSession();
-      }, 3000);
-    }
-    return () => {
-      if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
-    };
+      const timer = setTimeout(() => setIsAudioReady(true), 500);
+      return () => clearTimeout(timer);
+  }, []);
+
+  // 👇 ЛОГИКА АВТО-СТАРТА
+  useEffect(() => {
+      if (showPrepModal) {
+          prepTimerRef.current = window.setTimeout(() => {
+              setShowPrepModal(false);
+              startSession(); // Старт после таймера
+          }, 5500);
+      }
+      return () => {
+          if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
+      };
   }, [showPrepModal, startSession]);
 
-  useEffect(() => {
-    if (phase === 'finished' || phase === 'idle') {
-      setIsRunning(false);
-    }
-  }, [phase]);
-
   const handleToggleMusic = () => {
-    const newState = !musicEnabled;
-    setMusicEnabled(newState);
-    soundManager.setMusicEnabled(newState);
+      const newState = !musicEnabled;
+      setMusicEnabled(newState);
+      soundManager.setMusicEnabled(newState);
   };
   const handleToggleSfx = () => {
-    const newState = !sfxEnabled;
-    setSfxEnabled(newState);
-    soundManager.setSfxEnabled(newState);
+      const newState = !sfxEnabled;
+      setSfxEnabled(newState);
+      soundManager.setSfxEnabled(newState);
   };
   const handleSelectTrack = (id: string) => {
-    soundManager.setTrack(id);
-    setCurrentTrack(id);
+      soundManager.setTrack(id);
+      setCurrentTrack(id);
   };
   const handleChangeMusicVol = (val: number) => {
-    soundManager.setMusicVolume(val);
-    setMusicVol(val);
+      soundManager.setMusicVolume(val);
+      setMusicVol(val);
   };
   const handleChangeSfxVol = (val: number) => {
-    soundManager.setMusicVolume(val);
-    setSfxVol(val);
+      soundManager.setSfxVolume(val);
+      setSfxVol(val);
   };
 
   const getTotalDuration = () => {
@@ -80,238 +80,211 @@ export const BreathingPage = () => {
     return 0;
   };
 
-  const handleStart = () => {
-    soundManager.unlock();
-    setShowPrepModal(true);
+  const handleToggle = () => {
+    if (!isAudioReady) return;
+    
+    if (phase !== 'idle' && phase !== 'finished') {
+        // Стоп
+        stopSession();
+        setShowPrepModal(false);
+        if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
+    } else {
+        // Старт (через подготовку)
+        soundManager.unlock(); 
+        setShowPrepModal(true);
+    }
   };
 
-  const handleStop = () => {
-    stopSession();
-    setIsRunning(false);
-    if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
-    setShowPrepModal(false);
+  const formatTotalTime = (s: number) => {
+      if (duration === 0) return "∞";
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return `${m}:${sec.toString().padStart(2, '0')}`;
   };
+
+  const isRunning = phase !== 'idle' && phase !== 'finished';
 
   return (
-    <>
-      <div className="flex flex-col pb-32 relative z-0 font-sans h-[calc(100dvh-80px)] overflow-hidden">
+    <div className="min-h-full flex flex-col pb-6 relative z-0">
+        
+        {/* Модалка подготовки (БЕЗ onComplete) */}
+        <BreathingStartModal 
+            isOpen={showPrepModal} 
+            onClose={() => {
+                setShowPrepModal(false);
+                if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
+            }} 
+        />
 
-        {/* BACKGROUND GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/50 via-blue-50/30 to-violet-50/50 dark:from-cyan-950/20 dark:via-blue-950/10 dark:to-violet-950/20 -z-10" />
+        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative overflow-hidden flex-1 flex flex-col z-10 border border-white/60">
+            
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.03] pointer-events-none" />
 
-        {/* MAIN CONTAINER */}
-        <div className="flex flex-col h-full relative">
-
-          {/* HEADER SECTION - Glass morphism */}
-          <div className="px-5 pt-6 pb-5 relative">
-            {/* Glass effect background */}
-            <div className="absolute inset-x-0 top-0 bottom-0 bg-white/70 dark:bg-white/5 backdrop-blur-xl -z-10 rounded-b-[2.5rem] shadow-lg shadow-cyan-500/5 dark:shadow-black/20 border border-white/50 dark:border-white/10" />
-
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-violet-600 dark:from-cyan-400 dark:via-blue-400 dark:to-violet-400 bg-clip-text text-transparent tracking-tight">
-                  Дыхание
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Пранаяма</p>
-              </div>
-              <div className="flex gap-2 items-center">
-                <button onClick={() => setShowSound(true)} className="w-10 h-10 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center text-slate-600 dark:text-slate-400 shadow-lg shadow-slate-200/50 dark:shadow-black/20 transition-all hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-white/10">
-                  <Volume2 className="w-4.5 h-4.5" />
-                </button>
-                <button onClick={() => setShowInfo(true)} className="w-10 h-10 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center text-slate-600 dark:text-slate-400 shadow-lg shadow-slate-200/50 dark:shadow-black/20 transition-all hover:scale-105 active:scale-95 border border-slate-200/50 dark:border-white/10">
-                  <Info className="w-4.5 h-4.5" />
-                </button>
-                <ProfileAvatar onClick={() => navigate('/profile')} size="sm" />
-              </div>
+            {/* HEADER */}
+            <div className="px-8 pt-8 pb-4 flex justify-between items-start relative z-20 shrink-0">
+                <div className="flex-1 min-w-0 pr-2">
+                    <h1 className="text-3xl font-[900] text-slate-800 leading-tight">
+                        Пранаяма
+                    </h1>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Гиповентиляция
+                        </span>
+                        {isRunning && (
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 animate-in fade-in">
+                                <Timer className="w-3 h-3" />
+                                {formatTotalTime(totalTimeLeft)}
+                            </span>
+                        )}
+                    </div>
+                </div>
+                
+                <div className="flex gap-2 relative">
+                    <button onClick={() => setShowSound(true)} className="p-2 text-slate-300 hover:text-blue-500 transition-colors">
+                        <Volume2 className="w-6 h-6" />
+                    </button>
+                    <button onClick={() => setShowInfo(true)} className="p-2 text-slate-300 hover:text-blue-500 transition-colors">
+                        <Info className="w-6 h-6" />
+                    </button>
+                </div>
             </div>
 
-            {/* STATS GRID - Beautiful cards */}
-            <div className="grid grid-cols-3 gap-3">
-              {/* Card 1: Cycles */}
-              <div className="relative overflow-hidden rounded-3xl p-2.5 shadow-xl shadow-cyan-500/10 dark:shadow-cyan-500/5 group transition-all duration-300 hover:scale-105">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 via-cyan-500 to-blue-500 opacity-90" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <div className="relative z-10 h-full flex flex-col items-center justify-between min-h-[88px]">
-                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
-                    <Flame className="w-3.5 h-3.5 text-white" fill="currentColor" />
-                  </div>
-                  <div className="text-2xl font-[900] text-white tabular-nums leading-none">
-                    {cycles}
-                  </div>
-                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider">Циклов</p>
-                </div>
-                {/* Sparkle effect */}
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/30 rounded-full blur-lg group-hover:scale-150 transition-transform duration-500" />
-              </div>
-
-              {/* Card 2: Phase/Level */}
-              <div className="relative overflow-hidden rounded-3xl p-2.5 shadow-xl shadow-violet-500/10 dark:shadow-violet-500/5 group transition-all duration-300 hover:scale-105">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-400 via-violet-500 to-purple-500 opacity-90" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <div className="relative z-10 h-full flex flex-col items-center justify-between min-h-[88px]">
-                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
-                    {isRunning && phase === 'inhale' && <Wind className="w-3.5 h-3.5 text-white" fill="currentColor" />}
-                    {isRunning && phase === 'hold' && <Clock className="w-3.5 h-3.5 text-white" fill="currentColor" />}
-                    {isRunning && phase === 'exhale' && <Wind className="w-3.5 h-3.5 text-white" fill="currentColor" />}
-                    {!isRunning && <Target className="w-3.5 h-3.5 text-white" fill="currentColor" />}
-                  </div>
-                  <div className="text-lg font-[900] text-white leading-none">
-                    {isRunning && phase === 'inhale' && 'Вдох'}
-                    {isRunning && phase === 'hold' && 'Задержка'}
-                    {isRunning && phase === 'exhale' && 'Выдох'}
-                    {!isRunning && level.id}
-                  </div>
-                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider">
-                    {isRunning ? 'Фаза' : 'Уровень'}
-                  </p>
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/30 rounded-full blur-lg group-hover:scale-150 transition-transform duration-500" />
-              </div>
-
-              {/* Card 3: Timer */}
-              <div className="relative overflow-hidden rounded-3xl p-2.5 shadow-xl shadow-pink-500/10 dark:shadow-pink-500/5 group transition-all duration-300 hover:scale-105">
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-rose-500 to-orange-500 opacity-90" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <div className="relative z-10 h-full flex flex-col items-center justify-between min-h-[88px]">
-                  <div className="inline-flex p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
-                    <Clock className="w-3.5 h-3.5 text-white" fill="currentColor" />
-                  </div>
-                  <div className="text-2xl font-[900] text-white tabular-nums leading-none">
-                    {isRunning ? phaseTimeLeft : level.inhale + level.hold + level.exhale}
-                  </div>
-                  <p className="text-[9px] font-bold text-white/80 uppercase tracking-wider">
-                    {isRunning ? 'Сек' : 'Сек/цикл'}
-                  </p>
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-white/30 rounded-full blur-lg group-hover:scale-150 transition-transform duration-500" />
-              </div>
-            </div>
-
-            {/* LEVEL SELECTOR - Elegant */}
-            <div className="mt-5 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-white/10 dark:to-white/5 rounded-2xl" />
-              <div className="relative flex items-center justify-between px-4 py-2.5">
-                <button
-                  onClick={() => !isRunning && setLevelIndex(i => Math.max(0, i - 1))}
-                  disabled={isRunning || levelIndex === 0}
-                  className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 shadow-md shadow-slate-200/50 dark:shadow-black/20 flex items-center justify-center text-slate-700 dark:text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 border border-slate-200/50 dark:border-white/10 text-lg font-bold"
+            {/* CIRCLE & STATUS */}
+            <div className="flex-1 flex flex-col items-center justify-center relative z-10 py-6">
+                
+                <div 
+                    onClick={handleToggle} 
+                    className={cn(
+                        "cursor-pointer relative transform-gpu transition-all duration-500",
+                        !isAudioReady && "opacity-50 pointer-events-none",
+                        isRunning ? "scale-110" : "hover:scale-105 active:scale-95"
+                    )}
                 >
-                  −
-                </button>
-                <div className="text-center">
-                  <span className="text-sm font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-white bg-clip-text text-transparent">
-                    {level.name}
-                  </span>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                    {level.inhale}-{level.hold}-{level.exhale}
-                  </div>
+                    {!isAudioReady ? (
+                        <div className="w-64 h-64 flex flex-col items-center justify-center bg-slate-50 rounded-full border border-slate-100">
+                            <Loader2 className="w-8 h-8 text-slate-300 animate-spin mb-2" />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Загрузка...</span>
+                        </div>
+                    ) : phase === 'finished' ? (
+                        <div className="w-64 h-64 flex flex-col items-center justify-center bg-white rounded-full border-4 border-green-50 shadow-sm animate-in zoom-in duration-300">
+                            <CheckCircle2 className="w-16 h-16 text-green-500 mb-2" />
+                            <span className="text-xl font-bold text-slate-700">Отлично!</span>
+                            <button onClick={(e) => { e.stopPropagation(); stopSession(); }} className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl hover:bg-slate-100">
+                                Закрыть
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="relative flex items-center justify-center scale-110">
+                            <BreathingCircle 
+                                phase={phase} 
+                                timeLeft={phaseTimeLeft} 
+                                totalDuration={getTotalDuration()} 
+                            />
+                            
+                            {!isRunning && !showPrepModal && (
+                                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                    <span className="text-sm font-black text-slate-300 uppercase tracking-[0.2em] ml-1 animate-pulse">
+                                        СТАРТ
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
-                <button
-                  onClick={() => !isRunning && setLevelIndex(i => Math.min(BREATH_LEVELS.length - 1, i + 1))}
-                  disabled={isRunning || levelIndex === BREATH_LEVELS.length - 1}
-                  className="w-8 h-8 rounded-xl bg-white dark:bg-white/10 shadow-md shadow-slate-200/50 dark:shadow-black/20 flex items-center justify-center text-slate-700 dark:text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:scale-110 active:scale-95 border border-slate-200/50 dark:border-white/10 text-lg font-bold"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* CONTENT AREA - Breathing Circle */}
-          <div className="flex-1 px-4 flex flex-col items-center justify-center min-h-0 relative">
-
-            {/* Background decoration */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 rounded-full bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-violet-500/10 blur-3xl animate-pulse" />
-            </div>
-
-            {/* Breathing Circle */}
-            <div
-              onClick={isRunning ? handleStop : handleStart}
-              className={cn(
-                "cursor-pointer relative transition-all duration-300 flex-shrink-0 z-10",
-                !isRunning && "hover:scale-105 active:scale-95"
-              )}
-              style={{ width: '190px', height: '190px' }}
-            >
-              {/* Outer glow */}
-              {!isRunning && (
-                <div className="absolute inset-0 rounded-full blur-2xl opacity-40 bg-gradient-to-br from-cyan-400 via-blue-500 to-violet-500 animate-pulse"
-                     style={{ transform: 'scale(1.2)' }} />
-              )}
-
-              <BreathingCircle
-                phase={isRunning ? phase : 'idle'}
-                timeLeft={phaseTimeLeft}
-                totalDuration={getTotalDuration()}
-              />
+                {/* PATTERN INFO */}
+                <div className="w-full px-10 mt-12 flex justify-between items-center text-center max-w-sm">
+                    <div className={cn("transition-all duration-500", phase === 'inhale' ? "scale-110 opacity-100" : "opacity-30 blur-[0.5px]")}>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Вдох</span>
+                        <span className={cn("text-2xl font-black tabular-nums", phase === 'inhale' ? "text-cyan-600" : "text-slate-300")}>{level.inhale}</span>
+                    </div>
+                    <div className={cn("transition-all duration-500", phase === 'hold' ? "scale-110 opacity-100" : "opacity-30 blur-[0.5px]")}>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Задержка</span>
+                        <span className={cn("text-3xl font-black leading-none tabular-nums", phase === 'hold' ? "text-violet-600" : "text-slate-300")}>{level.hold}</span>
+                    </div>
+                    <div className={cn("transition-all duration-500", phase === 'exhale' ? "scale-110 opacity-100" : "opacity-30 blur-[0.5px]")}>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Выдох</span>
+                        <span className={cn("text-3xl font-black leading-none tabular-nums", phase === 'exhale' ? "text-blue-600" : "text-slate-300")}>{level.exhale}</span>
+                    </div>
+                </div>
             </div>
 
-            {/* Phase Indicators - Beautiful */}
-            <div className="flex items-center justify-center gap-5 mt-6 z-10">
-              <div className={cn("flex flex-col items-center gap-1.5 transition-all duration-500", phase === 'inhale' && isRunning ? "opacity-100 scale-110" : "opacity-50")}>
-                <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center text-base font-bold transition-all duration-500 shadow-lg",
-                  phase === 'inhale' && isRunning
-                    ? "bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-cyan-500/50 ring-2 ring-cyan-400/50"
-                    : "bg-white/80 dark:bg-white/10 text-slate-600 dark:text-slate-400 backdrop-blur-sm border border-slate-200/50 dark:border-white/10"
-                )}>
-                  {level.inhale}
-                </div>
-                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Вдох</span>
-              </div>
+            {/* CONTROLS */}
+            <AnimatePresence>
+                {!isRunning && (
+                    <motion.div 
+                        initial={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="px-6 pb-8 pt-4 space-y-6 bg-white/50 backdrop-blur-sm rounded-b-[3rem] overflow-hidden"
+                    >
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Длительность</p>
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-6 px-6">
+                                {DURATION_OPTIONS.map((opt) => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setDuration(opt)}
+                                        className={cn(
+                                            "shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border touch-manipulation",
+                                            duration === opt 
+                                                ? "bg-slate-800 text-white border-slate-800 shadow-md" 
+                                                : "bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100"
+                                        )}
+                                    >
+                                        {opt === 0 ? "∞" : `${opt}м`}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-              <div className={cn("flex flex-col items-center gap-1.5 transition-all duration-500", phase === 'hold' && isRunning ? "opacity-100 scale-110" : "opacity-50")}>
-                <div className={cn(
-                  "w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold transition-all duration-500 shadow-lg",
-                  phase === 'hold' && isRunning
-                    ? "bg-gradient-to-br from-violet-400 to-violet-500 text-white shadow-violet-500/50 ring-2 ring-violet-400/50"
-                    : "bg-white/80 dark:bg-white/10 text-slate-600 dark:text-slate-400 backdrop-blur-sm border border-slate-200/50 dark:border-white/10"
-                )}>
-                  {level.hold}
-                </div>
-                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Задержка</span>
-              </div>
+                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded-[1.5rem] border border-slate-100">
+                            <button 
+                                disabled={levelIndex === 0}
+                                onClick={() => setLevelIndex(i => i - 1)}
+                                className="p-3 hover:bg-slate-50 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
+                            >
+                                <ChevronLeft className="w-5 h-5 text-slate-400" />
+                            </button>
+                            <div className="text-center w-32">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+                                    Сложность
+                                </span>
+                                <span className="text-xl font-black text-slate-800 leading-none">
+                                    {level.id}
+                                </span>
+                            </div>
+                            <button 
+                                disabled={levelIndex === BREATH_LEVELS.length - 1}
+                                onClick={() => setLevelIndex(i => i + 1)}
+                                className="p-3 hover:bg-slate-50 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
+                            >
+                                <ChevronRight className="w-5 h-5 text-slate-400" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-              <div className={cn("flex flex-col items-center gap-1.5 transition-all duration-500", phase === 'exhale' && isRunning ? "opacity-100 scale-110" : "opacity-50")}>
-                <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center text-base font-bold transition-all duration-500 shadow-lg",
-                  phase === 'exhale' && isRunning
-                    ? "bg-gradient-to-br from-blue-400 to-blue-500 text-white shadow-blue-500/50 ring-2 ring-blue-400/50"
-                    : "bg-white/80 dark:bg-white/10 text-slate-600 dark:text-slate-400 backdrop-blur-sm border border-slate-200/50 dark:border-white/10"
-                )}>
-                  {level.exhale}
-                </div>
-                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Выдох</span>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
 
-      {/* MODALS */}
-      <BreathingStartModal
-        isOpen={showPrepModal}
-        onClose={() => {
-          setShowPrepModal(false);
-          if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
-        }}
-      />
-      {showInfo && <InfoSheet onClose={() => setShowInfo(false)} />}
-      <SoundSheet
-        isOpen={showSound}
-        onClose={() => setShowSound(false)}
-        musicEnabled={musicEnabled}
-        sfxEnabled={sfxEnabled}
-        currentTrackId={currentTrack}
-        musicVolume={musicVol}
-        sfxVolume={sfxVol}
-        onToggleMusic={handleToggleMusic}
-        onToggleSfx={handleToggleSfx}
-        onSelectTrack={handleSelectTrack}
-        onChangeMusicVolume={handleChangeMusicVol}
-        onChangeSfxVolume={handleChangeSfxVol}
-      />
-    </>
+        {/* MODALS */}
+        {showInfo && <InfoSheet onClose={() => setShowInfo(false)} />}
+        {showSound && (
+            <SoundSheet 
+                onClose={() => setShowSound(false)}
+                musicEnabled={musicEnabled}
+                sfxEnabled={sfxEnabled}
+                currentTrackId={currentTrack}
+                musicVolume={musicVol}
+                sfxVolume={sfxVol}
+                onToggleMusic={handleToggleMusic}
+                onToggleSfx={handleToggleSfx}
+                onSelectTrack={handleSelectTrack}
+                onChangeMusicVolume={handleChangeMusicVol}
+                onChangeSfxVolume={handleChangeSfxVol}
+            />
+        )}
+
+    </div>
   );
 };
