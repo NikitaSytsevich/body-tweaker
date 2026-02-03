@@ -271,6 +271,7 @@ export const BreathingPage = () => {
         {showInfo && <InfoSheet onClose={() => setShowInfo(false)} />}
         {showSound && (
             <SoundSheet 
+                isOpen={showSound}
                 onClose={() => setShowSound(false)}
                 musicEnabled={musicEnabled}
                 sfxEnabled={sfxEnabled}
