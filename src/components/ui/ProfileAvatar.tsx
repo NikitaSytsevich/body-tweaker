@@ -1,5 +1,5 @@
 // src/components/ui/ProfileAvatar.tsx
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
 import { cn } from '../../utils/cn';
@@ -74,6 +74,8 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const hasMounted = useRef(false);
+  const retryCount = useRef(0);
+  const [retryKey, setRetryKey] = useState(0);
 
   const initials = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : '?';
 
@@ -144,6 +146,20 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
     }
   }, [userData.photoUrl]);
 
+  useEffect(() => {
+    if (userData.photoUrl) {
+      retryCount.current = 0;
+      setRetryKey(0);
+    }
+  }, [userData.photoUrl]);
+
+  const avatarSrc = useMemo(() => {
+    if (!userData.photoUrl) return null;
+    if (retryKey === 0) return userData.photoUrl;
+    const separator = userData.photoUrl.includes('?') ? '&' : '?';
+    return `${userData.photoUrl}${separator}v=${retryKey}`;
+  }, [userData.photoUrl, retryKey]);
+
   // Показываем loading state
   if (isLoading) {
     return (
@@ -162,7 +178,7 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
   }
 
   // Show photo if available and no error
-  if (userData.photoUrl && !imageError) {
+  if (avatarSrc && !imageError) {
     return (
       <button
         onClick={onClick}
@@ -174,12 +190,21 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
         )}
       >
         <img
-          src={userData.photoUrl}
+          key={avatarSrc}
+          src={avatarSrc}
           alt="Profile"
           className="w-full h-full object-cover"
           onError={() => {
             console.warn('[ProfileAvatar] Image load error:', userData.photoUrl);
             setImageError(true);
+            if (retryCount.current < 2) {
+              retryCount.current += 1;
+              const delay = 600 * retryCount.current;
+              window.setTimeout(() => {
+                setImageError(false);
+                setRetryKey((prev) => prev + 1);
+              }, delay);
+            }
           }}
           onLoad={(e) => {
             const img = e.currentTarget;
@@ -191,9 +216,8 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
               console.log('[ProfileAvatar] Image loaded successfully:', img.naturalWidth, 'x', img.naturalHeight);
             }
           }}
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
           loading="eager"
+          decoding="async"
         />
       </button>
     );

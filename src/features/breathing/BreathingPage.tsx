@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
 import { BreathingCircle } from './components/BreathingCircle';
@@ -6,19 +7,16 @@ import { Info, ChevronRight, ChevronLeft, Volume2, Loader2, Timer, CheckCircle2 
 import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet';
-import { BreathingStartModal } from './components/BreathingStartModal';
 import { soundManager } from '../../utils/sounds';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const DURATION_OPTIONS = [5, 10, 15, 20, 30, 0];
+import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 
 export const BreathingPage = () => {
+  const navigate = useNavigate();
   const [levelIndex, setLevelIndex] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showSound, setShowSound] = useState(false);
-  const [showPrepModal, setShowPrepModal] = useState(false);
-
-  const [duration, setDuration] = useState(10);
+  const duration: number = 10;
   const [isAudioReady, setIsAudioReady] = useState(false);
   
   const [musicEnabled, setMusicEnabled] = useState(soundManager.isMusicEnabled);
@@ -27,8 +25,6 @@ export const BreathingPage = () => {
   const [musicVol, setMusicVol] = useState(soundManager.musicVolume);
   const [sfxVol, setSfxVol] = useState(soundManager.sfxVolume);
 
-  const prepTimerRef = useRef<number | null>(null);
-
   const level = BREATH_LEVELS[levelIndex];
   const { phase, phaseTimeLeft, totalTimeLeft, startSession, stopSession } = useBreathingSession(level, duration);
 
@@ -36,19 +32,6 @@ export const BreathingPage = () => {
       const timer = setTimeout(() => setIsAudioReady(true), 500);
       return () => clearTimeout(timer);
   }, []);
-
-  // 👇 ЛОГИКА АВТО-СТАРТА
-  useEffect(() => {
-      if (showPrepModal) {
-          prepTimerRef.current = window.setTimeout(() => {
-              setShowPrepModal(false);
-              startSession(); // Старт после таймера
-          }, 5500);
-      }
-      return () => {
-          if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
-      };
-  }, [showPrepModal, startSession]);
 
   const handleToggleMusic = () => {
       const newState = !musicEnabled;
@@ -86,12 +69,9 @@ export const BreathingPage = () => {
     if (phase !== 'idle' && phase !== 'finished') {
         // Стоп
         stopSession();
-        setShowPrepModal(false);
-        if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
     } else {
-        // Старт (через подготовку)
         soundManager.unlock(); 
-        setShowPrepModal(true);
+        startSession();
     }
   };
 
@@ -105,52 +85,50 @@ export const BreathingPage = () => {
   const isRunning = phase !== 'idle' && phase !== 'finished';
 
   return (
-    <div className="min-h-full flex flex-col pb-6 relative z-0">
+    <div className="h-full flex flex-col relative z-0">
         
-        {/* Модалка подготовки (БЕЗ onComplete) */}
-        <BreathingStartModal 
-            isOpen={showPrepModal} 
-            onClose={() => {
-                setShowPrepModal(false);
-                if (prepTimerRef.current) clearTimeout(prepTimerRef.current);
-            }} 
-        />
-
-        <div className="bg-white rounded-[3rem] shadow-sm shadow-slate-200/50 relative overflow-hidden flex-1 flex flex-col z-10 border border-white/60">
-            
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.03] pointer-events-none" />
+        <div className="relative flex-1 min-h-0 flex flex-col z-10 rounded-[28px] overflow-hidden border border-white/60 dark:border-white/10 bg-white/70 dark:bg-[#1C1C1E]/80 backdrop-blur-2xl shadow-[0_20px_60px_-35px_rgba(15,23,42,0.45)]">
+            <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(125,211,252,0.35)_0%,rgba(255,255,255,0)_55%),radial-gradient(120%_120%_at_100%_0%,rgba(196,181,253,0.35)_0%,rgba(255,255,255,0)_60%)] opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.04] pointer-events-none" />
 
             {/* HEADER */}
-            <div className="px-8 pt-8 pb-4 flex justify-between items-start relative z-20 shrink-0">
-                <div className="flex-1 min-w-0 pr-2">
-                    <h1 className="text-3xl font-[900] text-slate-800 leading-tight">
+            <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3 relative z-20 shrink-0">
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-[26px] font-[900] text-slate-900 dark:text-white leading-tight tracking-tight">
                         Пранаяма
                     </h1>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                             Гиповентиляция
                         </span>
                         {isRunning && (
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 animate-in fade-in">
+                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-white/10 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 backdrop-blur-sm">
                                 <Timer className="w-3 h-3" />
                                 {formatTotalTime(totalTimeLeft)}
                             </span>
                         )}
                     </div>
                 </div>
-                
-                <div className="flex gap-2 relative">
-                    <button onClick={() => setShowSound(true)} className="p-2 text-slate-300 hover:text-blue-500 transition-colors">
-                        <Volume2 className="w-6 h-6" />
+
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowSound(true)}
+                        className="p-2 rounded-full bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/10 text-slate-400 hover:text-blue-500 transition-colors backdrop-blur-md"
+                    >
+                        <Volume2 className="w-5 h-5" />
                     </button>
-                    <button onClick={() => setShowInfo(true)} className="p-2 text-slate-300 hover:text-blue-500 transition-colors">
-                        <Info className="w-6 h-6" />
+                    <button
+                        onClick={() => setShowInfo(true)}
+                        className="p-2 rounded-full bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/10 text-slate-400 hover:text-blue-500 transition-colors backdrop-blur-md"
+                    >
+                        <Info className="w-5 h-5" />
                     </button>
+                    <ProfileAvatar onClick={() => navigate('/profile')} />
                 </div>
             </div>
 
             {/* CIRCLE & STATUS */}
-            <div className="flex-1 flex flex-col items-center justify-center relative z-10 py-6">
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center relative z-10 px-4 pt-1 pb-1">
                 
                 <div 
                     onClick={handleToggle} 
@@ -161,15 +139,15 @@ export const BreathingPage = () => {
                     )}
                 >
                     {!isAudioReady ? (
-                        <div className="w-64 h-64 flex flex-col items-center justify-center bg-slate-50 rounded-full border border-slate-100">
+                        <div className="w-[clamp(190px,48vw,250px)] h-[clamp(190px,48vw,250px)] flex flex-col items-center justify-center bg-white/70 dark:bg-white/10 rounded-full border border-white/70 dark:border-white/10 backdrop-blur-xl">
                             <Loader2 className="w-8 h-8 text-slate-300 animate-spin mb-2" />
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Загрузка...</span>
                         </div>
                     ) : phase === 'finished' ? (
-                        <div className="w-64 h-64 flex flex-col items-center justify-center bg-white rounded-full border-4 border-green-50 shadow-sm animate-in zoom-in duration-300">
-                            <CheckCircle2 className="w-16 h-16 text-green-500 mb-2" />
-                            <span className="text-xl font-bold text-slate-700">Отлично!</span>
-                            <button onClick={(e) => { e.stopPropagation(); stopSession(); }} className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl hover:bg-slate-100">
+                        <div className="w-[clamp(190px,48vw,250px)] h-[clamp(190px,48vw,250px)] flex flex-col items-center justify-center bg-white/80 dark:bg-white/10 rounded-full border border-white/70 dark:border-white/10 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.6)] animate-in zoom-in duration-300 backdrop-blur-xl">
+                            <CheckCircle2 className="w-14 h-14 text-emerald-500 mb-2" />
+                            <span className="text-[clamp(16px,4.2vw,20px)] font-bold text-slate-700 dark:text-white">Отлично!</span>
+                            <button onClick={(e) => { e.stopPropagation(); stopSession(); }} className="mt-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-white/70 dark:bg-white/10 px-4 py-2 rounded-xl border border-white/60 dark:border-white/10 hover:bg-white/90 dark:hover:bg-white/20 backdrop-blur-md">
                                 Закрыть
                             </button>
                         </div>
@@ -181,9 +159,9 @@ export const BreathingPage = () => {
                                 totalDuration={getTotalDuration()} 
                             />
                             
-                            {!isRunning && !showPrepModal && (
+                            {!isRunning && (
                                 <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                                    <span className="text-sm font-black text-slate-300 uppercase tracking-[0.2em] ml-1 animate-pulse">
+                                    <span className="text-[11px] font-black text-slate-300 dark:text-white/40 uppercase tracking-[0.2em] ml-1 animate-pulse">
                                         СТАРТ
                                     </span>
                                 </div>
@@ -193,18 +171,18 @@ export const BreathingPage = () => {
                 </div>
 
                 {/* PATTERN INFO */}
-                <div className="w-full px-10 mt-12 flex justify-between items-center text-center max-w-sm">
+                <div className="w-full px-6 mt-4 flex justify-between items-center text-center max-w-sm">
                     <div className={cn("transition-all duration-500", phase === 'inhale' ? "scale-110 opacity-100" : "opacity-30 blur-[0.5px]")}>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Вдох</span>
-                        <span className={cn("text-2xl font-black tabular-nums", phase === 'inhale' ? "text-cyan-600" : "text-slate-300")}>{level.inhale}</span>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-white/40 uppercase block mb-1">Вдох</span>
+                        <span className={cn("text-2xl font-black tabular-nums", phase === 'inhale' ? "text-cyan-600 dark:text-cyan-300" : "text-slate-300 dark:text-white/30")}>{level.inhale}</span>
                     </div>
                     <div className={cn("transition-all duration-500", phase === 'hold' ? "scale-110 opacity-100" : "opacity-30 blur-[0.5px]")}>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Задержка</span>
-                        <span className={cn("text-3xl font-black leading-none tabular-nums", phase === 'hold' ? "text-violet-600" : "text-slate-300")}>{level.hold}</span>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-white/40 uppercase block mb-1">Задержка</span>
+                        <span className={cn("text-3xl font-black leading-none tabular-nums", phase === 'hold' ? "text-violet-600 dark:text-violet-300" : "text-slate-300 dark:text-white/30")}>{level.hold}</span>
                     </div>
                     <div className={cn("transition-all duration-500", phase === 'exhale' ? "scale-110 opacity-100" : "opacity-30 blur-[0.5px]")}>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Выдох</span>
-                        <span className={cn("text-3xl font-black leading-none tabular-nums", phase === 'exhale' ? "text-blue-600" : "text-slate-300")}>{level.exhale}</span>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-white/40 uppercase block mb-1">Выдох</span>
+                        <span className={cn("text-3xl font-black leading-none tabular-nums", phase === 'exhale' ? "text-blue-600 dark:text-blue-300" : "text-slate-300 dark:text-white/30")}>{level.exhale}</span>
                     </div>
                 </div>
             </div>
@@ -215,50 +193,30 @@ export const BreathingPage = () => {
                     <motion.div 
                         initial={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="px-6 pb-8 pt-4 space-y-6 bg-white/50 backdrop-blur-sm rounded-b-[3rem] overflow-hidden"
+                        className="px-5 pb-5 pt-3 space-y-3 bg-white/45 dark:bg-white/5 backdrop-blur-xl border-t border-white/60 dark:border-white/10 overflow-hidden"
                     >
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Длительность</p>
-                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2 -mx-6 px-6">
-                                {DURATION_OPTIONS.map((opt) => (
-                                    <button
-                                        key={opt}
-                                        onClick={() => setDuration(opt)}
-                                        className={cn(
-                                            "shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border touch-manipulation",
-                                            duration === opt 
-                                                ? "bg-slate-800 text-white border-slate-800 shadow-md" 
-                                                : "bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100"
-                                        )}
-                                    >
-                                        {opt === 0 ? "∞" : `${opt}м`}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded-[1.5rem] border border-slate-100">
+                        <div className="flex items-center justify-between bg-white/70 dark:bg-white/10 p-2 rounded-[1.5rem] border border-white/60 dark:border-white/10">
                             <button 
                                 disabled={levelIndex === 0}
                                 onClick={() => setLevelIndex(i => i - 1)}
-                                className="p-3 hover:bg-slate-50 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
+                                className="p-3 hover:bg-white/80 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
                             >
-                                <ChevronLeft className="w-5 h-5 text-slate-400" />
+                                <ChevronLeft className="w-5 h-5 text-slate-400 dark:text-slate-300" />
                             </button>
                             <div className="text-center w-32">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
                                     Сложность
                                 </span>
-                                <span className="text-xl font-black text-slate-800 leading-none">
+                                <span className="text-[19px] font-black text-slate-800 dark:text-white leading-none">
                                     {level.id}
                                 </span>
                             </div>
                             <button 
                                 disabled={levelIndex === BREATH_LEVELS.length - 1}
                                 onClick={() => setLevelIndex(i => i + 1)}
-                                className="p-3 hover:bg-slate-50 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
+                                className="p-3 hover:bg-white/80 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
                             >
-                                <ChevronRight className="w-5 h-5 text-slate-400" />
+                                <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-300" />
                             </button>
                         </div>
                     </motion.div>
