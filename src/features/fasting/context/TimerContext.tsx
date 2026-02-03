@@ -1,20 +1,18 @@
 // src/features/fasting/context/TimerContext.tsx
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import dayjs from 'dayjs';
 
 import { FASTING_SCHEMES } from '../data/schemes';
 import type { FastingScheme } from '../data/schemes';
-import { FASTING_PHASES } from '../data/stages';
 
 import { 
     storageGet, 
     storageSet, 
     storageRemove, 
-    storageGetJSON,
     storageUpdateHistory
 } from '../../../utils/storage'; // 👈 NEW
 
-import type { NotificationSettings, HistoryRecord } from '../../../utils/types';
+import type { HistoryRecord } from '../../../utils/types';
 
 interface TimerContextType {
     isFasting: boolean;
@@ -26,10 +24,6 @@ interface TimerContextType {
     toggleFasting: () => void;
     startTime: string | null;
     setStartTime: (date: string | null) => void;
-    notification: {title: string, message: string, phaseId?: number} | null;
-    closeNotification: () => void;
-    phaseToOpen: number | null;
-    setPhaseToOpen: (id: number | null) => void;
     isLoading: boolean; // 👈 NEW
 }
 
@@ -42,10 +36,7 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setIsLoading] = useState(true); // 👈 Индикатор загрузки
     
     const [elapsed, setElapsed] = useState(0);
-    const [notification, setNotification] = useState<{title: string, message: string, phaseId?: number} | null>(null);
-    const [phaseToOpen, setPhaseToOpen] = useState<number | null>(null);
     
-    const lastPhaseIndexRef = useRef<number>(-1);
 
     const scheme = FASTING_SCHEMES.find((s) => s.id === schemeId) || FASTING_SCHEMES[0];
     const goalSeconds = scheme.hours * 3600;
@@ -70,8 +61,6 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
                     const diff = now.diff(dayjs(savedStart), 'second');
                     setElapsed(diff >= 0 ? diff : 0);
                     
-                    const currentHours = now.diff(dayjs(savedStart), 'hour');
-                    lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart);
                 }
             } catch (e) {
                 console.error("Timer init error:", e);
@@ -97,13 +86,9 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
             const now = dayjs();
             const diff = now.diff(dayjs(date), 'second');
             setElapsed(diff >= 0 ? diff : 0);
-            
-            const currentHours = now.diff(dayjs(date), 'hour');
-            lastPhaseIndexRef.current = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart);
         } else {
             storageRemove('fasting_startTime');
             setElapsed(0);
-            lastPhaseIndexRef.current = -1;
         }
     }, []);
 
@@ -121,29 +106,6 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
             const safeDiff = diff >= 0 ? diff : 0;
             setElapsed(safeDiff);
 
-            // Проверка фаз
-            if (safeDiff % 60 === 0) {
-                const currentHours = safeDiff / 3600;
-                const newPhaseIndex = FASTING_PHASES.findIndex((p) => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
-                
-                if (newPhaseIndex !== -1 && newPhaseIndex !== lastPhaseIndexRef.current) {
-                    if (lastPhaseIndexRef.current !== -1) {
-                        // Асинхронно проверяем настройки (тут можно использовать промис, но useEffect синхронен)
-                        storageGetJSON<NotificationSettings>('user_settings', { fasting: true }).then(settings => {
-                            if (settings.fasting !== false) {
-                                const phase = FASTING_PHASES[newPhaseIndex];
-                                setNotification({
-                                    title: `Новый этап: ${phase.title}`,
-                                    message: phase.subtitle,
-                                    phaseId: phase.id
-                                });
-                                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                            }
-                        });
-                    }
-                    lastPhaseIndexRef.current = newPhaseIndex;
-                }
-            }
         };
 
         update();
@@ -174,7 +136,6 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
             // START
             setStartTime(dayjs().toISOString());
-            lastPhaseIndexRef.current = 0;
         }
     }, [startTime, scheme.title, setStartTime]);
 
@@ -198,10 +159,6 @@ export const TimerProvider = ({ children }: { children: React.ReactNode }) => {
             toggleFasting,
             startTime,
             setStartTime,
-            notification,
-            closeNotification: () => setNotification(null),
-            phaseToOpen,
-            setPhaseToOpen,
             isLoading // Экспортируем флаг загрузки
         }}>
             {children}

@@ -62,7 +62,7 @@ const PHASE_THEMES = [
 ];
 
 export const MetabolismMapPage = () => {
-  const { isFasting, elapsed, phaseToOpen, setPhaseToOpen } = useFastingTimerContext();
+  const { isFasting, elapsed } = useFastingTimerContext();
   const elapsedHours = elapsed / 3600;
   const navigate = useNavigate();
 
@@ -72,17 +72,6 @@ export const MetabolismMapPage = () => {
   useEffect(() => {
     setViewMode(isFasting ? 'map' : 'articles');
   }, [isFasting]);
-
-  useEffect(() => {
-      if (phaseToOpen !== null) {
-          const targetPhase = FASTING_PHASES.find(p => p.id === phaseToOpen);
-          if (targetPhase) {
-              setSelectedPhase(targetPhase);
-              setViewMode('map');
-          }
-          setPhaseToOpen(null);
-      }
-  }, [phaseToOpen, setPhaseToOpen]);
 
   const activeIndex = useMemo(() => {
     for (let i = FASTING_PHASES.length - 1; i >= 0; i--) {

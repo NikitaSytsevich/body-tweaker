@@ -15,8 +15,6 @@ const HistoryPage = lazy(() => import('../features/history/HistoryPage').then(m 
 // ArticleDetailPage stays eager as it's rarely used but needs instant load
 import { ArticleDetailPage } from '../features/articles/pages/ArticleDetailPage';
 
-import { useFastingTimerContext } from '../features/fasting/context/TimerContext';
-import { ToastNotification } from '../components/ui/ToastNotification';
 
 // OPTIMIZATION: Added Suspense fallback for lazy-loaded pages
 const PageView = memo(({ isActive, children }: { isActive: boolean, children: React.ReactNode }) => {
@@ -45,8 +43,6 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 export const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const { notification, closeNotification, setPhaseToOpen } = useFastingTimerContext();
 
   const navRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -174,13 +170,6 @@ export const Layout = () => {
 
     } catch { /* ignore */ }
   }, []);
-
-  const handleNotificationClick = () => {
-      if (notification?.phaseId) {
-          setPhaseToOpen(notification.phaseId);
-          navigate('/');
-      }
-  };
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
@@ -339,14 +328,6 @@ export const Layout = () => {
             </motion.nav>
           </div>
         )}
-
-        <ToastNotification
-            isVisible={!!notification}
-            title={notification?.title || ""}
-            message={notification?.message || ""}
-            onClose={closeNotification}
-            onPress={handleNotificationClick}
-        />
 
       </div>
     </div>

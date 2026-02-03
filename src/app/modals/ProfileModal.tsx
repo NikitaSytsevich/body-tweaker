@@ -6,7 +6,6 @@ import {
   X,
   Settings as SettingsIcon,
   Info as InfoIcon,
-  Bell,
   Trash2,
   Download,
   Upload,
@@ -26,10 +25,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { useStorage } from '../../hooks/useStorage';
 import { useAddToHomeScreen } from '../../hooks/useAddToHomeScreen';
 import { storageGet, storageSet, storageRemove, storageGetJSON, storageSetJSON } from '../../utils/storage';
-import type { NotificationSettings } from '../../utils/types';
 import WebApp from '@twa-dev/sdk';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
@@ -97,22 +94,12 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Settings
-  const { value: notifications, setValue: setNotifications, isLoading: isSettingsLoading } =
-    useStorage<NotificationSettings>('user_settings', { fasting: true });
-
   // PWA
   const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
   const isTelegramNativeInstallSupported = WebApp.isVersionAtLeast('8.0');
   const canInstall = !isStandalone && (isTelegramNativeInstallSupported || isIOS || !!deferredPrompt);
 
   // Handlers
-  const toggleNotification = () => {
-    if (!isSettingsLoading) {
-      setNotifications((prev) => ({ ...prev, fasting: !prev.fasting }));
-    }
-  };
-
   const handleInstallClick = () => {
     if (isTelegramNativeInstallSupported) {
       WebApp.addToHomeScreen();
@@ -132,7 +119,6 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
     try {
       await Promise.all([
         storageRemove('history_fasting'),
-        storageRemove('user_settings'),
         storageRemove('fasting_startTime'),
         storageRemove('fasting_scheme'),
         storageRemove('user_name'),
@@ -148,9 +134,8 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
   const handleExport = async () => {
     setIsProcessing(true);
     try {
-      const [history, settings, startTime, scheme, userName, terms] = await Promise.all([
+      const [history, startTime, scheme, userName, terms] = await Promise.all([
         storageGetJSON('history_fasting', []),
-        storageGetJSON('user_settings', { fasting: true }),
         storageGet('fasting_startTime'),
         storageGet('fasting_scheme'),
         storageGet('user_name'),
@@ -162,7 +147,6 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
         date: new Date().toISOString(),
         data: {
           history_fasting: history,
-          user_settings: settings,
           fasting_startTime: startTime,
           fasting_scheme: scheme,
           user_name: userName,
@@ -206,7 +190,6 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
 
         const promises = [];
         if (data.history_fasting) promises.push(storageSetJSON('history_fasting', data.history_fasting));
-        if (data.user_settings) promises.push(storageSetJSON('user_settings', data.user_settings));
         if (data.fasting_startTime) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
         if (data.fasting_scheme) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
 
@@ -258,7 +241,7 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
               </div>
 
               {/* USER PROFILE CARD */}
-              <div className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[2rem] shadow-sm flex items-center gap-4">
+              <div className="bg-white/75 dark:bg-white/10 p-4 rounded-[2rem] shadow-[0_16px_40px_-30px_rgba(15,23,42,0.4)] backdrop-blur-xl border border-white/60 dark:border-white/10 flex items-center gap-4">
                 <div className="relative">
                   <ProfileAvatar size="lg" />
                   <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#2C2C2E] rounded-full" />
@@ -321,41 +304,10 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
                     </div>
                   </div>
 
-                  {/* Notifications & PWA */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2">Приложение</h4>
-
-                    {/* Уведомления */}
-                    <div
-                      onClick={toggleNotification}
-                      className={cn(
-                        "bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm flex items-center justify-between transition-transform cursor-pointer",
-                        isSettingsLoading ? "opacity-70 cursor-wait" : "active:scale-[0.99]"
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
-                          <Bell className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-white text-sm">Уведомления</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">О смене фаз голодания</p>
-                        </div>
-                      </div>
-
-                      {isSettingsLoading ? (
-                        <div className="w-12 h-7 flex items-center justify-center">
-                          <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                        </div>
-                      ) : (
-                        <div className={cn("w-12 h-7 rounded-full relative transition-colors duration-300", notifications.fasting ? "bg-blue-500" : "bg-slate-200 dark:bg-white/10")}>
-                          <div className={cn("w-6 h-6 bg-white rounded-full shadow-sm absolute top-0.5 transition-transform duration-300", notifications.fasting ? "translate-x-5.5" : "translate-x-0.5")} />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Установка PWA */}
-                    {canInstall && (
+                  {/* PWA */}
+                  {canInstall && (
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2">Приложение</h4>
                       <div
                         onClick={handleInstallClick}
                         className="bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform cursor-pointer"
@@ -371,8 +323,8 @@ export const ProfileModal = ({ isOpen, onClose, initialTab = 'settings' }: Props
                         </div>
                         <ChevronRight className="w-5 h-5 text-slate-300" />
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Backup & Reset */}
                   <div>

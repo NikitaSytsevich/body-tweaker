@@ -11,13 +11,6 @@ import type { ComponentType, SVGProps } from 'react';
 export type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
 /**
- * Тип для настроек уведомлений
- */
-export interface NotificationSettings {
-  fasting: boolean;
-}
-
-/**
  * Тип для записи истории
  */
 export interface HistoryRecord {

@@ -8,16 +8,14 @@ import {
   storageGet, 
   storageSet, 
   storageRemove, 
-  storageGetJSON,
   storageUpdateHistory 
 } from '../../../utils/storage'; // 👈 NEW
-import type { NotificationSettings, HistoryRecord } from '../../../utils/types';
+import type { HistoryRecord } from '../../../utils/types';
 
 export const useFastingTimer = () => {
   const [schemeId, setSchemeId] = useState(FASTING_SCHEMES[0].id);
   const [startTime, setStartTimeState] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  const [notification, setNotification] = useState<{title: string, message: string} | null>(null);
   const lastPhaseIndexRef = useRef<number>(-1);
 
   const scheme = FASTING_SCHEMES.find(s => s.id === schemeId) || FASTING_SCHEMES[0];
@@ -73,21 +71,7 @@ export const useFastingTimer = () => {
         if (safeDiff % 60 === 0) { 
             const currentHours = safeDiff / 3600;
             const newPhaseIndex = FASTING_PHASES.findIndex(p => currentHours >= p.hoursStart && (!p.hoursEnd || currentHours < p.hoursEnd));
-            
-            if (newPhaseIndex !== -1 && newPhaseIndex !== lastPhaseIndexRef.current) {
-                if (lastPhaseIndexRef.current !== -1) {
-                    // ASYNC CHECK
-                    storageGetJSON<NotificationSettings>('user_settings', { fasting: true }).then(settings => {
-                        if (settings.fasting !== false) {
-                            const phase = FASTING_PHASES[newPhaseIndex];
-                            setNotification({
-                                title: `Новый этап: ${phase.title}`,
-                                message: phase.subtitle
-                            });
-                            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                        }
-                    });
-                }
+            if (newPhaseIndex !== -1) {
                 lastPhaseIndexRef.current = newPhaseIndex;
             }
         }
@@ -139,8 +123,6 @@ export const useFastingTimer = () => {
     elapsed,
     toggleFasting,
     startTime,
-    setStartTime,
-    notification,
-    closeNotification: useCallback(() => setNotification(null), [])
+    setStartTime
   };
 };
