@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import WebApp from '@twa-dev/sdk';
-import { LEGAL_DOCS, getLegalDocById, type LegalDocId } from './legal/legalDocs';
+import { LEGAL_DOCS, getLegalDocById, type LegalDocId, OPERATOR_EMAIL, OPERATOR_NAME } from './legal/legalDocs';
 
 // Хуки
 import { useAddToHomeScreen } from '../hooks/useAddToHomeScreen';
@@ -562,6 +562,30 @@ export const LegalSubPage = () => {
   const navigate = useNavigate();
   const [selectedDocId, setSelectedDocId] = useState<LegalDocId | null>(null);
   const selectedDoc = selectedDocId ? getLegalDocById(selectedDocId) ?? null : null;
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'ok' | 'fail'>('idle');
+
+  const handleCopyEmail = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(OPERATOR_EMAIL);
+      } else {
+        const input = document.createElement('textarea');
+        input.value = OPERATOR_EMAIL;
+        input.setAttribute('readonly', 'true');
+        input.style.position = 'absolute';
+        input.style.left = '-9999px';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      setCopyStatus('ok');
+      window.setTimeout(() => setCopyStatus('idle'), 1600);
+    } catch {
+      setCopyStatus('fail');
+      window.setTimeout(() => setCopyStatus('idle'), 2000);
+    }
+  };
 
   return (
     <div className="h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] flex flex-col">
@@ -577,6 +601,28 @@ export const LegalSubPage = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 pt-2 pb-8">
+        <div className="bg-white dark:bg-[#2C2C2E] p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 mb-6">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-2">
+            Оператор
+          </p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-white">{OPERATOR_NAME}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{OPERATOR_EMAIL}</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              onClick={handleCopyEmail}
+              className="w-full py-3 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold uppercase tracking-widest shadow-lg shadow-slate-900/20 dark:shadow-white/10 active:scale-95 transition-transform"
+            >
+              {copyStatus === 'ok' ? 'Email скопирован' : copyStatus === 'fail' ? 'Не удалось' : 'Скопировать email'}
+            </button>
+            <a
+              href={`mailto:${OPERATOR_EMAIL}`}
+              className="w-full py-3 rounded-2xl bg-white dark:bg-[#2C2C2E] text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-white/10 text-xs font-bold uppercase tracking-widest flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+            >
+              Написать оператору
+            </a>
+          </div>
+        </div>
+
         {!selectedDoc && (
           <>
             <div className="bg-white dark:bg-[#2C2C2E] p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 mb-6">
