@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
 import { useTheme } from '../contexts/ThemeContext';
-import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
+import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId, OPERATOR_EMAIL } from './legal/legalDocs';
 
 interface Props {
   onComplete: () => void;
@@ -20,6 +20,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
   const [acceptConsent, setAcceptConsent] = useState(false);
   const [acceptMedical, setAcceptMedical] = useState(false);
   const [confirmAge, setConfirmAge] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'ok' | 'fail'>('idle');
 
   const canAccept = acceptTerms && acceptPrivacy && acceptConsent && acceptMedical && confirmAge;
   const openDoc = useMemo(() => (openDocId ? getLegalDocById(openDocId) ?? null : null), [openDocId]);
@@ -41,6 +42,29 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
     });
     await storageSet('has_accepted_terms', 'true');
     onComplete();
+  };
+
+  const handleCopyEmail = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(OPERATOR_EMAIL);
+      } else {
+        const input = document.createElement('textarea');
+        input.value = OPERATOR_EMAIL;
+        input.setAttribute('readonly', 'true');
+        input.style.position = 'absolute';
+        input.style.left = '-9999px';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      setCopyStatus('ok');
+      window.setTimeout(() => setCopyStatus('idle'), 1600);
+    } catch {
+      setCopyStatus('fail');
+      window.setTimeout(() => setCopyStatus('idle'), 2000);
+    }
   };
 
   return (
@@ -245,6 +269,36 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                     />
                     <span>Мне исполнилось 18 лет.</span>
                   </label>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100/60 dark:border-white/10">
+                  <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${
+                    theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                  }`}>
+                    Контакты оператора
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleCopyEmail}
+                      className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-widest shadow-lg active:scale-95 transition-transform ${
+                        theme === 'dark'
+                          ? 'bg-white text-slate-900 shadow-white/10'
+                          : 'bg-slate-900 text-white shadow-slate-900/20'
+                      }`}
+                    >
+                      {copyStatus === 'ok' ? 'Email скопирован' : copyStatus === 'fail' ? 'Не удалось' : 'Скопировать email'}
+                    </button>
+                    <a
+                      href={`mailto:${OPERATOR_EMAIL}`}
+                      className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center border shadow-sm active:scale-95 transition-transform ${
+                        theme === 'dark'
+                          ? 'bg-[#2C2C2E] text-slate-200 border-white/10'
+                          : 'bg-white text-slate-700 border-slate-100'
+                      }`}
+                    >
+                      Написать оператору
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
