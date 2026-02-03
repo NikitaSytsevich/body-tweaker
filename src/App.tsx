@@ -20,8 +20,8 @@ function App() {
 
   useEffect(() => {
       const checkFirstRun = async () => {
-          const accepted = await storageGet('has_accepted_terms');
-          setShowWelcome(accepted !== 'true');
+          const accepted = await storageGet('legal_acceptance_v1');
+          setShowWelcome(!accepted);
       };
       checkFirstRun();
   }, []);

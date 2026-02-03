@@ -1,9 +1,11 @@
 // src/app/WelcomeScreen.tsx
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
-import { storageSet } from '../utils/storage';
+import { storageSet, storageSetJSON } from '../utils/storage';
 import { useTheme } from '../contexts/ThemeContext';
+import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
+import { LegalDocModal } from './legal/LegalDocModal';
 
 interface Props {
   onComplete: () => void;
@@ -12,11 +14,32 @@ interface Props {
 export const WelcomeScreen = ({ onComplete }: Props) => {
   const [step, setStep] = useState(0);
   const { theme } = useTheme();
+  const [openDocId, setOpenDocId] = useState<LegalDocId | null>(null);
+
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptConsent, setAcceptConsent] = useState(false);
+  const [acceptMedical, setAcceptMedical] = useState(false);
+  const [confirmAge, setConfirmAge] = useState(false);
+
+  const canAccept = acceptTerms && acceptPrivacy && acceptConsent && acceptMedical && confirmAge;
+  const openDoc = useMemo(() => (openDocId ? getLegalDocById(openDocId) ?? null : null), [openDocId]);
 
   const handleNext = () => setStep(1);
 
   // Асинхронное сохранение согласия
   const handleAgree = async () => {
+    if (!canAccept) return;
+    await storageSetJSON('legal_acceptance_v1', {
+      version: LEGAL_VERSION,
+      acceptedAt: new Date().toISOString(),
+      ageConfirmed: true,
+      docs: LEGAL_DOCS.map((doc) => ({
+        id: doc.id,
+        title: doc.title,
+        version: doc.version
+      }))
+    });
     await storageSet('has_accepted_terms', 'true');
     onComplete();
   };
@@ -139,20 +162,103 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                   </li>
                 </ul>
 
-                <p className={`text-xs mt-4 pt-4 border-t transition-colors duration-300 ${
-                  theme === 'dark'
-                    ? 'text-slate-500 border-white/10'
-                    : 'text-slate-400 border-slate-100'
-                }`}>
-                  Нажимая «Принять», вы соглашаетесь с Условиями использования.
-                </p>
+                <div className="space-y-3">
+                  <p className={`text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${
+                    theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                  }`}>
+                    Документы
+                  </p>
+                  <div className="space-y-2">
+                    {LEGAL_DOCS.map((doc) => (
+                      <button
+                        key={doc.id}
+                        type="button"
+                        onClick={() => setOpenDocId(doc.id)}
+                        className={`w-full text-left p-3 rounded-xl border transition-colors duration-300 ${
+                          theme === 'dark'
+                            ? 'bg-[#2A2A2C] border-white/10 hover:bg-[#343436]'
+                            : 'bg-slate-50 border-slate-100 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className={`text-sm font-semibold transition-colors duration-300 ${
+                              theme === 'dark' ? 'text-white' : 'text-slate-800'
+                            }`}>
+                              {doc.shortTitle}
+                            </p>
+                            <p className={`text-xs transition-colors duration-300 ${
+                              theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                            }`}>
+                              {doc.summary}
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-blue-600">Открыть</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-blue-600"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                    />
+                    <span>Я принимаю Пользовательское соглашение.</span>
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-blue-600"
+                      checked={acceptPrivacy}
+                      onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                    />
+                    <span>Я ознакомлен(а) с Политикой конфиденциальности.</span>
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-blue-600"
+                      checked={acceptConsent}
+                      onChange={(e) => setAcceptConsent(e.target.checked)}
+                    />
+                    <span>Я даю согласие на обработку персональных данных.</span>
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-blue-600"
+                      checked={acceptMedical}
+                      onChange={(e) => setAcceptMedical(e.target.checked)}
+                    />
+                    <span>Я ознакомлен(а) с медицинским предупреждением и понимаю риски.</span>
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-blue-600"
+                      checked={confirmAge}
+                      onChange={(e) => setConfirmAge(e.target.checked)}
+                    />
+                    <span>Мне исполнилось 18 лет.</span>
+                  </label>
+                </div>
               </div>
             </div>
 
             <div className="pt-4 shrink-0">
               <button
                 onClick={handleAgree}
-                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-blue-600/20 active:scale-95 transition-all hover:bg-blue-700"
+                disabled={!canAccept}
+                className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-95 ${
+                  canAccept
+                    ? 'bg-blue-600 text-white shadow-blue-600/20 hover:bg-blue-700'
+                    : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                }`}
               >
                 Принять и продолжить
               </button>
@@ -171,6 +277,12 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
         )}
 
       </AnimatePresence>
+
+      <LegalDocModal
+        doc={openDoc}
+        isOpen={Boolean(openDoc)}
+        onClose={() => setOpenDocId(null)}
+      />
     </div>
   );
 };

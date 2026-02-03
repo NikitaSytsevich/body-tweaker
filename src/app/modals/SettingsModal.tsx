@@ -73,7 +73,8 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
               storageRemove('fasting_startTime'),
               storageRemove('fasting_scheme'),
               storageRemove('user_name'),
-              storageRemove('has_accepted_terms')
+              storageRemove('has_accepted_terms'),
+              storageRemove('legal_acceptance_v1')
           ]);
           window.location.reload();
       } catch (e) {
@@ -85,12 +86,13 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
   const handleExport = async () => {
       setIsProcessing(true);
       try {
-          const [history, startTime, scheme, userName, terms] = await Promise.all([
+          const [history, startTime, scheme, userName, terms, legalAcceptance] = await Promise.all([
               storageGetJSON('history_fasting', []),
               storageGet('fasting_startTime'),
               storageGet('fasting_scheme'),
               storageGet('user_name'),
-              storageGet('has_accepted_terms')
+              storageGet('has_accepted_terms'),
+              storageGetJSON('legal_acceptance_v1', null)
           ]);
 
           const backupData = {
@@ -101,7 +103,8 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
                   fasting_startTime: startTime,
                   fasting_scheme: scheme,
                   user_name: userName,
-                  has_accepted_terms: terms
+                  has_accepted_terms: terms,
+                  legal_acceptance_v1: legalAcceptance
               }
           };
           
@@ -143,6 +146,7 @@ export const SettingsModal = ({ isOpen, onClose }: Props) => {
               if (data.history_fasting) promises.push(storageSetJSON('history_fasting', data.history_fasting));
               if (data.fasting_startTime) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
               if (data.fasting_scheme) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
+              if (data.legal_acceptance_v1) promises.push(storageSetJSON('legal_acceptance_v1', data.legal_acceptance_v1));
               
               await Promise.all(promises);
               window.location.reload();

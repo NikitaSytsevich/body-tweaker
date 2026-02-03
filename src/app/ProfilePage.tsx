@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import WebApp from '@twa-dev/sdk';
+import { LEGAL_DOCS, getLegalDocById, type LegalDocId } from './legal/legalDocs';
+import { LegalDocModal } from './legal/LegalDocModal';
 
 // Хуки
 import { useAddToHomeScreen } from '../hooks/useAddToHomeScreen';
@@ -159,6 +161,7 @@ export const SettingsSubPage = () => {
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [openDocId, setOpenDocId] = useState<LegalDocId | null>(null);
 
   // PWA
   const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
@@ -188,7 +191,8 @@ export const SettingsSubPage = () => {
               storageRemove('fasting_startTime'),
               storageRemove('fasting_scheme'),
               storageRemove('user_name'),
-              storageRemove('has_accepted_terms')
+              storageRemove('has_accepted_terms'),
+              storageRemove('legal_acceptance_v1')
           ]);
           window.location.reload();
       } catch (e) {
@@ -200,12 +204,13 @@ export const SettingsSubPage = () => {
   const handleExport = async () => {
       setIsProcessing(true);
       try {
-          const [history, startTime, scheme, userName, terms] = await Promise.all([
+          const [history, startTime, scheme, userName, terms, legalAcceptance] = await Promise.all([
               storageGetJSON('history_fasting', []),
               storageGet('fasting_startTime'),
               storageGet('fasting_scheme'),
               storageGet('user_name'),
-              storageGet('has_accepted_terms')
+              storageGet('has_accepted_terms'),
+              storageGetJSON('legal_acceptance_v1', null)
           ]);
 
           const backupData = {
@@ -216,7 +221,8 @@ export const SettingsSubPage = () => {
                   fasting_startTime: startTime,
                   fasting_scheme: scheme,
                   user_name: userName,
-                  has_accepted_terms: terms
+                  has_accepted_terms: terms,
+                  legal_acceptance_v1: legalAcceptance
               }
           };
 
@@ -258,6 +264,7 @@ export const SettingsSubPage = () => {
               if (data.history_fasting) promises.push(storageSetJSON('history_fasting', data.history_fasting));
               if (data.fasting_startTime) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
               if (data.fasting_scheme) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
+              if (data.legal_acceptance_v1) promises.push(storageSetJSON('legal_acceptance_v1', data.legal_acceptance_v1));
 
               await Promise.all(promises);
               window.location.reload();
@@ -274,6 +281,7 @@ export const SettingsSubPage = () => {
   // User Data
   const firstName = user?.first_name || 'Гость';
   const username = user?.username ? `@${user.username}` : '';
+  const openDoc = openDocId ? getLegalDocById(openDocId) ?? null : null;
 
   return (
     <>
@@ -378,6 +386,26 @@ export const SettingsSubPage = () => {
                   </button>
               </div>
 
+              {/* 5. ПРАВОВЫЕ ДОКУМЕНТЫ */}
+              <div className="space-y-3">
+                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest pl-2">Правовые документы</h4>
+                  <div className="space-y-2">
+                      {LEGAL_DOCS.map((doc) => (
+                          <button
+                              key={doc.id}
+                              onClick={() => setOpenDocId(doc.id)}
+                              className="w-full bg-white/70 dark:bg-white/10 p-4 rounded-[1.6rem] shadow-sm border border-white/60 dark:border-white/10 backdrop-blur-xl flex items-center justify-between active:scale-[0.99] transition-transform"
+                          >
+                              <div className="text-left">
+                                  <p className="font-bold text-slate-800 dark:text-white text-sm">{doc.shortTitle}</p>
+                                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{doc.summary}</p>
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-slate-300" />
+                          </button>
+                      ))}
+                  </div>
+              </div>
+
               {/* FOOTER INFO */}
               <div className="pt-2 pb-6 flex justify-center opacity-40">
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-white/70 dark:bg-white/10 rounded-full border border-white/60 dark:border-white/10 backdrop-blur">
@@ -410,6 +438,12 @@ export const SettingsSubPage = () => {
       <InstallGuideModal
         isOpen={showInstallGuide}
         onClose={() => setShowInstallGuide(false)}
+      />
+
+      <LegalDocModal
+        doc={openDoc}
+        isOpen={Boolean(openDoc)}
+        onClose={() => setOpenDocId(null)}
       />
     </>
   );
