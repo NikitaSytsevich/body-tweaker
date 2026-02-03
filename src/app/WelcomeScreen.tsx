@@ -5,7 +5,6 @@ import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
-import { OperatorContactCard } from '../components/ui/OperatorContactCard';
 
 interface Props {
   onComplete: () => void;
@@ -218,7 +217,6 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                   </p>
                 </div>
 
-                <OperatorContactCard variant="onboarding" />
               </div>
             </div>
 

@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './app/Layout';
 import { WelcomeScreen } from './app/WelcomeScreen';
 import { TimerProvider } from './features/fasting/context/TimerContext';
-import { ProfilePage, SettingsSubPage, AboutSubPage, LegalSubPage } from './app/ProfilePage';
+import { ProfilePage, SettingsSubPage, AboutSubPage } from './app/ProfilePage';
 import { ArticleDetailPage } from './features/articles/pages/ArticleDetailPage';
 import { storageGet } from './utils/storage';
 
@@ -45,7 +45,6 @@ function App() {
           <Route path="/profile" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
           <Route path="/profile/settings" element={<ProfileLayout><SettingsSubPage /></ProfileLayout>} />
           <Route path="/profile/about" element={<ProfileLayout><AboutSubPage /></ProfileLayout>} />
-          <Route path="/profile/legal" element={<ProfileLayout><LegalSubPage /></ProfileLayout>} />
           <Route path="/articles/:slug" element={<ArticleDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
