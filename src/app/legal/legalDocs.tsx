@@ -16,6 +16,7 @@ export const LEGAL_VERSION = '1.0';
 export const LEGAL_EFFECTIVE_DATE = '3 февраля 2026';
 export const OPERATOR_NAME = 'Сыцевич Никита Владимирович';
 export const OPERATOR_EMAIL = 'nikitka.sytsevich@icloud.com';
+export const OPERATOR_ADDRESS = 'Республика Беларусь, Брестская обл., Лунинецкий р-н, г. Микашевичи, ул. Строителей 7А, кв. 59';
 export const APP_NAME = 'Body Tweaker';
 
 const sectionTitle = 'text-sm font-bold text-slate-800 dark:text-white';
@@ -41,7 +42,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         <div className="space-y-2">
           <h4 className={sectionTitle}>1. Общие положения</h4>
           <p className={paragraph}>
-            Оператор приложения: {OPERATOR_NAME}, e-mail для обращений: {OPERATOR_EMAIL}.
+            Оператор приложения: {OPERATOR_NAME}, адрес: {OPERATOR_ADDRESS}, e-mail для обращений: {OPERATOR_EMAIL}.
             Приложение предназначено для информационных целей и самоконтроля.
           </p>
         </div>
@@ -103,6 +104,12 @@ export const LEGAL_DOCS: LegalDoc[] = [
             По вопросам обращайтесь на {OPERATOR_EMAIL}.
           </p>
         </div>
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>9. Применимое право</h4>
+          <p className={paragraph}>
+            К настоящему Соглашению применяется право Республики Беларусь.
+          </p>
+        </div>
       </div>
     )
   },
@@ -123,7 +130,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
         <div className="space-y-2">
           <h4 className={sectionTitle}>1. Оператор</h4>
           <p className={paragraph}>
-            Оператор персональных данных: {OPERATOR_NAME}, e-mail: {OPERATOR_EMAIL}.
+            Оператор персональных данных: {OPERATOR_NAME}, адрес: {OPERATOR_ADDRESS}, e-mail: {OPERATOR_EMAIL}.
           </p>
         </div>
 
@@ -132,26 +139,25 @@ export const LEGAL_DOCS: LegalDoc[] = [
           <ul className={list}>
             <li>Данные Telegram профиля, доступные приложению: имя, username, фото профиля.</li>
             <li>Данные, вводимые пользователем: история голодания, сессии дыхания, настройки.</li>
-            <li>Технические данные, передаваемые браузером при загрузке внешних ресурсов (например, IP, user-agent).
-            </li>
+            <li>Технические данные, передаваемые браузером при загрузке внешних ресурсов (например, IP, user-agent).</li>
+            <li>Сведения, которые могут относиться к состоянию здоровья, если пользователь вводит их в приложении.</li>
           </ul>
         </div>
 
         <div className="space-y-2">
-          <h4 className={sectionTitle}>3. Источники и хранение</h4>
+          <h4 className={sectionTitle}>3. Правовые основания и цели</h4>
+          <ul className={list}>
+            <li>Основание обработки — согласие субъекта персональных данных.</li>
+            <li>Цели: предоставление функционала приложения, сохранение истории и настроек, обратная связь по обращениям.</li>
+          </ul>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>4. Источники и хранение</h4>
           <ul className={list}>
             <li>Данные хранятся локально на устройстве пользователя.</li>
             <li>При поддержке Telegram Cloud Storage данные могут синхронизироваться в облаке Telegram.</li>
             <li>Передача данных на сервер Оператора не осуществляется.</li>
-          </ul>
-        </div>
-
-        <div className="space-y-2">
-          <h4 className={sectionTitle}>4. Цели обработки</h4>
-          <ul className={list}>
-            <li>Обеспечение работы приложения и сохранение истории.</li>
-            <li>Персонализация интерфейса (например, отображение имени пользователя).</li>
-            <li>Ответы на обращения пользователя по e-mail.</li>
           </ul>
         </div>
 
@@ -164,7 +170,17 @@ export const LEGAL_DOCS: LegalDoc[] = [
         </div>
 
         <div className="space-y-2">
-          <h4 className={sectionTitle}>6. Сроки хранения</h4>
+          <h4 className={sectionTitle}>6. Трансграничная передача</h4>
+          <p className={paragraph}>
+            При использовании Telegram и облачной синхронизации возможна трансграничная передача
+            персональных данных. В случае передачи в государства без надлежащего уровня защиты
+            такие действия осуществляются на основании согласия пользователя с учетом возможных рисков
+            (отсутствие специального законодательства, уполномоченного органа и мер ответственности).
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>7. Сроки хранения</h4>
           <p className={paragraph}>
             Данные хранятся до их удаления пользователем (через функцию «Сбросить все данные»)
             либо до отзыва согласия.
@@ -172,16 +188,29 @@ export const LEGAL_DOCS: LegalDoc[] = [
         </div>
 
         <div className="space-y-2">
-          <h4 className={sectionTitle}>7. Права пользователя</h4>
+          <h4 className={sectionTitle}>8. Права пользователя</h4>
           <ul className={list}>
             <li>Запросить информацию об обработке данных.</li>
             <li>Отозвать согласие и удалить данные через настройки приложения.</li>
+            <li>Требовать исправления, блокирования или удаления данных при отсутствии оснований для обработки.</li>
+            <li>Получать информацию о предоставлении данных третьим лицам (если такое имело место).</li>
+            <li>Обжаловать действия Оператора в уполномоченный орган или суд.</li>
             <li>Обратиться к Оператору по адресу {OPERATOR_EMAIL}.</li>
           </ul>
         </div>
 
         <div className="space-y-2">
-          <h4 className={sectionTitle}>8. Безопасность</h4>
+          <h4 className={sectionTitle}>9. Порядок реализации прав</h4>
+          <p className={paragraph}>
+            Для реализации прав субъект подает заявление в письменной форме либо в виде электронного документа.
+            В заявлении указываются ФИО, адрес, дата рождения, суть требования и подпись (либо ЭЦП).
+            Срок предоставления информации — до 5 рабочих дней, срок прекращения обработки, удаления или внесения
+            изменений — до 15 календарных дней (если иное не предусмотрено законом).
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>10. Безопасность</h4>
           <p className={paragraph}>
             Данные в хранилище приложения шифруются. Для синхронизации с Telegram Cloud Storage
             используется защищенный канал Telegram.
@@ -209,6 +238,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
           <ul className={list}>
             <li>Данные Telegram профиля: имя, username, фото профиля.</li>
             <li>Данные использования приложения: история, настройки, введенные пользователем сведения.</li>
+            <li>Сведения, которые могут относиться к состоянию здоровья, если пользователь вводит их в приложении.</li>
           </ul>
         </div>
 
@@ -216,7 +246,7 @@ export const LEGAL_DOCS: LegalDoc[] = [
           <h4 className={sectionTitle}>2. Действия с данными</h4>
           <p className={paragraph}>
             Сбор, запись, систематизация, накопление, хранение, обновление, использование,
-            обезличивание (при необходимости), удаление.
+            обезличивание (при необходимости), предоставление, блокирование, удаление.
           </p>
         </div>
 
@@ -230,10 +260,34 @@ export const LEGAL_DOCS: LegalDoc[] = [
         </div>
 
         <div className="space-y-2">
-          <h4 className={sectionTitle}>4. Срок действия согласия</h4>
+          <h4 className={sectionTitle}>4. Специальные персональные данные</h4>
+          <p className={paragraph}>
+            Пользователь дает согласие на обработку специальных персональных данных (сведения о состоянии здоровья),
+            если такие сведения вводятся в приложении.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>5. Трансграничная передача</h4>
+          <p className={paragraph}>
+            Пользователь дает согласие на трансграничную передачу персональных данных при использовании Telegram и
+            облачной синхронизации, включая возможную передачу в государства без надлежащего уровня защиты, и
+            проинформирован о соответствующих рисках.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>6. Срок действия согласия</h4>
           <p className={paragraph}>
             Согласие действует до его отзыва. Отзыв возможен путем удаления данных в настройках
             приложения и направления запроса на {OPERATOR_EMAIL}.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className={sectionTitle}>7. Оператор и контакты</h4>
+          <p className={paragraph}>
+            Оператор: {OPERATOR_NAME}, адрес: {OPERATOR_ADDRESS}, e-mail: {OPERATOR_EMAIL}.
           </p>
         </div>
       </div>
