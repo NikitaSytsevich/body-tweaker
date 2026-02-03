@@ -5,7 +5,6 @@ import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
-import { LegalDocModal } from './legal/LegalDocModal';
 
 interface Props {
   onComplete: () => void;
@@ -278,11 +277,60 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
 
       </AnimatePresence>
 
-      <LegalDocModal
-        doc={openDoc}
-        isOpen={Boolean(openDoc)}
-        onClose={() => setOpenDocId(null)}
-      />
+      <AnimatePresence>
+        {openDoc && (
+          <motion.div
+            key="legal-doc"
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.2 }}
+            className={`absolute inset-0 z-[10000] flex flex-col ${
+              theme === 'dark' ? 'bg-[#1C1C1E]' : 'bg-[#FFE5E0]'
+            }`}
+          >
+            <div className="px-4 pt-6 pb-2 flex items-center gap-3">
+              <button
+                onClick={() => setOpenDocId(null)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-[#2C2C2E] border-white/10 text-white hover:bg-white/10'
+                    : 'bg-white border-slate-100 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <ChevronRight className="w-5 h-5 rotate-180" />
+              </button>
+              <div>
+                <p className={`text-xs uppercase tracking-widest font-bold ${
+                  theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                }`}>
+                  Правовые документы
+                </p>
+                <h2 className={`text-lg font-[900] ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-800'
+                }`}>
+                  {openDoc.shortTitle}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 pb-8">
+              <div className={`rounded-[2rem] p-6 shadow-sm border space-y-6 transition-colors duration-300 ${
+                theme === 'dark'
+                  ? 'bg-[#2C2C2E] border-white/10 text-slate-300'
+                  : 'bg-white border-slate-100 text-slate-600'
+              }`}>
+                <div className={`text-xs ${
+                  theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                }`}>
+                  Версия {openDoc.version} от {openDoc.effectiveDate}
+                </div>
+                {openDoc.content}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

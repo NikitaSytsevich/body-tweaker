@@ -21,7 +21,6 @@ import {
 import { cn } from '../utils/cn';
 import WebApp from '@twa-dev/sdk';
 import { LEGAL_DOCS, getLegalDocById, type LegalDocId } from './legal/legalDocs';
-import { LegalDocModal } from './legal/LegalDocModal';
 
 // Хуки
 import { useAddToHomeScreen } from '../hooks/useAddToHomeScreen';
@@ -120,6 +119,23 @@ export const ProfilePage = () => {
           <ChevronRight className="w-6 h-6 text-blue-400 dark:text-blue-500" />
         </motion.button>
 
+        {/* Правовые документы */}
+        <motion.button
+          onClick={() => navigate('/profile/legal')}
+          className="w-full bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 p-6 rounded-[2rem] shadow-sm border border-violet-100 dark:border-violet-900/30 flex items-center justify-between active:scale-[0.98] transition-transform"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-violet-500 flex items-center justify-center text-white shadow-lg shadow-violet-500/30">
+              <ShieldCheck className="w-7 h-7" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Правовые документы</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Соглашения, политика, предупреждения</p>
+            </div>
+          </div>
+          <ChevronRight className="w-6 h-6 text-violet-400 dark:text-violet-500" />
+        </motion.button>
+
         {/* О проекте */}
         <motion.button
           onClick={() => navigate('/profile/about')}
@@ -161,7 +177,6 @@ export const SettingsSubPage = () => {
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
-  const [openDocId, setOpenDocId] = useState<LegalDocId | null>(null);
 
   // PWA
   const { deferredPrompt, isIOS, isStandalone, promptInstall } = useAddToHomeScreen();
@@ -281,7 +296,6 @@ export const SettingsSubPage = () => {
   // User Data
   const firstName = user?.first_name || 'Гость';
   const username = user?.username ? `@${user.username}` : '';
-  const openDoc = openDocId ? getLegalDocById(openDocId) ?? null : null;
 
   return (
     <>
@@ -386,26 +400,6 @@ export const SettingsSubPage = () => {
                   </button>
               </div>
 
-              {/* 5. ПРАВОВЫЕ ДОКУМЕНТЫ */}
-              <div className="space-y-3">
-                  <h4 className="text-[11px] font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest pl-2">Правовые документы</h4>
-                  <div className="space-y-2">
-                      {LEGAL_DOCS.map((doc) => (
-                          <button
-                              key={doc.id}
-                              onClick={() => setOpenDocId(doc.id)}
-                              className="w-full bg-white/70 dark:bg-white/10 p-4 rounded-[1.6rem] shadow-sm border border-white/60 dark:border-white/10 backdrop-blur-xl flex items-center justify-between active:scale-[0.99] transition-transform"
-                          >
-                              <div className="text-left">
-                                  <p className="font-bold text-slate-800 dark:text-white text-sm">{doc.shortTitle}</p>
-                                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">{doc.summary}</p>
-                              </div>
-                              <ChevronRight className="w-5 h-5 text-slate-300" />
-                          </button>
-                      ))}
-                  </div>
-              </div>
-
               {/* FOOTER INFO */}
               <div className="pt-2 pb-6 flex justify-center opacity-40">
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-white/70 dark:bg-white/10 rounded-full border border-white/60 dark:border-white/10 backdrop-blur">
@@ -438,12 +432,6 @@ export const SettingsSubPage = () => {
       <InstallGuideModal
         isOpen={showInstallGuide}
         onClose={() => setShowInstallGuide(false)}
-      />
-
-      <LegalDocModal
-        doc={openDoc}
-        isOpen={Boolean(openDoc)}
-        onClose={() => setOpenDocId(null)}
       />
     </>
   );
@@ -564,6 +552,81 @@ export const AboutSubPage = () => {
           </p>
         </div>
       </div>
+      </div>
+    </div>
+  );
+};
+
+// Legal documents sub-page
+export const LegalSubPage = () => {
+  const navigate = useNavigate();
+  const [selectedDocId, setSelectedDocId] = useState<LegalDocId | null>(null);
+  const selectedDoc = selectedDocId ? getLegalDocById(selectedDocId) ?? null : null;
+
+  return (
+    <div className="h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] flex flex-col">
+      {/* HEADER */}
+      <div className="px-6 pt-6 pb-2 shrink-0 bg-[#F2F2F7] dark:bg-[#1C1C1E] z-20 flex items-center gap-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#2C2C2E] border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <h2 className="text-xl font-[900] text-slate-800 dark:text-white">Правовые документы</h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 pt-2 pb-8">
+        {!selectedDoc && (
+          <>
+            <div className="bg-white dark:bg-[#2C2C2E] p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 mb-6">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Здесь собраны актуальные версии пользовательского соглашения, политики конфиденциальности,
+                согласия на обработку данных и медицинских предупреждений.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {LEGAL_DOCS.map((doc) => (
+                <button
+                  key={doc.id}
+                  onClick={() => setSelectedDocId(doc.id)}
+                  className="w-full bg-white dark:bg-[#2C2C2E] p-4 rounded-[1.8rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-between active:scale-[0.99] transition-transform text-left"
+                >
+                  <div>
+                    <p className="font-bold text-slate-800 dark:text-white text-sm">{doc.shortTitle}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{doc.summary}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {selectedDoc && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setSelectedDocId(null)}
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+              Назад к списку
+            </button>
+
+            <div className="bg-white dark:bg-[#2C2C2E] p-5 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5">
+              <div className="text-xs text-slate-400 dark:text-slate-500 mb-3">
+                Версия {selectedDoc.version} от {selectedDoc.effectiveDate}
+              </div>
+              <h3 className="text-xl font-[900] text-slate-800 dark:text-white mb-4">
+                {selectedDoc.title}
+              </h3>
+              <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {selectedDoc.content}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
