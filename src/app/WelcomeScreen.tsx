@@ -16,13 +16,9 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
   const { theme } = useTheme();
   const [openDocId, setOpenDocId] = useState<LegalDocId | null>(null);
 
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
-  const [acceptConsent, setAcceptConsent] = useState(false);
-  const [acceptMedical, setAcceptMedical] = useState(false);
-  const [confirmAge, setConfirmAge] = useState(false);
+  const [acceptAll, setAcceptAll] = useState(false);
 
-  const canAccept = acceptTerms && acceptPrivacy && acceptConsent && acceptMedical && confirmAge;
+  const canAccept = acceptAll;
   const openDoc = useMemo(() => (openDocId ? getLegalDocById(openDocId) ?? null : null), [openDocId]);
 
   const handleNext = () => setStep(1);
@@ -201,52 +197,25 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                   </div>
                 </div>
 
-                <div className="space-y-3 text-xs">
+                <div className="space-y-2 text-xs">
                   <label className="flex items-start gap-3">
                     <input
                       type="checkbox"
                       className="mt-0.5 h-4 w-4 accent-blue-600"
-                      checked={acceptTerms}
-                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      checked={acceptAll}
+                      onChange={(e) => setAcceptAll(e.target.checked)}
                     />
-                    <span>Я принимаю Пользовательское соглашение.</span>
+                    <span>
+                      Я принимаю Пользовательское соглашение, Политику конфиденциальности,
+                      Согласие на обработку персональных данных и Медицинское предупреждение,
+                      а также подтверждаю, что мне исполнилось 18 лет.
+                    </span>
                   </label>
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 accent-blue-600"
-                      checked={acceptPrivacy}
-                      onChange={(e) => setAcceptPrivacy(e.target.checked)}
-                    />
-                    <span>Я ознакомлен(а) с Политикой конфиденциальности.</span>
-                  </label>
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 accent-blue-600"
-                      checked={acceptConsent}
-                      onChange={(e) => setAcceptConsent(e.target.checked)}
-                    />
-                    <span>Я даю согласие на обработку персональных данных.</span>
-                  </label>
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 accent-blue-600"
-                      checked={acceptMedical}
-                      onChange={(e) => setAcceptMedical(e.target.checked)}
-                    />
-                    <span>Я ознакомлен(а) с медицинским предупреждением и понимаю риски.</span>
-                  </label>
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 accent-blue-600"
-                      checked={confirmAge}
-                      onChange={(e) => setConfirmAge(e.target.checked)}
-                    />
-                    <span>Мне исполнилось 18 лет.</span>
-                  </label>
+                  <p className={`text-[11px] leading-relaxed ${
+                    theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+                  }`}>
+                    Документы доступны выше по ссылкам. Вы можете ознакомиться с ними перед принятием.
+                  </p>
                 </div>
 
                 <OperatorContactCard variant="onboarding" />
