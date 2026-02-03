@@ -41,6 +41,26 @@
     --glass-border: rgba(255, 255, 255, 0.10);
   }
 
+  .article-theme {
+    --article-bg: #F4F5F8;
+    --article-surface: #FFFFFF;
+    --article-surface-2: #F1F3F7;
+    --article-border: rgba(15, 23, 42, 0.08);
+    --article-text: #0F172A;
+    --article-muted: #4B5563;
+    --article-accent: #4C8DFF;
+  }
+
+  .dark .article-theme {
+    --article-bg: #0B0C10;
+    --article-surface: #16181D;
+    --article-surface-2: #1F2229;
+    --article-border: rgba(255, 255, 255, 0.08);
+    --article-text: #F8FAFC;
+    --article-muted: #B8BDC7;
+    --article-accent: #4C8DFF;
+  }
+
   body {
     @apply bg-[#F2F2F7] dark:bg-[#1C1C1E] text-slate-900 dark:text-white antialiased;
     /* Фикс высоты для мобильных браузеров (чтобы адресная строка не мешала) */
@@ -60,6 +80,35 @@
   /* Убираем подсветку при тапе на мобильных */
   * {
     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .article-bg {
+    background-color: var(--article-bg);
+    color: var(--article-text);
+  }
+
+  .article-surface {
+    background-color: var(--article-surface);
+    border: 1px solid var(--article-border);
+  }
+
+  .article-surface-2 {
+    background-color: var(--article-surface-2);
+    border: 1px solid var(--article-border);
+  }
+
+  .article-muted {
+    color: var(--article-muted);
+  }
+
+  .article-accent {
+    color: var(--article-accent);
+  }
+
+  .article-border {
+    border-color: var(--article-border);
   }
 }
 

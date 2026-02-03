@@ -9,41 +9,41 @@ interface Props {
 export const ArticleCard = ({ article }: Props) => {
   return (
     <motion.div
-      whileHover={{ scale: 0.98 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 0.99 }}
+      whileTap={{ scale: 0.98 }}
       className="w-full mb-6 last:mb-24"
     >
-      <Link to={`/articles/${article.id}`} className="block bg-white dark:bg-[#2C2C2E] rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/10 overflow-hidden relative group">
-
-        {/* Картинка (Aspect Ratio ~ 3:2 как на скрине) */}
-        <div className="aspect-[3/2] w-full bg-slate-100 dark:bg-[#3A3A3C] relative overflow-hidden">
-            {article.imageUrl ? (
-                <img
-                    src={article.imageUrl}
-                    alt={article.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-            ) : (
-                // Заглушка, если картинки нет
-                <div className="w-full h-full bg-gradient-to-br from-blue-50 dark:from-blue-900/20 to-indigo-50 dark:to-indigo-900/20 flex items-center justify-center text-slate-300 dark:text-slate-600">
-                    Нет изображения
-                </div>
-            )}
+      <Link
+        to={`/articles/${article.id}`}
+        className="group block overflow-hidden rounded-[32px] border border-[color:var(--article-border)] bg-[color:var(--article-surface)] shadow-[0_20px_60px_-45px_rgba(0,0,0,0.6)]"
+      >
+        <div className="relative aspect-[3/2] w-full overflow-hidden bg-[color:var(--article-surface-2)]">
+          {article.imageUrl ? (
+            <img
+              src={article.imageUrl}
+              alt={article.title}
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-[color:var(--article-surface-2)] text-[color:var(--article-muted)]">
+              Нет изображения
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-black/60" />
         </div>
 
-        {/* Текст */}
-        <div className="p-6">
-          <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block">
+        <div className="space-y-3 p-5">
+          <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[color:var(--article-muted)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--article-accent)]" />
             {article.category}
           </span>
-          <h3 className="text-2xl font-[900] text-slate-900 dark:text-white leading-tight mb-3">
+          <h3 className="text-[26px] font-semibold leading-tight tracking-tight text-[color:var(--article-text)]">
             {article.title}
           </h3>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed">
+          <p className="text-[15px] leading-relaxed text-[color:var(--article-muted)] line-clamp-3">
             {article.summary}
           </p>
         </div>
-
       </Link>
     </motion.div>
   );

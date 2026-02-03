@@ -19,7 +19,7 @@ export const ArticleDetailPage = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md"
         onClick={() => navigate('/')}
       />
 
@@ -28,44 +28,45 @@ export const ArticleDetailPage = () => {
         animate={{ y: '40px' }}
         exit={{ y: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed inset-x-0 bottom-0 top-0 z-[101] bg-white dark:bg-[#2C2C2E] rounded-t-[2rem] overflow-hidden flex flex-col shadow-2xl"
+        className="article-theme font-article fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--article-bg)] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)]"
       >
-        <button
-          onClick={() => navigate('/')}
-          className="absolute top-5 right-5 z-50 w-8 h-8 bg-black/20 dark:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white/90 dark:text-slate-900/90 hover:bg-black/30 dark:hover:bg-white/30 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         <div className="flex-1 overflow-y-auto">
-            <div className="relative w-full h-[45vh] bg-slate-100 dark:bg-[#3A3A3C]">
-                {article.imageUrl && (
-                    <img
-                        src={article.imageUrl}
-                        alt={article.title}
-                        className="w-full h-full object-cover"
-                    />
-                )}
-                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-[#2C2C2E] via-white/80 dark:via-[#2C2C2E]/80 to-transparent pointer-events-none" />
+          <div className="relative h-[42vh] min-h-[280px] w-full bg-[color:var(--article-surface)]">
+            {article.imageUrl && (
+              <img
+                src={article.imageUrl}
+                alt={article.title}
+                className="h-full w-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/80 pointer-events-none" />
 
-                <div className="absolute top-6 left-6 right-16">
-                    <span className="text-xs font-bold text-white/95 uppercase tracking-widest drop-shadow-sm">
-                        Статья: {article.category.toLowerCase()}
-                    </span>
-                </div>
+            <div className="absolute top-4 left-4 right-4 flex items-center justify-center">
+              <div className="rounded-full bg-black/40 px-4 py-2 text-[11px] uppercase tracking-[0.25em] text-white/85 backdrop-blur">
+                {article.category}
+              </div>
             </div>
+            <button
+              onClick={() => navigate('/')}
+              className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white/90 backdrop-blur transition-colors hover:bg-black/60"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
-            <div className="relative px-6 -mt-6 pb-24">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-[900] text-slate-900 dark:text-white leading-[1.1] tracking-tight">
-                        {article.title}
-                    </h1>
-                </div>
-                <div className="prose prose-lg prose-slate dark:prose-invert max-w-none font-medium text-slate-700 dark:text-slate-300 leading-relaxed">
-                    {article.content}
-                </div>
+          <div className="relative -mt-12 px-5 pb-28">
+            <div className="rounded-[28px] border border-[color:var(--article-border)] bg-[color:var(--article-surface)] p-6 shadow-[0_20px_60px_-50px_rgba(0,0,0,0.7)]">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-[color:var(--article-muted)]">
+                {article.category}
+              </p>
+              <h1 className="mt-3 text-[30px] font-semibold leading-[1.15] tracking-tight text-[color:var(--article-text)]">
+                {article.title}
+              </h1>
+              <div className="mt-6 space-y-8">
+                {article.content}
+              </div>
             </div>
+          </div>
         </div>
       </motion.div>
     </>

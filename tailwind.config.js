@@ -9,7 +9,10 @@ export default {
     extend: {
       padding: {
         'safe': 'env(safe-area-inset-bottom)',
-      }
+      },
+      fontFamily: {
+        article: ['"Manrope"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],
