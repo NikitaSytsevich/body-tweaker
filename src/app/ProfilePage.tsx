@@ -32,6 +32,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { ToastNotification } from '../components/ui/ToastNotification';
 import { InstallGuideModal } from './modals/InstallGuideModal';
+import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 
 // Команда
 const TEAM = [
@@ -74,10 +75,6 @@ export const ProfilePage = () => {
   const user = WebApp.initDataUnsafe?.user;
   const firstName = user?.first_name || 'Гость';
   const username = user?.username ? `@${user.username}` : '';
-  const photoUrl = user?.photo_url;
-  const [imageError, setImageError] = useState(false);
-
-  const initials = firstName ? firstName.charAt(0).toUpperCase() : '?';
 
   return (
     <div className="min-h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] px-4 pt-4 pb-24">
@@ -95,20 +92,7 @@ export const ProfilePage = () => {
       {/* USER CARD */}
       <div className="bg-white dark:bg-[#2C2C2E] p-5 rounded-[2rem] shadow-sm flex items-center gap-4 mb-6">
         <div className="relative">
-          {photoUrl && !imageError ? (
-            <img
-              src={photoUrl}
-              alt="User"
-              className="w-16 h-16 rounded-full border-4 border-slate-50 dark:border-white/5"
-              crossOrigin="anonymous"
-              referrerPolicy="no-referrer"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500">
-              <span className="text-xl font-bold">{initials}</span>
-            </div>
-          )}
+          <ProfileAvatar size="lg" />
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#2C2C2E] rounded-full" />
         </div>
         <div>
