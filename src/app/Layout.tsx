@@ -1,9 +1,8 @@
 // src/app/Layout.tsx
-import { useState, useRef, useEffect, memo, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, memo, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Map, Timer, Wind, History } from 'lucide-react';
-import { motion, AnimatePresence, useSpring, useMotionValue, useTransform } from 'framer-motion';
-import type { Variants } from 'framer-motion';
+import { BookOpen, Timer, Wind, History } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '../utils/cn';
 import { storageGet, storageSet } from '../utils/storage';
 import WebApp from '@twa-dev/sdk';
@@ -41,6 +40,8 @@ const PageView = memo(({ isActive, children }: { isActive: boolean, children: Re
     );
 });
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 export const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -50,30 +51,111 @@ export const Layout = () => {
   const navRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   
-  const xPercent = useMotionValue(0);
-  const springPercent = useSpring(xPercent, { 
-      stiffness: isDragging ? 2000 : 500, 
-      damping: isDragging ? 50 : 40 
-  });
+  const xPx = useMotionValue(0);
+  const dragBaseRef = useRef<number | null>(null);
 
-  const navItems = [
-    { id: 'map', path: '/', icon: Map },
-    { id: 'timer', path: '/timer', icon: Timer },
-    { id: 'breath', path: '/breathing', icon: Wind },
-    { id: 'history', path: '/history', icon: History },
-  ];
+  const navItems = useMemo(() => ([
+    { id: 'knowledge', path: '/', icon: BookOpen, label: 'Знания' },
+    { id: 'timer', path: '/timer', icon: Timer, label: 'Таймер' },
+    { id: 'breath', path: '/breathing', icon: Wind, label: 'Дыхание' },
+    { id: 'history', path: '/history', icon: History, label: 'История' },
+  ]), []);
 
   // ИЗМЕНЕНИЕ: Проверка, открыта ли статья
   const isArticleDetail = location.pathname.startsWith('/articles/');
 
-  const activeIndex = navItems.findIndex(i => i.path === location.pathname);
+  const activeIndex = navItems.findIndex((item) => {
+    if (item.path === '/') {
+      return location.pathname === '/' || location.pathname === '';
+    }
+    return location.pathname.startsWith(item.path);
+  });
   const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
 
-  useEffect(() => {
-    if (!isDragging) {
-        xPercent.set(safeActiveIndex * 25);
+  const pillGap = 4;
+  const [metrics, setMetrics] = useState({
+    innerWidth: 0,
+    itemWidth: 0,
+    pillWidth: 0,
+    minX: 0,
+    maxX: 0,
+    offsetX: 0
+  });
+  const [ready, setReady] = useState(false);
+
+  const measure = useCallback(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const styles = getComputedStyle(nav);
+    const padLeft = parseFloat(styles.paddingLeft) || 0;
+    const padRight = parseFloat(styles.paddingRight) || 0;
+    const innerWidth = Math.max(nav.clientWidth - padLeft - padRight, 0);
+    const itemWidth = navItems.length ? innerWidth / navItems.length : 0;
+    const pillWidth = itemWidth;
+    const minX = 0;
+    const maxX = Math.max(innerWidth - pillWidth, 0);
+    const offsetX = padLeft;
+
+    setMetrics((prev) => {
+      if (
+        Math.abs(prev.innerWidth - innerWidth) < 0.5 &&
+        Math.abs(prev.itemWidth - itemWidth) < 0.5 &&
+        Math.abs(prev.pillWidth - pillWidth) < 0.5 &&
+        Math.abs(prev.minX - minX) < 0.5 &&
+        Math.abs(prev.maxX - maxX) < 0.5 &&
+        Math.abs(prev.offsetX - offsetX) < 0.5
+      ) {
+        return prev;
+      }
+      return { innerWidth, itemWidth, pillWidth, minX, maxX, offsetX };
+    });
+
+    if (!ready && innerWidth > 0) {
+      setReady(true);
     }
-  }, [safeActiveIndex, isDragging]);
+  }, [pillGap, navItems.length, ready]);
+
+  useEffect(() => {
+    const node = navRef.current;
+    if (!node) return;
+    const update = () => measure();
+    update();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(update);
+      observer.observe(node);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [measure]);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure, navItems.length]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!cancelled) measure();
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [measure]);
+
+  useEffect(() => {
+    if (isDragging || metrics.itemWidth <= 0) return;
+    const target = clamp(
+      safeActiveIndex * metrics.itemWidth,
+      metrics.minX,
+      metrics.maxX
+    );
+    xPx.set(target);
+  }, [safeActiveIndex, isDragging, metrics, xPx]);
 
   useEffect(() => {
     try {
@@ -103,30 +185,34 @@ export const Layout = () => {
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
       if (!isDragging || !navRef.current) return;
-      const rect = navRef.current.getBoundingClientRect();
-      const contentWidth = rect.width - 16;
-      if (contentWidth <= 0) return;
-      const relativeX = e.clientX - rect.left - 8 - (contentWidth / 8);
-      const percent = (relativeX / contentWidth) * 100;
-      xPercent.set(percent);
+      if (!metrics.pillWidth) return;
+      const baseLeft = dragBaseRef.current;
+      if (baseLeft == null) return;
+      const relativeX = e.clientX - baseLeft;
+      const nextX = relativeX - (metrics.pillWidth / 2);
+      xPx.set(clamp(nextX, metrics.minX, metrics.maxX));
     };
 
     const handleUp = (e: PointerEvent) => {
       if (!isDragging || !navRef.current) return;
       setIsDragging(false);
-      const rect = navRef.current.getBoundingClientRect();
-      const contentWidth = rect.width - 16;
-      const itemWidth = contentWidth / 4;
-      const relativeX = e.clientX - rect.left - 8;
-      let index = Math.floor(relativeX / itemWidth);
-      index = Math.max(0, Math.min(index, 3));
+      if (metrics.itemWidth <= 0) {
+        dragBaseRef.current = null;
+        return;
+      }
+      const baseLeft = dragBaseRef.current ?? (navRef.current.getBoundingClientRect().left + navRef.current.clientLeft + metrics.offsetX);
+      dragBaseRef.current = null;
+      const relativeX = e.clientX - baseLeft;
+      let index = Math.round((relativeX - (metrics.itemWidth / 2)) / metrics.itemWidth);
+      index = Math.max(0, Math.min(index, navItems.length - 1));
       const targetPath = navItems[index].path;
       
       if (targetPath !== location.pathname) {
         if (navigator.vibrate) navigator.vibrate(15);
         navigate(targetPath);
       } else {
-        xPercent.set(index * 25);
+        const target = clamp(index * metrics.itemWidth, metrics.minX, metrics.maxX);
+        xPx.set(target);
       }
     };
 
@@ -140,9 +226,12 @@ export const Layout = () => {
         window.removeEventListener('pointerup', handleUp);
         window.removeEventListener('pointercancel', handleUp);
     };
-  }, [isDragging, location.pathname, navigate]);
+  }, [isDragging, location.pathname, navigate, metrics, navItems, xPx]);
 
-  const leftStyle = useTransform(springPercent, (v) => `calc(${v}% + 8px)`);
+  const leftStyle = useTransform(
+    xPx,
+    (v) => `${metrics.offsetX + clamp(v, metrics.minX, metrics.maxX)}px`
+  );
 
   return (
     <div className="bg-[#F2F2F7] dark:bg-[#1C1C1E] flex justify-center font-sans text-slate-900 dark:text-white h-[100dvh] w-screen overflow-hidden fixed inset-0">
@@ -176,55 +265,74 @@ export const Layout = () => {
 
         {/* ИЗМЕНЕНИЕ: Скрываем навигацию на странице статьи */}
         {!isArticleDetail && (
-          <div className="fixed bottom-8 left-0 right-0 z-40 flex justify-center pointer-events-none">
+          <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none">
             <motion.nav
               ref={navRef}
-              animate={{ scale: isDragging ? 0.98 : 1, y: isDragging ? 2 : 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              style={{ touchAction: 'none' }}
+              style={{ touchAction: 'none', padding: `${pillGap}px` }}
               onPointerDown={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const contentWidth = rect.width - 16;
-                  const relativeX = e.clientX - rect.left - 8 - (contentWidth / 8);
-                  const percent = (relativeX / contentWidth) * 100;
-                  xPercent.set(percent);
+                e.preventDefault();
+                if (!metrics.pillWidth || !metrics.itemWidth) return;
+                const nav = e.currentTarget;
+                const rect = nav.getBoundingClientRect();
+                const baseLeft = rect.left + nav.clientLeft + metrics.offsetX;
+                dragBaseRef.current = baseLeft;
+                setIsDragging(true);
+                const relativeX = e.clientX - baseLeft;
+                const nextX = relativeX - (metrics.pillWidth / 2);
+                xPx.set(clamp(nextX, metrics.minX, metrics.maxX));
               }}
-              className="pointer-events-auto bg-white/90 dark:bg-[#2C2C2E]/85 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] rounded-[2.5rem] px-2 py-2 flex items-center mx-4 max-w-sm w-full relative h-20 cursor-grab active:cursor-grabbing select-none"
+              className={cn(
+                "pointer-events-auto select-none cursor-grab active:cursor-grabbing",
+                "mx-4 w-full max-w-[340px] h-[72px] flex items-center relative",
+                "rounded-full border",
+                "bg-[linear-gradient(180deg,#F8F8F8_0%,#F1F1F1_100%)] border-white/70 shadow-[0_16px_36px_-18px_rgba(0,0,0,0.22)]",
+                "dark:bg-[linear-gradient(180deg,#2C2C2E_0%,#1F1F22_100%)] dark:border-[#3A3A3C]/80 dark:shadow-[0_16px_36px_-18px_rgba(0,0,0,0.7)]"
+              )}
             >
               <motion.div
-                  className="absolute top-2 bottom-2 bg-white dark:bg-[#2C2C2E] shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] dark:shadow-[0_4px_15px_-3px_rgba(0,0,0,0.3)] rounded-[2rem] border border-slate-100 dark:border-white/10 z-0 pointer-events-none"
-                  style={{
-                      left: leftStyle,
-                      width: 'calc(25% - 16px)',
-                      scale: isDragging ? 1.05 : 1
-                  }}
+                className={cn(
+                  "absolute rounded-full z-0 pointer-events-none",
+                  "bg-[#E9E9E9] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
+                  "dark:bg-[#3A3A3C] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                )}
+                style={{
+                  left: leftStyle,
+                  width: metrics.pillWidth > 0
+                    ? `${metrics.pillWidth}px`
+                    : `calc((100% - ${pillGap * 2}px) / ${navItems.length})`,
+                  top: `${pillGap}px`,
+                  bottom: `${pillGap}px`,
+                  transition: isDragging || !ready ? 'none' : 'left 120ms ease-out, width 120ms ease-out'
+                }}
               />
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                const getIconAnimation = (): Variants | Record<string, unknown> => {
-                    if (!isActive) return {};
-                    // OPTIMIZATION: Reduced animation durations for better performance
-                    switch (item.id) {
-                        case 'map': return { scaleX: [1, 1.2, 0.9, 1], transition: { duration: 0.3 } };
-                        case 'timer': return { rotate: [0, 360], transition: { duration: 0.4, ease: "backOut" } };
-                        case 'breath': return { x: [0, 5, -5, 0], rotate: [0, 10, -10, 0], transition: { duration: 0.3 } };
-                        case 'history': return { rotate: [0, -20, 360, 360], transition: { duration: 0.5, times: [0, 0.2, 0.8, 1] } };
-                        default: return { scale: 1.2, y: -4 };
-                    }
-                };
-
+              {navItems.map((item, index) => {
+                const isActive = index === safeActiveIndex;
                 return (
-                  <div key={item.id} className="relative flex-1 flex flex-col items-center justify-center h-full z-10 pointer-events-none">
-                    <motion.div animate={isActive ? { ...getIconAnimation(), y: -4, scale: 1.1 } : { y: 0, scale: 1, rotate: 0 }}>
-                      <item.icon className={cn("w-6 h-6 transition-colors duration-200", isActive ? "text-blue-600 dark:text-blue-500 fill-blue-600/10 dark:fill-blue-500/10" : "text-slate-400 dark:text-slate-500")} strokeWidth={isActive ? 2.5 : 2} />
-                    </motion.div>
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="w-1 h-1 bg-blue-600 dark:bg-blue-500 rounded-full absolute bottom-3" />
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "relative flex-1 flex flex-col items-center justify-center gap-1 h-full z-10 pointer-events-none"
+                    )}
+                  >
+                    <item.icon
+                      className={cn(
+                        "w-6 h-6 transition-colors duration-200",
+                        isActive
+                          ? "text-[#0A84FF] dark:text-[#0A84FF]"
+                          : "text-[#3A3A3C] dark:text-white/90"
                       )}
-                    </AnimatePresence>
+                      strokeWidth={2}
+                    />
+                    <span
+                      className={cn(
+                        "text-[11px] font-semibold tracking-tight transition-colors duration-200",
+                        isActive
+                          ? "text-[#0A84FF] dark:text-[#0A84FF]"
+                          : "text-[#4A4A4A] dark:text-white/90"
+                      )}
+                    >
+                      {item.label}
+                    </span>
                   </div>
                 );
               })}
