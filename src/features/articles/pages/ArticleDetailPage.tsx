@@ -1,7 +1,8 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { X } from 'lucide-react';
 import { getArticleById } from '../content';
 import { motion } from 'framer-motion';
+import WebApp from '@twa-dev/sdk';
 
 export const ArticleDetailPage = () => {
   const location = useLocation();
@@ -11,6 +12,24 @@ export const ArticleDetailPage = () => {
   const article = articleId ? getArticleById(articleId) : undefined;
 
   if (!article) return null;
+
+  useEffect(() => {
+    const handleBack = () => navigate('/');
+    try {
+      WebApp.BackButton.show();
+      WebApp.BackButton.onClick(handleBack);
+    } catch {
+      // ignore when running outside Telegram
+    }
+    return () => {
+      try {
+        WebApp.BackButton.offClick(handleBack);
+        WebApp.BackButton.hide();
+      } catch {
+        // ignore
+      }
+    };
+  }, [navigate]);
 
   return (
     <>
@@ -28,8 +47,15 @@ export const ArticleDetailPage = () => {
         animate={{ y: '40px' }}
         exit={{ y: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="article-theme font-article fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--article-bg)] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)]"
+        className="article-theme font-article fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--article-bg)] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)] pt-[var(--app-top-offset)]"
       >
+        <div
+          className="pointer-events-none absolute top-0 left-0 right-0"
+          style={{
+            height: 'var(--app-top-offset)',
+            background: 'linear-gradient(180deg, var(--article-bg) 0%, rgba(255,255,255,0) 100%)',
+          }}
+        />
         <div className="flex-1 overflow-y-auto">
           <div className="relative h-[42vh] min-h-[280px] w-full bg-[color:var(--article-surface)]">
             {article.imageUrl && (
@@ -46,12 +72,6 @@ export const ArticleDetailPage = () => {
                 {article.category}
               </div>
             </div>
-            <button
-              onClick={() => navigate('/')}
-              className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white/90 backdrop-blur transition-colors hover:bg-black/60"
-            >
-              <X className="h-5 w-5" />
-            </button>
           </div>
 
           <div className="relative -mt-12 px-5 pb-28">
