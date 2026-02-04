@@ -235,7 +235,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
           >
             <div
               className="px-4 pb-2"
-              style={{ paddingTop: 'calc(3.5rem + var(--app-top-offset))' }}
+              style={{ paddingTop: 'calc(5.5rem + var(--app-top-offset))' }}
             >
               <p className="text-xs uppercase tracking-widest font-bold app-muted">
                 Правовые документы
