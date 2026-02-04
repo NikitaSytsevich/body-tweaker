@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Trash2, Edit3, Check, Sunrise, Moon, Clock, Trophy } from 'lucide-react';
 import { FASTING_PHASES } from '../../fasting/data/stages';
 import { NativeDatePicker } from '../../../components/ui/DatePicker';
@@ -42,21 +41,15 @@ export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) =>
   const isFasting = record.type === 'fasting';
 
   const content = (
-    <AnimatePresence>
       <>
         {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100]"
+          className="fixed inset-0 bg-black/40 backdrop-blur-md z-[100] animate-fade-in"
         />
 
         {/* Modal Sheet */}
-        <motion.div
-          initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[90vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
-        >
+        <div className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[90vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto animate-sheet-in">
           {/* Handle */}
           <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-[#1C1C1E] shrink-0" onClick={onClose}>
             <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/20 rounded-full" />
@@ -227,9 +220,8 @@ export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) =>
               )}
 
           </div>
-        </motion.div>
+        </div>
       </>
-    </AnimatePresence>
   );
 
   return createPortal(content, document.body);

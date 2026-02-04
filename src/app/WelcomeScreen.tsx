@@ -1,10 +1,11 @@
 // src/app/WelcomeScreen.tsx
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
+import WebApp from '@twa-dev/sdk';
 
 interface Props {
   onComplete: () => void;
@@ -39,6 +40,32 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
     onComplete();
   };
 
+  useEffect(() => {
+    if (!openDocId) {
+      try {
+        WebApp.BackButton.hide();
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
+    const handleBack = () => setOpenDocId(null);
+    try {
+      WebApp.BackButton.show();
+      WebApp.BackButton.onClick(handleBack);
+    } catch {
+      // ignore
+    }
+    return () => {
+      try {
+        WebApp.BackButton.offClick(handleBack);
+        WebApp.BackButton.hide();
+      } catch {
+        // ignore
+      }
+    };
+  }, [openDocId]);
 
   return (
     <div
@@ -264,29 +291,17 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
               theme === 'dark' ? 'bg-[#1C1C1E]' : 'bg-[#FFE5E0]'
             }`}
           >
-            <div className="px-4 pt-6 pb-2 flex items-center gap-3">
-              <button
-                onClick={() => setOpenDocId(null)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-[#2C2C2E] border-white/10 text-white hover:bg-white/10'
-                    : 'bg-white border-slate-100 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                <ChevronRight className="w-5 h-5 rotate-180" />
-              </button>
-              <div>
-                <p className={`text-xs uppercase tracking-widest font-bold ${
-                  theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
-                }`}>
-                  Правовые документы
-                </p>
-                <h2 className={`text-lg font-[900] ${
-                  theme === 'dark' ? 'text-white' : 'text-slate-800'
-                }`}>
-                  {openDoc.shortTitle}
-                </h2>
-              </div>
+            <div className="px-4 pt-10 pb-2">
+              <p className={`text-xs uppercase tracking-widest font-bold ${
+                theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
+              }`}>
+                Правовые документы
+              </p>
+              <h2 className={`text-lg font-[900] ${
+                theme === 'dark' ? 'text-white' : 'text-slate-800'
+              }`}>
+                {openDoc.shortTitle}
+              </h2>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pb-8">

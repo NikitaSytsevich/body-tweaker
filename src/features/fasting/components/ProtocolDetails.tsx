@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { ChevronLeft, Play, Clock, Activity, ChevronDown, Zap, PartyPopper } from 'lucide-react';
 import { FASTING_SCHEMES } from '../data/schemes';
 import { FASTING_PHASES } from '../data/stages';
@@ -92,13 +91,7 @@ export const ProtocolDetails = ({ schemeId, onBack, onStart }: Props) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className="flex flex-col h-full bg-[#F2F2F7] dark:bg-gradient-to-b dark:from-[#0B0F14] dark:via-[#0E141C] dark:to-[#0B0F14] relative overflow-hidden"
-    >
+    <div className="flex flex-col h-full bg-[#F2F2F7] dark:bg-gradient-to-b dark:from-[#0B0F14] dark:via-[#0E141C] dark:to-[#0B0F14] relative overflow-hidden animate-slide-in-right">
       <div className="sticky top-0 z-30 flex items-center justify-between gap-4 px-6 pt-4 pb-3 bg-[#F2F2F7]/80 dark:bg-[#0B0F14]/75 backdrop-blur border-b border-white/60 dark:border-[#1B2736]">
         <div className="flex items-center gap-3">
           <button
@@ -284,6 +277,6 @@ export const ProtocolDetails = ({ schemeId, onBack, onStart }: Props) => {
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

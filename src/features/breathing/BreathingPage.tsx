@@ -8,7 +8,6 @@ import { cn } from '../../utils/cn';
 import { InfoSheet } from './components/InfoSheet';
 import { SoundSheet } from './components/SoundSheet';
 import { soundManager } from '../../utils/sounds';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 
 export const BreathingPage = () => {
@@ -188,40 +187,34 @@ export const BreathingPage = () => {
             </div>
 
             {/* CONTROLS */}
-            <AnimatePresence>
-                {!isRunning && (
-                    <motion.div 
-                        initial={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="px-5 pb-5 pt-3 space-y-3 bg-white/45 dark:bg-white/5 backdrop-blur-xl border-t border-white/60 dark:border-white/10 overflow-hidden"
-                    >
-                        <div className="flex items-center justify-between bg-white/70 dark:bg-white/10 p-2 rounded-[1.5rem] border border-white/60 dark:border-white/10">
-                            <button 
-                                disabled={levelIndex === 0}
-                                onClick={() => setLevelIndex(i => i - 1)}
-                                className="p-3 hover:bg-white/80 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
-                            >
-                                <ChevronLeft className="w-5 h-5 text-slate-400 dark:text-slate-300" />
-                            </button>
-                            <div className="text-center w-32">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
-                                    Сложность
-                                </span>
-                                <span className="text-[19px] font-black text-slate-800 dark:text-white leading-none">
-                                    {level.id}
-                                </span>
-                            </div>
-                            <button 
-                                disabled={levelIndex === BREATH_LEVELS.length - 1}
-                                onClick={() => setLevelIndex(i => i + 1)}
-                                className="p-3 hover:bg-white/80 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
-                            >
-                                <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-300" />
-                            </button>
+            {!isRunning && (
+                <div className="px-5 pb-5 pt-3 space-y-3 bg-white/45 dark:bg-white/5 backdrop-blur-xl border-t border-white/60 dark:border-white/10 overflow-hidden animate-fade-in">
+                    <div className="flex items-center justify-between bg-white/70 dark:bg-white/10 p-2 rounded-[1.5rem] border border-white/60 dark:border-white/10">
+                        <button 
+                            disabled={levelIndex === 0}
+                            onClick={() => setLevelIndex(i => i - 1)}
+                            className="p-3 hover:bg-white/80 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
+                        >
+                            <ChevronLeft className="w-5 h-5 text-slate-400 dark:text-slate-300" />
+                        </button>
+                        <div className="text-center w-32">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">
+                                Сложность
+                            </span>
+                            <span className="text-[19px] font-black text-slate-800 dark:text-white leading-none">
+                                {level.id}
+                            </span>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        <button 
+                            disabled={levelIndex === BREATH_LEVELS.length - 1}
+                            onClick={() => setLevelIndex(i => i + 1)}
+                            className="p-3 hover:bg-white/80 rounded-xl disabled:opacity-30 transition-colors touch-manipulation"
+                        >
+                            <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-300" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
         </div>
 

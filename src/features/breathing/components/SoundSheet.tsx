@@ -1,6 +1,5 @@
 // src/features/breathing/components/SoundSheet.tsx
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X,  
   Music, 
@@ -44,28 +43,18 @@ export const SoundSheet = ({
     onToggleMusic, onToggleSfx, onSelectTrack,
     onChangeMusicVolume, onChangeSfxVolume
 }: Props) => {
+  if (!isOpen) return null;
 
   const content = (
-    <AnimatePresence>
-      {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] animate-fade-in"
           />
 
           {/* Modal */}
-          <motion.div
-            initial={{ y: "100%" }} 
-            animate={{ y: 0 }} 
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] shadow-2xl overflow-hidden max-w-md mx-auto max-h-[85vh] flex flex-col"
-          >
+          <div className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] shadow-2xl overflow-hidden max-w-md mx-auto max-h-[85vh] flex flex-col animate-sheet-in">
             {/* Handle */}
             <div className="w-full flex justify-center pt-3 pb-2 shrink-0 bg-[#F2F2F7] dark:bg-[#1C1C1E]" onClick={onClose}>
               <div className="w-12 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full" />
@@ -201,10 +190,8 @@ export const SoundSheet = ({
                 </div>
 
             </div>
-          </motion.div>
+          </div>
         </>
-      )}
-    </AnimatePresence>
   );
 
   return createPortal(content, document.body);

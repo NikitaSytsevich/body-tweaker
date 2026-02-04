@@ -1,5 +1,4 @@
 import { createPortal } from 'react-dom'; // 👈 Импорт Портала
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, Activity, AlertTriangle, Lightbulb, Thermometer } from 'lucide-react';
 import type { FastingStage } from '../data/stages';
 import { cn } from '../../../utils/cn';
@@ -10,28 +9,19 @@ interface Props {
 }
 
 export const PhaseSheet = ({ phase, onClose }: Props) => {
+  if (!phase) return null;
+
   // Контент модалки
   const content = (
-    <AnimatePresence>
-      {phase && (
         <>
           {/* Затемнение */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[100] animate-fade-in"
           />
 
           {/* Шторка */}
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
-          >
+          <div className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto animate-sheet-in">
             <div className="w-full flex justify-center pt-3 pb-2 bg-[#F2F2F7] dark:bg-[#1C1C1E] shrink-0" onClick={onClose}>
               <div className="w-12 h-1.5 bg-gray-300 dark:bg-white/20 rounded-full" />
             </div>
@@ -126,10 +116,8 @@ export const PhaseSheet = ({ phase, onClose }: Props) => {
 
               </div>
             </div>
-          </motion.div>
+          </div>
         </>
-      )}
-    </AnimatePresence>
   );
 
   // Рендерим в body

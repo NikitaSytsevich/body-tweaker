@@ -1,7 +1,6 @@
 // src/app/ProfilePage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   Settings as SettingsIcon,
   Info as InfoIcon,
@@ -103,7 +102,7 @@ export const ProfilePage = () => {
       {/* ACTION CARDS */}
       <div className="space-y-3">
         {/* Настройки */}
-        <motion.button
+        <button
           onClick={() => navigate('/profile/settings')}
           className="w-full bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-6 rounded-[2rem] shadow-sm border border-blue-100 dark:border-blue-900/30 flex items-center justify-between active:scale-[0.98] transition-transform"
         >
@@ -117,10 +116,10 @@ export const ProfilePage = () => {
             </div>
           </div>
           <ChevronRight className="w-6 h-6 text-blue-400 dark:text-blue-500" />
-        </motion.button>
+        </button>
 
         {/* О проекте */}
-        <motion.button
+        <button
           onClick={() => navigate('/profile/about')}
           className="w-full bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-[2rem] shadow-sm border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-between active:scale-[0.98] transition-transform"
         >
@@ -134,7 +133,7 @@ export const ProfilePage = () => {
             </div>
           </div>
           <ChevronRight className="w-6 h-6 text-emerald-400 dark:text-emerald-500" />
-        </motion.button>
+        </button>
       </div>
 
       {/* FOOTER */}

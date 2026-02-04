@@ -11,8 +11,6 @@ interface Props<T extends string = string> {
 // OPTIMIZATION: React.memo to prevent unnecessary re-renders
 function SegmentedControlInner<T extends string = string>({ options, value, onChange }: Props<T>) {
   const activeIndex = options.findIndex((o) => o.value === value);
-  const widthPercent = 100 / options.length;
-
   return (
     <div
         className="bg-slate-100 dark:bg-[#2C2C2E] p-1 rounded-2xl flex relative select-none"
@@ -20,7 +18,7 @@ function SegmentedControlInner<T extends string = string>({ options, value, onCh
         <div
           className="absolute top-1 bottom-1 left-1 bg-white dark:bg-[#3A3A3C] rounded-xl shadow-sm border border-black/5 dark:border-white/10 z-10 pointer-events-none transition-transform"
           style={{
-            width: `calc(${widthPercent}% - 8px)`,
+            width: `calc((100% - 8px) / ${options.length})`,
             transform: `translateX(${activeIndex * 100}%)`
           }}
         />

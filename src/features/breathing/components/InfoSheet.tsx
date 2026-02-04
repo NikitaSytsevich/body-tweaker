@@ -1,6 +1,5 @@
 // src/features/breathing/components/InfoSheet.tsx
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, Wind, Brain, Zap, HeartPulse, Sparkles } from 'lucide-react';
 import { cn } from '../../../utils/cn';
 
@@ -35,19 +34,13 @@ export const InfoSheet = ({ onClose }: Props) => {
   ];
 
   const content = (
-    <AnimatePresence>
         <>
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] animate-fade-in"
           />
 
-          <motion.div
-            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto"
-          >
+          <div className="fixed bottom-0 left-0 right-0 z-[101] bg-[#F2F2F7] dark:bg-[#1C1C1E] rounded-t-[2.5rem] h-[85vh] shadow-2xl flex flex-col overflow-hidden max-w-md mx-auto animate-sheet-in">
             {/* HERO HEADER */}
             <div className="relative h-48 shrink-0 overflow-hidden bg-sky-50 dark:bg-[#0c2e3e]">
                 {/* Анимация воздуха */}
@@ -118,9 +111,8 @@ export const InfoSheet = ({ onClose }: Props) => {
 
                 </div>
             </div>
-          </motion.div>
+          </div>
         </>
-    </AnimatePresence>
   );
 
   return createPortal(content, document.body);

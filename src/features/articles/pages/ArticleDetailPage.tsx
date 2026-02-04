@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { loadArticleById } from '../content';
-import { motion } from 'framer-motion';
 import WebApp from '@twa-dev/sdk';
 import type { Article } from '../types';
 
@@ -74,21 +73,13 @@ export const ArticleDetailPage = () => {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md"
+      <div
+        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md animate-fade-in"
         onClick={() => navigate('/')}
       />
 
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: '40px' }}
-        exit={{ y: '100%' }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="article-theme font-article fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--article-bg)] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)] pt-[var(--app-top-offset)]"
+      <div
+        className="article-theme font-article fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--article-bg)] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)] pt-[var(--app-top-offset)] animate-sheet-in"
       >
         <div
           className="pointer-events-none absolute top-0 left-0 right-0"
@@ -129,7 +120,7 @@ export const ArticleDetailPage = () => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </>
   );
 };

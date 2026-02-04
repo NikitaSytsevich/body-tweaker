@@ -171,6 +171,14 @@
   animation: pop-in 180ms ease-out;
 }
 
+@keyframes slide-in-right {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 220ms ease-out;
+}
+
 /* Оптимизация для GPU */
 .transform-gpu {
   transform: translate3d(0, 0, 0);
