@@ -33,7 +33,7 @@ const TimerVisual = memo(({
             <div className="relative shrink-0 w-[clamp(200px,50vw,240px)] h-[clamp(200px,50vw,240px)]">
                 {/* SVG Кольцо */}
                 <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}`} className="rotate-[-90deg] drop-shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
-                    <circle cx={center} cy={center} r={radius} fill="none" stroke="#F1F5F9" className="dark:stroke-[#38383A]" strokeWidth={stroke} strokeLinecap="round" />
+                    <circle cx={center} cy={center} r={radius} fill="none" stroke="#CBD5E1" className="dark:stroke-[#38383A]" strokeWidth={stroke} strokeLinecap="round" />
                     <circle
                         cx={center} cy={center} r={radius} fill="none"
                         stroke="currentColor" strokeWidth={stroke}
