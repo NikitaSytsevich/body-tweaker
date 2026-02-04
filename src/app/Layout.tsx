@@ -22,7 +22,7 @@ const PageView = memo(({ isActive, children }: { isActive: boolean, children: Re
         <div
           className={cn(
               "w-full h-full absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide",
-              "pb-32 px-4 pt-2",
+              "pb-28 px-5 pt-4",
               isActive ? "z-10 opacity-100 pointer-events-auto" : "-z-10 opacity-0 pointer-events-none"
           )}
           style={{ visibility: isActive ? 'visible' : 'hidden' }}
@@ -239,11 +239,11 @@ export const Layout = () => {
   }, [currentPath, mountedRoutes]);
 
   return (
-    <div className="bg-[#F2F2F7] dark:bg-[#1C1C1E] flex justify-center font-sans text-slate-900 dark:text-white h-[100dvh] w-screen overflow-hidden fixed inset-0 pt-[var(--app-top-offset)] relative">
+    <div className="app-surface flex justify-center font-sans h-[100dvh] w-screen overflow-hidden fixed inset-0 pt-[var(--app-top-offset)] relative">
 
-      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/90 via-white/70 to-transparent dark:from-[#0B0F14]/90 dark:via-[#0B0F14]/70" />
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/80 via-white/40 to-transparent dark:from-[#0B0F14]/80 dark:via-[#0B0F14]/50" />
 
-      <div className="w-full max-w-md bg-[#F2F2F7] dark:bg-[#1C1C1E] h-full relative flex flex-col shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md h-full relative flex flex-col shadow-2xl overflow-hidden app-surface">
 
         <main className="flex-1 relative w-full overflow-hidden">
             {/* ИЗМЕНЕНИЕ: Скрываем основные экраны, если открыта статья */}
@@ -298,17 +298,16 @@ export const Layout = () => {
               }}
               className={cn(
                 "pointer-events-auto select-none cursor-grab active:cursor-grabbing",
-                "mx-4 w-full max-w-[340px] h-[72px] flex items-center relative",
-                "rounded-full border",
-                "bg-[linear-gradient(180deg,#F8F8F8_0%,#F1F1F1_100%)] border-white/70 shadow-[0_16px_36px_-18px_rgba(0,0,0,0.22)]",
-                "dark:bg-[linear-gradient(180deg,#2C2C2E_0%,#1F1F22_100%)] dark:border-[#3A3A3C]/80 dark:shadow-[0_16px_36px_-18px_rgba(0,0,0,0.7)]"
+                "mx-4 w-full max-w-[340px] h-[70px] flex items-center relative",
+                "rounded-full border backdrop-blur-2xl",
+                "bg-[color:var(--tg-glass-strong)] border-[color:var(--tg-border)] shadow-[0_18px_40px_-26px_rgba(15,23,42,0.35)]"
               )}
             >
               <motion.div
                 className={cn(
                   "absolute rounded-full z-0 pointer-events-none",
-                  "bg-[#E9E9E9] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
-                  "dark:bg-[#3A3A3C] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                  "bg-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
+                  "dark:bg-white/10 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
                 )}
                 style={{
                   left: leftStyle,
@@ -333,8 +332,8 @@ export const Layout = () => {
                       className={cn(
                         "w-6 h-6 transition-colors duration-200",
                         isActive
-                          ? "text-[#0A84FF] dark:text-[#0A84FF]"
-                          : "text-[#3A3A3C] dark:text-white/90"
+                          ? "text-[color:var(--tg-accent)]"
+                          : "text-[color:var(--tg-text)] opacity-70"
                       )}
                       strokeWidth={2}
                     />
@@ -342,8 +341,8 @@ export const Layout = () => {
                       className={cn(
                         "text-[11px] font-semibold tracking-tight transition-colors duration-200",
                         isActive
-                          ? "text-[#0A84FF] dark:text-[#0A84FF]"
-                          : "text-[#4A4A4A] dark:text-white/90"
+                          ? "text-[color:var(--tg-accent)]"
+                          : "text-[color:var(--tg-text)] opacity-70"
                       )}
                     >
                       {item.label}

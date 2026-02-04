@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
-import { useTheme } from '../contexts/ThemeContext';
 import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
 import WebApp from '@twa-dev/sdk';
+import { AnimatedEmoji } from '../components/ui/AnimatedEmoji';
 
 interface Props {
   onComplete: () => void;
@@ -13,7 +13,6 @@ interface Props {
 
 export const WelcomeScreen = ({ onComplete }: Props) => {
   const [step, setStep] = useState(0);
-  const { theme } = useTheme();
   const [openDocId, setOpenDocId] = useState<LegalDocId | null>(null);
 
   const [acceptAll, setAcceptAll] = useState(false);
@@ -70,11 +69,10 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
   return (
     <div
       style={{ paddingTop: 'calc(1.5rem + var(--app-top-offset))' }}
-      className={`fixed inset-0 z-[9999] flex flex-col justify-between p-6 overflow-hidden transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#1C1C1E]' : 'bg-[#FFE5E0]'
-    }`}
+      className="fixed inset-0 z-[9999] flex flex-col justify-between p-6 overflow-hidden app-surface"
     >
-      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/75 via-white/40 to-transparent dark:from-[#0B0F14]/85 dark:via-[#0B0F14]/60" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,rgba(76,141,255,0.22)_0%,rgba(76,141,255,0)_55%)]" />
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/60 via-white/30 to-transparent dark:from-[#0B0F14]/70 dark:via-[#0B0F14]/40" />
 
       <AnimatePresence mode="wait">
 
@@ -87,32 +85,16 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             exit={{ opacity: 0, x: -50 }}
             className="flex-1 flex flex-col items-center justify-center text-center"
           >
-            {/* Логотип приложения */}
-            <div className="relative mb-12">
-              {/* Логотип с градиентной подложкой */}
-              <div className={`w-56 h-56 rounded-[3rem] flex items-center justify-center relative shadow-2xl transition-colors duration-300 ${
-                theme === 'dark'
-                  ? 'bg-gradient-to-br from-[#2C2C2E] to-slate-800 border-4 border-white/10'
-                  : 'bg-gradient-to-br from-slate-100 to-slate-200 border-4 border-white'
-              }`}>
-                <img
-                  src="/logo.svg?v=2"
-                  alt="Body Tweaker Logo"
-                  className="w-40 h-40 rounded-3xl shadow-2xl"
-                />
-              </div>
+            <div className="relative mb-10">
+              <AnimatedEmoji name="sparkles" size={220} fallback="✨" className="mx-auto" />
             </div>
 
             {/* Заголовок и описание */}
             <div className="mb-8">
-              <h1 className={`text-4xl font-black tracking-tight leading-tight mb-4 transition-colors duration-300 ${
-                theme === 'dark' ? 'text-white' : 'text-[#1a1a1a]'
-              }`}>
+              <h1 className="text-4xl font-black tracking-tight leading-tight mb-4 app-header">
                 Body Tweaker
               </h1>
-              <p className={`text-base font-medium leading-relaxed max-w-xs transition-colors duration-300 ${
-                theme === 'dark' ? 'text-slate-400' : 'text-[#4a4a4a]'
-              }`}>
+              <p className="text-base font-medium leading-relaxed max-w-xs app-muted">
                 Научный подход к голоданию, дыханию и оздоровлению организма
               </p>
             </div>
@@ -120,11 +102,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             {/* Кнопка */}
             <button
               onClick={handleNext}
-              className={`w-full max-w-xs text-white py-4 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 ${
-                theme === 'dark'
-                  ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
-                  : 'bg-[#64B5F6] hover:bg-[#54A5E6]'
-              }`}
+              className="tg-button w-full max-w-xs py-4 text-base font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
             >
               Начать <ChevronRight className="w-5 h-5" />
             </button>
@@ -141,46 +119,30 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
           >
             <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
               <div className="flex items-center gap-3 mb-6">
-                <div className={`p-3 rounded-xl shadow-sm transition-colors duration-300 ${
-                  theme === 'dark' ? 'bg-[#2C2C2E]' : 'bg-white'
-                }`}>
-                  <ShieldCheck className="w-6 h-6 text-blue-600" />
+                <div className="p-3 rounded-xl app-card-soft">
+                  <ShieldCheck className="w-6 h-6 text-[color:var(--tg-accent)]" />
                 </div>
-                <h2 className={`text-2xl font-[900] transition-colors duration-300 ${
-                  theme === 'dark' ? 'text-white' : 'text-slate-800'
-                }`}>
+                <h2 className="text-2xl font-[900] app-header">
                   Важно знать
                 </h2>
               </div>
 
-              <div className={`rounded-[2rem] p-6 shadow-sm border space-y-6 text-sm leading-relaxed transition-colors duration-300 ${
-                theme === 'dark'
-                  ? 'bg-[#2C2C2E] border-white/10 text-slate-300'
-                  : 'bg-white border-slate-100 text-slate-600'
-              }`}>
+              <div className="app-card p-6 space-y-6 text-sm leading-relaxed">
                 <p>
                   Приложение <strong>Body Tweaker</strong> предоставляет информацию и инструменты для отслеживания интервального голодания и дыхательных практик.
                 </p>
 
-                <div className={`p-4 rounded-xl border-l-4 border-orange-400 transition-colors duration-300 ${
-                  theme === 'dark' ? 'bg-[#3A3A3C]' : 'bg-slate-50'
-                }`}>
-                  <h3 className={`font-bold mb-1 flex items-center gap-2 transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-white' : 'text-slate-800'
-                  }`}>
-                    <Activity className="w-4 h-4 text-orange-500" />
+                <div className="p-4 rounded-xl border-l-4 border-[color:var(--tg-accent)] bg-[color:var(--tg-glass)]">
+                  <h3 className="font-bold mb-1 flex items-center gap-2 app-header">
+                    <Activity className="w-4 h-4 text-[color:var(--tg-accent)]" />
                     Отказ от ответственности
                   </h3>
-                  <p className={`text-xs transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
-                  }`}>
+                  <p className="text-xs app-muted">
                     Мы не являемся медицинским учреждением. Информация в приложении не заменяет консультацию врача.
                   </p>
                 </div>
 
-                <ul className={`space-y-3 list-disc pl-4 transition-colors duration-300 ${
-                  theme === 'dark' ? 'marker:text-slate-600' : 'marker:text-slate-300'
-                }`}>
+                <ul className="space-y-3 list-disc pl-4 marker:text-slate-300 dark:marker:text-slate-600">
                   <li>
                     Используя таймер голодания, вы подтверждаете, что у вас нет противопоказаний.
                   </li>
@@ -190,9 +152,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                 </ul>
 
                 <div className="space-y-3">
-                  <p className={`text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
-                  }`}>
+                  <p className="text-xs font-bold uppercase tracking-widest app-muted">
                     Документы
                   </p>
                   <div className="space-y-2">
@@ -201,26 +161,18 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                         key={doc.id}
                         type="button"
                         onClick={() => setOpenDocId(doc.id)}
-                        className={`w-full text-left p-3 rounded-xl border transition-colors duration-300 ${
-                          theme === 'dark'
-                            ? 'bg-[#2A2A2C] border-white/10 hover:bg-[#343436]'
-                            : 'bg-slate-50 border-slate-100 hover:bg-slate-100'
-                        }`}
+                        className="w-full text-left p-3 rounded-xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] hover:bg-[color:var(--tg-glass-strong)] transition-colors"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className={`text-sm font-semibold transition-colors duration-300 ${
-                              theme === 'dark' ? 'text-white' : 'text-slate-800'
-                            }`}>
+                            <p className="text-sm font-semibold app-header">
                               {doc.shortTitle}
                             </p>
-                            <p className={`text-xs transition-colors duration-300 ${
-                              theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
-                            }`}>
+                            <p className="text-xs app-muted">
                               {doc.summary}
                             </p>
                           </div>
-                          <span className="text-xs font-bold text-blue-600">Открыть</span>
+                          <span className="tg-chip">Открыть</span>
                         </div>
                       </button>
                     ))}
@@ -231,7 +183,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                   <label className="flex items-start gap-3">
                     <input
                       type="checkbox"
-                      className="mt-0.5 h-4 w-4 accent-blue-600"
+                      className="mt-0.5 h-4 w-4 accent-[color:var(--tg-accent)]"
                       checked={acceptAll}
                       onChange={(e) => setAcceptAll(e.target.checked)}
                     />
@@ -241,9 +193,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
                       и возможную трансграничную передачу, а также подтверждаю, что мне исполнилось 18 лет.
                     </span>
                   </label>
-                  <p className={`text-[11px] leading-relaxed ${
-                    theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
-                  }`}>
+                  <p className="text-[11px] leading-relaxed app-muted">
                     Документы доступны выше по ссылкам. Вы можете ознакомиться с ними перед принятием.
                   </p>
                 </div>
@@ -255,21 +205,15 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
               <button
                 onClick={handleAgree}
                 disabled={!canAccept}
-                className={`w-full py-4 rounded-2xl font-bold shadow-xl transition-all active:scale-95 ${
-                  canAccept
-                    ? 'bg-blue-600 text-white shadow-blue-600/20 hover:bg-blue-700'
-                    : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                className={`tg-button w-full py-4 text-base font-semibold transition-transform active:scale-95 ${
+                  !canAccept ? 'opacity-40 cursor-not-allowed' : ''
                 }`}
               >
                 Принять и продолжить
               </button>
               <button
                 onClick={() => setStep(0)}
-                className={`w-full py-3 font-bold text-xs uppercase tracking-wide mt-2 transition-colors duration-300 ${
-                  theme === 'dark'
-                    ? 'text-slate-500 hover:text-slate-300'
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
+                className="w-full py-3 font-bold text-xs uppercase tracking-wide mt-2 text-[color:var(--tg-muted)] hover:text-[color:var(--tg-text)] transition-colors"
               >
                 Назад
               </button>
@@ -287,32 +231,20 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.2 }}
-            className={`absolute inset-0 z-[10000] flex flex-col ${
-              theme === 'dark' ? 'bg-[#1C1C1E]' : 'bg-[#FFE5E0]'
-            }`}
+            className="absolute inset-0 z-[10000] flex flex-col app-surface"
           >
             <div className="px-4 pt-10 pb-2">
-              <p className={`text-xs uppercase tracking-widest font-bold ${
-                theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
-              }`}>
+              <p className="text-xs uppercase tracking-widest font-bold app-muted">
                 Правовые документы
               </p>
-              <h2 className={`text-lg font-[900] ${
-                theme === 'dark' ? 'text-white' : 'text-slate-800'
-              }`}>
+              <h2 className="text-lg font-[900] app-header">
                 {openDoc.shortTitle}
               </h2>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pb-8">
-              <div className={`rounded-[2rem] p-6 shadow-sm border space-y-6 transition-colors duration-300 ${
-                theme === 'dark'
-                  ? 'bg-[#2C2C2E] border-white/10 text-slate-300'
-                  : 'bg-white border-slate-100 text-slate-600'
-              }`}>
-                <div className={`text-xs ${
-                  theme === 'dark' ? 'text-slate-500' : 'text-slate-400'
-                }`}>
+              <div className="app-card p-6 space-y-6">
+                <div className="text-xs app-muted">
                   Версия {openDoc.version} от {openDoc.effectiveDate}
                 </div>
                 {openDoc.content}

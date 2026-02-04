@@ -11,7 +11,8 @@ export default {
         'safe': 'env(safe-area-inset-bottom)',
       },
       fontFamily: {
-        article: ['"Manrope"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['"Golos Text"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Golos Text"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },

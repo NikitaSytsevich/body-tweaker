@@ -79,17 +79,17 @@ export const ArticleDetailPage = () => {
       />
 
       <div
-        className="article-theme font-article fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] bg-[color:var(--article-bg)] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)] pt-[var(--app-top-offset)] animate-sheet-in"
+        className="app-surface fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)] pt-[var(--app-top-offset)] animate-sheet-in"
       >
         <div
           className="pointer-events-none absolute top-0 left-0 right-0"
           style={{
             height: 'var(--app-top-offset)',
-            background: 'linear-gradient(180deg, var(--article-bg) 0%, rgba(255,255,255,0) 100%)',
+            background: 'linear-gradient(180deg, var(--tg-bg) 0%, rgba(255,255,255,0) 100%)',
           }}
         />
         <div className="flex-1 overflow-y-auto">
-          <div className="relative h-[42vh] min-h-[280px] w-full bg-[color:var(--article-surface)]">
+          <div className="relative h-[42vh] min-h-[280px] w-full bg-[color:var(--tg-surface)]">
             {article.imageUrl && (
               <img
                 src={article.imageUrl}
@@ -100,18 +100,18 @@ export const ArticleDetailPage = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/80 pointer-events-none" />
 
             <div className="absolute top-4 left-4 right-4 flex items-center justify-center">
-              <div className="rounded-full bg-black/40 px-4 py-2 text-[11px] uppercase tracking-[0.25em] text-white/85 backdrop-blur">
+              <div className="tg-chip bg-black/40 text-white/85">
                 {article.category}
               </div>
             </div>
           </div>
 
           <div className="relative -mt-12 px-5 pb-28">
-            <div className="rounded-[28px] border border-[color:var(--article-border)] bg-[color:var(--article-surface)] p-6 shadow-[0_20px_60px_-50px_rgba(0,0,0,0.7)]">
-              <p className="text-[11px] uppercase tracking-[0.25em] text-[color:var(--article-muted)]">
+            <div className="app-card rounded-[28px] p-6 shadow-[0_20px_60px_-50px_rgba(0,0,0,0.7)]">
+              <p className="text-[11px] uppercase tracking-[0.25em] app-muted">
                 {article.category}
               </p>
-              <h1 className="mt-3 text-[30px] font-semibold leading-[1.15] tracking-tight text-[color:var(--article-text)]">
+              <h1 className="mt-3 text-[30px] font-semibold leading-[1.15] tracking-tight app-header">
                 {article.title}
               </h1>
               <div className="mt-6 space-y-8">

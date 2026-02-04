@@ -20,6 +20,7 @@ import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { HistorySkeleton } from './components/HistorySkeleton';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
+import { AnimatedEmoji } from '../../components/ui/AnimatedEmoji';
 
 // Utils
 import { storageGetHistory, storageSaveHistory } from '../../utils/storage';
@@ -34,7 +35,7 @@ dayjs.locale('ru');
 // Карточка статистики
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const StatCard = ({ label, value, unit, icon: Icon, colorClass, bgClass }: any) => (
-  <div className={cn("flex flex-col items-center justify-center p-3 rounded-2xl flex-1 min-w-[85px] border border-transparent", bgClass)}>
+  <div className={cn("app-card flex flex-col items-center justify-center p-3 rounded-2xl flex-1 min-w-[85px]", bgClass)}>
     <div className="flex items-center gap-1.5 mb-1.5 opacity-90">
        <Icon className={cn("w-3.5 h-3.5", colorClass)} />
        <span className={cn("text-[9px] font-bold uppercase tracking-wide", colorClass)}>{label}</span>
@@ -44,7 +45,7 @@ const StatCard = ({ label, value, unit, icon: Icon, colorClass, bgClass }: any) 
             {value}
         </span>
         {unit && (
-            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase">
+            <span className="text-[9px] font-bold app-muted uppercase">
                 {unit}
             </span>
         )}
@@ -176,7 +177,7 @@ export const HistoryPage = () => {
       
       {/* HEADER */}
       <div className="px-6 pt-6 mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-[900] text-slate-800 dark:text-white leading-tight">
+          <h1 className="text-3xl font-[900] app-header leading-tight">
             Прогресс
           </h1>
           <ProfileAvatar onClick={() => navigate('/profile')} />
@@ -195,8 +196,8 @@ export const HistoryPage = () => {
                 value={stats.totalTime}
                 unit={activeTab === 'fasting' ? "Часов" : "Минут"}
                 icon={Hourglass}
-                bgClass="bg-blue-50 dark:bg-blue-900/20"
-                colorClass="text-blue-500 dark:text-blue-400"
+                bgClass="bg-[color:var(--tg-glass)]"
+                colorClass="text-blue-500"
             />
 
             <StatCard
@@ -204,8 +205,8 @@ export const HistoryPage = () => {
                 value={stats.maxDuration}
                 unit={activeTab === 'fasting' ? "Часов" : "Минут"}
                 icon={Trophy}
-                bgClass="bg-amber-50 dark:bg-amber-900/20"
-                colorClass="text-amber-500 dark:text-amber-400"
+                bgClass="bg-[color:var(--tg-glass)]"
+                colorClass="text-amber-500"
             />
 
             <StatCard
@@ -213,25 +214,25 @@ export const HistoryPage = () => {
                 value={stats.count}
                 unit="Всего"
                 icon={Zap}
-                bgClass="bg-purple-50 dark:bg-purple-900/20"
-                colorClass="text-purple-500 dark:text-purple-400"
+                bgClass="bg-[color:var(--tg-glass)]"
+                colorClass="text-violet-500"
             />
         </div>
 
         {/* 2. CALENDAR CARD */}
-        <div className="bg-white dark:bg-[#2C2C2E] rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-white/5 mb-6">
+        <div className="app-card rounded-[2rem] p-6 shadow-sm mb-6">
             
             {/* Calendar Header */}
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-[900] text-slate-800 dark:text-white capitalize">
+                <h2 className="text-xl font-[900] app-header capitalize">
                     {currentDate.format('MMMM YYYY')}
                 </h2>
                 <div className="flex gap-1">
-                    <button onClick={() => setCurrentDate(d => d.subtract(1, 'month'))} className="p-2 hover:bg-slate-50 dark:hover:bg-white/10 rounded-full transition-colors">
-                        <ChevronLeft className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                    <button onClick={() => setCurrentDate(d => d.subtract(1, 'month'))} className="p-2 hover:bg-[color:var(--tg-glass)] rounded-full transition-colors">
+                        <ChevronLeft className="w-5 h-5 text-[color:var(--tg-muted)]" />
                     </button>
-                    <button onClick={() => setCurrentDate(d => d.add(1, 'month'))} className="p-2 hover:bg-slate-50 dark:hover:bg-white/10 rounded-full transition-colors">
-                        <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                    <button onClick={() => setCurrentDate(d => d.add(1, 'month'))} className="p-2 hover:bg-[color:var(--tg-glass)] rounded-full transition-colors">
+                        <ChevronRight className="w-5 h-5 text-[color:var(--tg-muted)]" />
                     </button>
                 </div>
             </div>
@@ -239,7 +240,7 @@ export const HistoryPage = () => {
             {/* Days Grid */}
             <div className="grid grid-cols-7 gap-y-4 mb-2">
                 {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
-                    <div key={d} className="text-center text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
+                    <div key={d} className="text-center text-[10px] font-bold app-muted uppercase">
                         {d}
                     </div>
                 ))}
@@ -264,10 +265,10 @@ export const HistoryPage = () => {
                                     "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all relative",
                                     // Стиль выбранной даты
                                     isSelected 
-                                        ? "bg-slate-800 dark:bg-white text-white dark:text-slate-900 shadow-lg scale-110 z-10" 
-                                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5",
+                                        ? "bg-[color:var(--tg-text)] text-[color:var(--tg-bg)] shadow-lg scale-110 z-10" 
+                                        : "text-[color:var(--tg-text)] opacity-70 hover:bg-[color:var(--tg-glass)]",
                                     // Стиль "Сегодня"
-                                    !isSelected && isToday && "text-blue-500 dark:text-blue-400"
+                                    !isSelected && isToday && "text-[color:var(--tg-accent)]"
                                 )}
                             >
                                 {dayNum}
@@ -290,16 +291,16 @@ export const HistoryPage = () => {
 
         {/* 3. SELECTED DAY LIST */}
         <div className="animate-in slide-in-from-bottom-4 duration-500">
-            <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 pl-2">
+            <h3 className="text-xs font-bold app-muted uppercase tracking-widest mb-4 pl-2">
                 {selectedDate.isSame(dayjs(), 'day') ? 'Сегодня' : selectedDate.format('D MMMM')}
             </h3>
 
             {isLoading ? (
                 <HistorySkeleton />
             ) : recordsForSelectedDate.length === 0 ? (
-                <div className="text-center py-8 opacity-50 border-2 border-dashed border-slate-100 dark:border-white/5 rounded-2xl bg-white/50 dark:bg-[#2C2C2E]/50">
-                    <CalendarIcon className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                    <p className="text-sm font-medium text-slate-400 dark:text-slate-500">Нет активности</p>
+                <div className="text-center py-10 border-2 border-dashed border-[color:var(--tg-border)] rounded-2xl bg-[color:var(--tg-glass)]">
+                    <AnimatedEmoji name="wind" size={96} fallback="🌬️" className="mx-auto mb-2" />
+                    <p className="text-sm font-medium app-muted">Нет активности</p>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -314,20 +315,12 @@ export const HistoryPage = () => {
                                 key={record.id}
                                 onClick={() => setSelectedRecord(record)}
                                 className={cn(
-                                    "relative p-4 rounded-[1.5rem] flex items-center gap-4 active:scale-[0.98] transition-transform overflow-hidden",
-                                    "bg-white dark:bg-[#2C2C2E] shadow-md border",
+                                    "relative p-4 rounded-[1.5rem] flex items-center gap-4 active:scale-[0.98] transition-transform overflow-hidden app-card",
                                     isFasting
-                                        ? "border-blue-100 dark:border-blue-900/30 shadow-blue-500/5"
-                                        : "border-purple-100 dark:border-purple-900/30 shadow-purple-500/5"
+                                        ? "border-blue-200/60"
+                                        : "border-violet-200/60"
                                 )}
                             >
-                                {/* Gradient overlay */}
-                                <div className={cn(
-                                    "absolute inset-0 opacity-[0.03] dark:opacity-[0.06] pointer-events-none",
-                                    isFasting
-                                        ? "bg-gradient-to-br from-blue-500 to-cyan-500"
-                                        : "bg-gradient-to-br from-purple-500 to-pink-500"
-                                )} />
 
                                 {/* Progress bar indicator */}
                                 <div className={cn(
@@ -345,30 +338,28 @@ export const HistoryPage = () => {
 
                                 {/* Icon with gradient background */}
                                 <div className={cn(
-                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 relative z-10 shadow-lg",
-                                    isFasting
-                                        ? "bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 text-white"
-                                        : "bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-500 text-white"
+                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 relative z-10 shadow-lg text-white",
+                                    isFasting ? "bg-blue-500" : "bg-violet-500"
                                 )}>
                                     {isFasting ? <Flame className="w-7 h-7" /> : <Wind className="w-7 h-7" />}
                                 </div>
 
                                 <div className="flex-1 min-w-0 relative z-10">
-                                    <h4 className="font-bold text-slate-800 dark:text-white truncate text-sm mb-1">
+                                    <h4 className="font-bold app-header truncate text-sm mb-1">
                                         {record.scheme}
                                     </h4>
 
                                     {/* Big duration display */}
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-xl font-black text-slate-800 dark:text-white tabular-nums">
+                                        <span className="text-xl font-black app-header tabular-nums">
                                             {isFasting ? hours : Math.floor(record.durationSeconds / 60)}
                                         </span>
-                                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
+                                        <span className="text-xs font-bold app-muted uppercase">
                                             {isFasting ? 'ч' : 'мин'}
                                         </span>
                                         {isFasting && minutes > 0 && (
                                             <>
-                                                <span className="text-sm font-bold text-slate-400 dark:text-slate-500 ml-1 tabular-nums">
+                                                <span className="text-sm font-bold app-muted ml-1 tabular-nums">
                                                     {minutes}м
                                                 </span>
                                             </>
@@ -381,14 +372,12 @@ export const HistoryPage = () => {
                                     "flex flex-col items-end gap-1 relative z-10 shrink-0",
                                 )}>
                                     <div className={cn(
-                                        "px-2.5 py-1 rounded-xl text-xs font-bold shadow-sm whitespace-nowrap",
-                                        isFasting
-                                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                                            : "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                                        "px-2.5 py-1 rounded-xl text-xs font-bold shadow-sm whitespace-nowrap bg-[color:var(--tg-glass)]",
+                                        isFasting ? "text-blue-600" : "text-violet-600"
                                     )}>
                                         {dayjs(record.endTime).format('HH:mm')}
                                     </div>
-                                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                                    <span className="text-[10px] font-medium app-muted whitespace-nowrap">
                                         {dayjs(record.endTime).format('D MMM')}
                                     </span>
                                 </div>

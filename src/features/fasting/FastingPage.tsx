@@ -48,7 +48,7 @@ const TimerVisual = memo(({
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
 
                     {/* Время */}
-                    <div className="flex items-baseline text-slate-800 dark:text-white translate-y-[-4px]">
+                    <div className="flex items-baseline app-header translate-y-[-4px]">
                         <span className="text-[clamp(42px,11vw,64px)] font-[850] font-mono tracking-tighter tabular-nums leading-none">
                             {isFasting ? elapsedFormatted.split(':')[0] : `${totalHours}`}
                             <span className="mx-1 opacity-20 relative -top-1">:</span>
@@ -57,7 +57,7 @@ const TimerVisual = memo(({
                     </div>
 
                     {/* Подпись */}
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                    <span className="text-[10px] font-bold app-muted uppercase tracking-[0.2em]">
                         {isFasting ? elapsedFormatted.split(':')[2] : 'Часов'}
                     </span>
                 </div>
@@ -145,20 +145,18 @@ export const FastingPage = () => {
 
         <div className="h-full flex flex-col relative z-0">
 
-        <div className="relative flex-1 min-h-0 flex flex-col z-10 rounded-[28px] overflow-hidden border border-white/60 dark:border-white/10 bg-white/70 dark:bg-[#1C1C1E]/80 backdrop-blur-2xl shadow-[0_20px_60px_-35px_rgba(15,23,42,0.45)]">
-            <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_0%_0%,rgba(125,211,252,0.35)_0%,rgba(255,255,255,0)_55%),radial-gradient(120%_120%_at_100%_0%,rgba(196,181,253,0.35)_0%,rgba(255,255,255,0)_60%)] opacity-60 pointer-events-none" />
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-[0.04] pointer-events-none" />
+        <div className="relative flex-1 min-h-0 flex flex-col z-10 rounded-[28px] overflow-hidden app-card">
 
             {/* HEADER */}
             <div className="px-5 pt-5 pb-3 flex justify-between items-start relative z-20 shrink-0">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <div className={cn("w-2 h-2 rounded-full", isFasting ? "bg-blue-600 dark:bg-blue-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600")} />
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        <div className={cn("w-2 h-2 rounded-full", isFasting ? "bg-[color:var(--tg-accent)] animate-pulse" : "bg-[color:var(--tg-border)]")} />
+                        <span className="text-[10px] font-bold app-muted uppercase tracking-widest">
                             {isFasting ? "Активность" : "Статус"}
                         </span>
                     </div>
-                    <h1 className="text-[26px] font-[900] text-slate-900 dark:text-white leading-tight tracking-tight">
+                    <h1 className="text-[26px] font-[900] app-header leading-tight tracking-tight">
                         {isFasting ? "Голодание" : "Ожидание"}
                     </h1>
                 </div>
@@ -175,25 +173,25 @@ export const FastingPage = () => {
 
             <div className="flex justify-center gap-4 shrink-0 mt-1 mb-2 relative z-20 px-5">
                 <NativeDatePicker label="Начало" icon={Sunrise} dateValue={currentStart} onChange={handleChangeStart} disabled={!isFasting} />
-                <div className="w-px bg-white/60 dark:bg-white/10 h-10 self-center" />
+                <div className="w-px bg-[color:var(--tg-border)] h-10 self-center" />
                 <NativeDatePicker label="Финиш" icon={Moon} dateValue={currentEnd} onChange={handleChangeEnd} disabled={!isFasting} />
             </div>
 
             {/* BUTTON */}
-            <div ref={buttonRef} className="px-5 pb-5 pt-3 mt-auto shrink-0 bg-white/45 dark:bg-white/5 backdrop-blur-xl z-20 border-t border-white/60 dark:border-white/10">
+            <div ref={buttonRef} className="px-5 pb-5 pt-3 mt-auto shrink-0 bg-[color:var(--tg-glass)] backdrop-blur-xl z-20 border-t border-[color:var(--tg-border)]">
                 <button
                     onClick={handleMainButtonClick}
                     className={cn(
-                        "w-full py-3.5 rounded-2xl flex items-center justify-between px-5 shadow-lg transition-all group relative overflow-hidden active:scale-[0.98]",
+                        "w-full py-3.5 rounded-2xl flex items-center justify-between px-5 transition-all group relative overflow-hidden active:scale-[0.98]",
                         isFasting
-                            ? "bg-white dark:bg-[#2C2C2E] border-2 border-red-100 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
+                            ? "tg-button tg-button--danger"
                             : isReadyToStart
-                                ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-slate-900/30 dark:shadow-black/10"
-                                : "bg-white dark:bg-[#2C2C2E] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#3A3A3C]"
+                                ? "tg-button"
+                                : "tg-button tg-button--secondary"
                     )}
                 >
                     <div className="flex flex-col items-start z-10">
-                        <span className="text-[9px] font-bold uppercase tracking-wider opacity-60">
+                        <span className="text-[9px] font-bold uppercase tracking-wider opacity-70">
                             {isFasting ? "Удержание..." : isReadyToStart ? "Подтверждено" : "Шаг 1"}
                         </span>
                         <span className="font-bold text-sm tracking-wide">
@@ -203,7 +201,7 @@ export const FastingPage = () => {
 
                     <div className={cn(
                         "w-10 h-10 rounded-full flex items-center justify-center transition-colors z-10",
-                        isFasting ? "bg-red-50 dark:bg-red-900/20" : isReadyToStart ? "bg-white/20 dark:bg-slate-900/10" : "bg-slate-100 dark:bg-[#3A3A3C] text-slate-400 dark:text-slate-500"
+                        isFasting ? "bg-white/20" : isReadyToStart ? "bg-white/25" : "bg-black/5 text-[color:var(--tg-muted)]"
                     )}>
                         {isFasting ? <Square className="w-4 h-4 fill-current" /> : isReadyToStart ? <Play className="w-4 h-4 fill-current ml-0.5" /> : <ListFilter className="w-4 h-4" />}
                     </div>
