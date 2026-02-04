@@ -39,13 +39,20 @@ const PageView = memo(({ isActive, children }: { isActive: boolean, children: Re
 });
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const MAIN_ROUTES = ['/', '/timer', '/breathing', '/history'];
+const normalizePath = (path: string) => (path === '' ? '/' : path);
 
 export const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const currentPath = normalizePath(location.pathname);
 
   const navRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const isMainRoute = MAIN_ROUTES.includes(currentPath);
+  const [mountedRoutes, setMountedRoutes] = useState<string[]>(() =>
+    isMainRoute ? [currentPath] : ['/']
+  );
   
   const xPx = useMotionValue(0);
   const dragBaseRef = useRef<number | null>(null);
@@ -58,13 +65,13 @@ export const Layout = () => {
   ]), []);
 
   // ИЗМЕНЕНИЕ: Проверка, открыта ли статья
-  const isArticleDetail = location.pathname.startsWith('/articles/');
+  const isArticleDetail = currentPath.startsWith('/articles/');
 
   const activeIndex = navItems.findIndex((item) => {
     if (item.path === '/') {
-      return location.pathname === '/' || location.pathname === '';
+      return currentPath === '/' || currentPath === '';
     }
-    return location.pathname.startsWith(item.path);
+    return currentPath.startsWith(item.path);
   });
   const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
 
@@ -110,6 +117,13 @@ export const Layout = () => {
       setReady(true);
     }
   }, [pillGap, navItems.length, ready]);
+
+  useEffect(() => {
+    if (!isMainRoute) return;
+    setMountedRoutes((prev) =>
+      prev.includes(currentPath) ? prev : [...prev, currentPath]
+    );
+  }, [currentPath, isMainRoute]);
 
   useEffect(() => {
     const node = navRef.current;
@@ -222,6 +236,12 @@ export const Layout = () => {
     (v) => `${metrics.offsetX + clamp(v, metrics.minX, metrics.maxX)}px`
   );
 
+  const shouldRender = useCallback((path: string) => {
+    if (path === '/' && (currentPath === '/' || currentPath === '')) return true;
+    if (currentPath === path) return true;
+    return mountedRoutes.includes(path);
+  }, [currentPath, mountedRoutes]);
+
   return (
     <div className="bg-[#F2F2F7] dark:bg-[#1C1C1E] flex justify-center font-sans text-slate-900 dark:text-white h-[100dvh] w-screen overflow-hidden fixed inset-0 pt-[var(--app-top-offset)] relative">
 
@@ -231,18 +251,26 @@ export const Layout = () => {
 
         <main className="flex-1 relative w-full overflow-hidden">
             {/* ИЗМЕНЕНИЕ: Скрываем основные экраны, если открыта статья */}
-            <PageView isActive={!isArticleDetail && (location.pathname === '/' || location.pathname === '')}>
-                <MetabolismMapPage />
-            </PageView>
-            <PageView isActive={!isArticleDetail && location.pathname === '/timer'}>
-                <FastingPage />
-            </PageView>
-            <PageView isActive={!isArticleDetail && location.pathname === '/breathing'}>
-                <BreathingPage />
-            </PageView>
-            <PageView isActive={!isArticleDetail && location.pathname === '/history'}>
-                <HistoryPage />
-            </PageView>
+            {shouldRender('/') && (
+              <PageView isActive={!isArticleDetail && (currentPath === '/' || currentPath === '')}>
+                  <MetabolismMapPage />
+              </PageView>
+            )}
+            {shouldRender('/timer') && (
+              <PageView isActive={!isArticleDetail && currentPath === '/timer'}>
+                  <FastingPage />
+              </PageView>
+            )}
+            {shouldRender('/breathing') && (
+              <PageView isActive={!isArticleDetail && currentPath === '/breathing'}>
+                  <BreathingPage />
+              </PageView>
+            )}
+            {shouldRender('/history') && (
+              <PageView isActive={!isArticleDetail && currentPath === '/history'}>
+                  <HistoryPage />
+              </PageView>
+            )}
 
             {/* ИЗМЕНЕНИЕ: Отображение детальной страницы статьи */}
             <AnimatePresence>

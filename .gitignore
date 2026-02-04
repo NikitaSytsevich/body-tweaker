@@ -33,6 +33,9 @@ dist-ssr
 *.py
 project_dump/
 *.tmp
+audit-output/
+output/
+tmp/
 
 # Dev builds
 dev-dist/

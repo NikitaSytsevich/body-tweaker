@@ -27,8 +27,16 @@ const CACHE_TTL = 5000; // 5 seconds
 // Константы для чанкинга (8 записей * ~400 байт < 4096 байт)
 const HISTORY_CHUNK_SIZE = 8;
 const HISTORY_MAX_CHUNKS = 125; // Поддержка до 1000 записей (125 * 8 = 1000)
+const HISTORY_META_SUFFIX = '__meta';
 
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
+const getHistoryMetaKey = (baseKey: string) => `${baseKey}${HISTORY_META_SUFFIX}`;
+
+type HistoryMeta = {
+  chunks: number;
+  total: number;
+  updatedAt: string;
+};
 
 // Проверка: доступны ли облачные функции (Telegram Environment)
 const isCloudAvailable = () => {
@@ -211,8 +219,14 @@ export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
   }
 
   // 2. Чтение чанков
+  const meta = await storageGetJSON<HistoryMeta | null>(getHistoryMetaKey(baseKey), null);
+  if (meta && meta.chunks === 0) return [];
+  const chunkCount = meta?.chunks && meta.chunks > 0
+    ? Math.min(meta.chunks, HISTORY_MAX_CHUNKS)
+    : HISTORY_MAX_CHUNKS;
+
   const chunks = await Promise.all(
-    Array.from({ length: HISTORY_MAX_CHUNKS }, (_, i) =>
+    Array.from({ length: chunkCount }, (_, i) =>
       storageGetJSON<T[]>(`${baseKey}_${i}`, [])
     )
   );
@@ -239,6 +253,7 @@ export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise
   }
 
   let success = true;
+  const chunkCount = Math.ceil(list.length / HISTORY_CHUNK_SIZE);
 
   for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
     const chunk = list.slice(i * HISTORY_CHUNK_SIZE, (i + 1) * HISTORY_CHUNK_SIZE);
@@ -251,6 +266,17 @@ export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise
       // Удаляем пустые ключи, чтобы не занимать квоту
       await storageRemove(key);
     }
+  }
+
+  const metaKey = getHistoryMetaKey(baseKey);
+  if (list.length === 0) {
+    await storageRemove(metaKey);
+  } else {
+    await storageSetJSON(metaKey, {
+      chunks: Math.min(chunkCount, HISTORY_MAX_CHUNKS),
+      total: list.length,
+      updatedAt: new Date().toISOString(),
+    } satisfies HistoryMeta);
   }
   return success;
 }

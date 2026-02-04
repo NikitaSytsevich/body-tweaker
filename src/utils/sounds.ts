@@ -34,6 +34,7 @@ class SoundManager {
 
   private readonly MIN_GAIN = 0.0001;
   private readonly SMOOTH = 0.08;
+  private hasPreloaded = false;
 
   /* ================= STATE ================= */
 
@@ -48,7 +49,6 @@ class SoundManager {
 
   constructor() {
     this.initCtx();
-    this.preload();
   }
 
   /* ================= INIT ================= */
@@ -66,6 +66,7 @@ class SoundManager {
   /** Обязательный вызов по user-gesture (Telegram / iOS) */
   unlock() {
     this.initCtx();
+    void this.ensurePreloaded();
     if (!this.ctx) return;
 
     if (this.ctx.state === 'suspended') {
@@ -80,6 +81,12 @@ class SoundManager {
   }
 
   /* ================= LOADING ================= */
+
+  private async ensurePreloaded() {
+    if (this.hasPreloaded) return;
+    this.hasPreloaded = true;
+    await this.preload();
+  }
 
   private async preload() {
     await this.loadTrack(this.currentTrackId);
@@ -131,6 +138,7 @@ class SoundManager {
     if (id === this.currentTrackId) return;
 
     this.currentTrackId = id;
+    void this.ensurePreloaded();
     await this.loadTrack(id);
 
     if (this.isSessionActive && this.isMusicEnabled) {
@@ -157,6 +165,7 @@ class SoundManager {
 
   startSession() {
     this.isSessionActive = true;
+    void this.ensurePreloaded();
     if (this.isMusicEnabled) this.playAmbient();
   }
 
@@ -225,6 +234,7 @@ class SoundManager {
   }
 
   private playSfx(key: string) {
+    void this.ensurePreloaded();
     if (!this.ctx || !this.buffers[key] || !this.isSfxEnabled) return;
 
     const source = this.ctx.createBufferSource();

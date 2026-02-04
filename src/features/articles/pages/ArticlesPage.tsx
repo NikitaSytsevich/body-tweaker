@@ -1,4 +1,4 @@
-import { articles } from '../content';
+import { articlesMeta } from '../content';
 import { ArticleCard } from '../components/ArticleCard';
 
 export const ArticlesPage = () => {
@@ -20,7 +20,7 @@ export const ArticlesPage = () => {
       </div>
 
       <div className="space-y-4 px-4 pb-28">
-        {articles.map(article => (
+        {articlesMeta.map(article => (
           <ArticleCard key={article.id} article={article} />
         ))}
       </div>

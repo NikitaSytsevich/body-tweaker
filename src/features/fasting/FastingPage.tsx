@@ -6,7 +6,6 @@ import { NativeDatePicker } from '../../components/ui/DatePicker';
 import { Play, Square, ListFilter, Sunrise, Moon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import dayjs from 'dayjs';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 
@@ -182,11 +181,10 @@ export const FastingPage = () => {
 
             {/* BUTTON */}
             <div ref={buttonRef} className="px-5 pb-5 pt-3 mt-auto shrink-0 bg-white/45 dark:bg-white/5 backdrop-blur-xl z-20 border-t border-white/60 dark:border-white/10">
-                <motion.button
-                    whileTap={{ scale: 0.98 }}
+                <button
                     onClick={handleMainButtonClick}
                     className={cn(
-                        "w-full py-3.5 rounded-2xl flex items-center justify-between px-5 shadow-lg transition-all group relative overflow-hidden",
+                        "w-full py-3.5 rounded-2xl flex items-center justify-between px-5 shadow-lg transition-all group relative overflow-hidden active:scale-[0.98]",
                         isFasting
                             ? "bg-white dark:bg-[#2C2C2E] border-2 border-red-100 dark:border-red-900/30 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
                             : isReadyToStart
@@ -209,7 +207,7 @@ export const FastingPage = () => {
                     )}>
                         {isFasting ? <Square className="w-4 h-4 fill-current" /> : isReadyToStart ? <Play className="w-4 h-4 fill-current ml-0.5" /> : <ListFilter className="w-4 h-4" />}
                     </div>
-                </motion.button>
+                </button>
             </div>
 
         </div>

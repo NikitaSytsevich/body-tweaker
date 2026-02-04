@@ -1,19 +1,48 @@
-import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getArticleById } from '../content';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { loadArticleById } from '../content';
 import { motion } from 'framer-motion';
 import WebApp from '@twa-dev/sdk';
+import type { Article } from '../types';
 
 export const ArticleDetailPage = () => {
-  const location = useLocation();
-  // Парсим ID из URL
-  const articleId = location.pathname.split('/articles/')[1];
+  const { slug } = useParams();
   const navigate = useNavigate();
-  const article = articleId ? getArticleById(articleId) : undefined;
-
-  if (!article) return null;
+  const [article, setArticle] = useState<Article | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isActive = true;
+    if (!slug) {
+      setArticle(null);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    loadArticleById(slug)
+      .then((resolved) => {
+        if (!isActive) return;
+        setArticle(resolved ?? null);
+      })
+      .finally(() => {
+        if (isActive) setIsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    if (!isLoading && !article) {
+      navigate('/', { replace: true });
+    }
+  }, [isLoading, article, navigate]);
+
+  useEffect(() => {
+    if (isLoading || !article) return;
+
     const handleBack = () => navigate('/');
     try {
       WebApp.BackButton.show();
@@ -29,7 +58,19 @@ export const ArticleDetailPage = () => {
         // ignore
       }
     };
-  }, [navigate]);
+  }, [article, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-[101] flex items-center justify-center bg-black/50 backdrop-blur-md">
+        <div className="rounded-2xl bg-white/90 px-6 py-4 text-sm font-semibold text-slate-700 shadow-lg dark:bg-[#2C2C2E] dark:text-white">
+          Загрузка статьи...
+        </div>
+      </div>
+    );
+  }
+
+  if (!article) return null;
 
   return (
     <>

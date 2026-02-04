@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { cn } from '../../../utils/cn'; // 3 точки
 import type { Phase } from '../hooks/useBreathingSession'; // 1 точка
 
@@ -31,50 +30,41 @@ export const BreathingCircle = ({ phase, timeLeft, totalDuration }: Props) => {
         ? 'rgba(96,165,250,0.45)'
         : 'rgba(148,163,184,0.25)';
 
+  const duration = totalDuration > 0 ? totalDuration : 0.5;
+
   return (
     <div className="relative w-[clamp(190px,48vw,250px)] h-[clamp(190px,48vw,250px)] flex items-center justify-center">
       
       {phase !== 'finished' && phase !== 'idle' && (
-        <motion.div
-            animate={{ 
-                scale: current.scale,
-                opacity: phase === 'hold' ? 0.6 : 0.45
-            }}
-            transition={{ 
-                duration: totalDuration > 0 ? totalDuration : 0.5, 
-                ease: "linear" 
-            }}
-            style={{
-              background: `radial-gradient(circle, ${glowColor} 0%, rgba(0,0,0,0) 70%)`
-            }}
-            className="absolute -inset-[6%] rounded-full"
+        <div
+          style={{
+            background: `radial-gradient(circle, ${glowColor} 0%, rgba(0,0,0,0) 70%)`,
+            opacity: phase === 'hold' ? 0.6 : 0.45,
+            transform: `scale(${current.scale})`,
+            transition: `transform ${duration}s linear, opacity ${duration}s linear`
+          }}
+          className="absolute -inset-[6%] rounded-full"
         />
       )}
 
-      <motion.div
-        animate={{ scale: current.scale }}
-        transition={{ duration: totalDuration > 0 ? totalDuration : 0.5, ease: "linear" }}
+      <div
         className={cn(
-            "w-[clamp(92px,24vw,120px)] h-[clamp(92px,24vw,120px)] rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500 backdrop-blur-xl",
-            current.color
+          "w-[clamp(92px,24vw,120px)] h-[clamp(92px,24vw,120px)] rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500 backdrop-blur-xl",
+          current.color
         )}
+        style={{ transform: `scale(${current.scale})`, transition: `transform ${duration}s linear` }}
       >
         {phase !== 'idle' && (
             <>
                 <span className="text-[clamp(11px,2.6vw,14px)] font-bold uppercase tracking-widest">{current.text}</span>
                 {phase !== 'finished' && (
-                    <motion.span 
-                        key={timeLeft}
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-[clamp(18px,4.6vw,26px)] font-mono font-black mt-1"
-                    >
-                        {timeLeft}
-                    </motion.span>
+                    <span className="text-[clamp(18px,4.6vw,26px)] font-mono font-black mt-1">
+                      {timeLeft}
+                    </span>
                 )}
             </>
         )}
-      </motion.div>
+      </div>
 
     </div>
   );

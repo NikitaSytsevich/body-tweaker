@@ -22,8 +22,6 @@ const FILES_TO_AUDIT = [
   // App structure
   'src/app/Layout.tsx',
   'src/app/WelcomeScreen.tsx',
-  'src/app/modals/SettingsModal.tsx',
-  'src/app/modals/InfoModal.tsx',
   'src/app/modals/InstallGuideModal.tsx',
 
   // Contexts
@@ -31,16 +29,11 @@ const FILES_TO_AUDIT = [
 
   // Fasting feature (core feature)
   'src/features/fasting/context/TimerContext.tsx',
-  'src/features/fasting/hooks/useFastingTimer.ts',
   'src/features/fasting/FastingPage.tsx',
   'src/features/fasting/MetabolismMapPage.tsx',
-  'src/features/fasting/components/TimerRing.tsx',
   'src/features/fasting/components/ProtocolSelector.tsx',
   'src/features/fasting/components/FastingStartModal.tsx',
   'src/features/fasting/components/PhaseSheet.tsx',
-  'src/features/fasting/components/PhasesList.tsx',
-  'src/features/fasting/components/SovietProtocolSheet.tsx',
-  'src/features/fasting/components/AnabolicState.tsx',
   'src/features/fasting/data/schemes.ts',
   'src/features/fasting/data/stages.ts',
   'src/features/fasting/data/preparationSteps.ts',
@@ -49,8 +42,7 @@ const FILES_TO_AUDIT = [
   'src/features/breathing/hooks/useBreathingSession.ts',
   'src/features/breathing/BreathingPage.tsx',
   'src/features/breathing/components/BreathingCircle.tsx',
-  'src/features/breathing/components/BreathingStartModal.tsx',
-  'src/features/breathing/components/SoundMixer.tsx',
+  'src/features/breathing/components/SoundSheet.tsx',
   'src/features/breathing/data/patterns.ts',
 
   // Biorhythm feature
@@ -67,6 +59,7 @@ const FILES_TO_AUDIT = [
   'src/features/articles/pages/ArticlesPage.tsx',
   'src/features/articles/pages/ArticleDetailPage.tsx',
   'src/features/articles/components/ArticleCard.tsx',
+  'src/features/articles/content/metadata.ts',
   'src/features/articles/types.ts',
 
   // UI Components

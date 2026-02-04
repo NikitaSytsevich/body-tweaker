@@ -11,7 +11,6 @@ import {
   Calendar as CalendarIcon,
   Hourglass
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import isoWeek from 'dayjs/plugin/isoWeek';
@@ -304,7 +303,6 @@ export const HistoryPage = () => {
                 </div>
             ) : (
                 <div className="space-y-3">
-                    <AnimatePresence>
                     {recordsForSelectedDate.map(record => {
                         const isFasting = record.type === 'fasting';
                         const hours = Math.floor(record.durationSeconds / 3600);
@@ -312,11 +310,7 @@ export const HistoryPage = () => {
                         const progress = isFasting ? Math.min((hours / 24) * 100, 100) : Math.min((record.durationSeconds / 60 / 30) * 100, 100);
 
                         return (
-                            <motion.div
-                                layoutId={record.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
+                            <div
                                 key={record.id}
                                 onClick={() => setSelectedRecord(record)}
                                 className={cn(
@@ -398,10 +392,9 @@ export const HistoryPage = () => {
                                         {dayjs(record.endTime).format('D MMM')}
                                     </span>
                                 </div>
-                            </motion.div>
+                            </div>
                         );
                     })}
-                    </AnimatePresence>
                 </div>
             )}
         </div>

@@ -1,18 +1,13 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import type { Article } from '../types';
+import type { ArticleMeta } from '../types';
 
 interface Props {
-  article: Article;
+  article: ArticleMeta;
 }
 
 export const ArticleCard = ({ article }: Props) => {
   return (
-    <motion.div
-      whileHover={{ scale: 0.99 }}
-      whileTap={{ scale: 0.98 }}
-      className="w-full mb-6 last:mb-24"
-    >
+    <div className="w-full mb-6 last:mb-24 transition-transform hover:scale-[0.99] active:scale-[0.98]">
       <Link
         to={`/articles/${article.id}`}
         className="group block overflow-hidden rounded-[32px] border border-[color:var(--article-border)] bg-[color:var(--article-surface)] shadow-[0_20px_60px_-45px_rgba(0,0,0,0.6)]"
@@ -45,6 +40,6 @@ export const ArticleCard = ({ article }: Props) => {
           </p>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 };

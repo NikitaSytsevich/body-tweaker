@@ -1,6 +1,6 @@
 // src/features/fasting/MetabolismMapPage.tsx
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFastingTimerContext } from './context/TimerContext';
 import { FASTING_PHASES } from './data/stages';
@@ -9,9 +9,12 @@ import { cn } from '../../utils/cn';
 import { Check, BookOpen, Activity, Flame, Zap, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhaseSheet } from './components/PhaseSheet';
-import { ArticlesPage } from '../articles/pages/ArticlesPage';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
+
+const ArticlesPage = lazy(() =>
+  import('../articles/pages/ArticlesPage').then((m) => ({ default: m.ArticlesPage }))
+);
 
 // Расширенный список названий для бейджей
 const STAGE_LABELS = [
@@ -162,7 +165,15 @@ export const MetabolismMapPage = () => {
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
                     > 
-                        <ArticlesPage />
+                        <Suspense
+                          fallback={
+                            <div className="flex items-center justify-center py-16 text-sm text-slate-400">
+                              Загрузка...
+                            </div>
+                          }
+                        >
+                          <ArticlesPage />
+                        </Suspense>
                     </motion.div>
                 ) : (
                     

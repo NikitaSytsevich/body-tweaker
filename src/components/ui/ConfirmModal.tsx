@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { cn } from '../../utils/cn';
@@ -38,60 +37,48 @@ export const ConfirmModal = ({
 
   const styles = variantStyles[variant];
 
-  const content = (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998]"
-          />
+  if (!isOpen) return null;
 
-          {/* Wrapper для центрирования */}
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998] animate-fade-in"
+      />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white dark:bg-[#2C2C2E] rounded-[2rem] shadow-2xl max-w-sm w-full pointer-events-auto overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={cn('p-3 rounded-2xl bg-slate-50 dark:bg-[#3A3A3C] shrink-0', styles.icon)}>
-                    <AlertTriangle className={cn('w-6 h-6', styles.icon)} />
-                  </div>
-                  <div className="flex-1 pt-1">
-                    <h3 className="text-lg font-[900] text-slate-800 dark:text-white leading-tight mb-1">{title}</h3>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-snug">{message}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={onClose}
-                    className="flex-1 px-4 py-3.5 bg-slate-100 dark:bg-[#3A3A3C] hover:bg-slate-200 dark:hover:bg-[#4A4A4C] text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm transition-colors active:scale-95"
-                  >
-                    {cancelText}
-                  </button>
-                  <button
-                    onClick={handleConfirm}
-                    className={cn('flex-1 px-4 py-3.5 rounded-xl font-bold text-sm transition-colors active:scale-95 shadow-lg', styles.button)}
-                  >
-                    {confirmText}
-                  </button>
-                </div>
+      {/* Wrapper для центрирования */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+        <div className="bg-white dark:bg-[#2C2C2E] rounded-[2rem] shadow-2xl max-w-sm w-full pointer-events-auto overflow-hidden animate-pop-in">
+          <div className="p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className={cn('p-3 rounded-2xl bg-slate-50 dark:bg-[#3A3A3C] shrink-0', styles.icon)}>
+                <AlertTriangle className={cn('w-6 h-6', styles.icon)} />
               </div>
-            </motion.div>
-          </div>
-        </>
-      )}
-    </AnimatePresence>
-  );
+              <div className="flex-1 pt-1">
+                <h3 className="text-lg font-[900] text-slate-800 dark:text-white leading-tight mb-1">{title}</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-snug">{message}</p>
+              </div>
+            </div>
 
-  return createPortal(content, document.body);
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-3.5 bg-slate-100 dark:bg-[#3A3A3C] hover:bg-slate-200 dark:hover:bg-[#4A4A4C] text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm transition-colors active:scale-95"
+              >
+                {cancelText}
+              </button>
+              <button
+                onClick={handleConfirm}
+                className={cn('flex-1 px-4 py-3.5 rounded-xl font-bold text-sm transition-colors active:scale-95 shadow-lg', styles.button)}
+              >
+                {confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body
+  );
 };
