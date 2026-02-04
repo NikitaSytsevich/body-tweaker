@@ -19,6 +19,42 @@ try {
   // Настройка внешнего вида (расширяем на весь экран)
   WebApp.expand();
 
+  const applyTelegramInsets = () => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    const isTelegram = Boolean(WebApp.initDataUnsafe?.user || WebApp.initData);
+    const platform = WebApp.platform as string | undefined;
+    const overlayByPlatform: Record<string, number> = {
+      ios: 56,
+      android: 48,
+      macos: 40,
+      tdesktop: 0,
+      weba: 0,
+      webk: 0,
+      web: 0,
+    };
+    if (!isTelegram) {
+      root.style.setProperty('--app-telegram-top', '0px');
+      return;
+    }
+
+    const overlayTop = overlayByPlatform[platform ?? ''] ?? 48;
+    const safeTop = WebApp.contentSafeAreaInset?.top ?? WebApp.safeAreaInset?.top ?? 0;
+    const safeBottom = WebApp.contentSafeAreaInset?.bottom ?? WebApp.safeAreaInset?.bottom ?? 0;
+
+    root.style.setProperty('--app-safe-top', `${safeTop}px`);
+    root.style.setProperty('--app-safe-bottom', `${safeBottom}px`);
+    root.style.setProperty('--app-telegram-top', `${overlayTop}px`);
+  };
+
+  applyTelegramInsets();
+  try {
+    WebApp.onEvent?.('safeAreaChanged', applyTelegramInsets);
+    WebApp.onEvent?.('contentSafeAreaChanged', applyTelegramInsets);
+  } catch {
+    // ignore
+  }
+
   // Запрос полного экрана (доступно с Telegram 8.0+).
   // Иногда требуется user-gesture, поэтому пробуем сразу и при первом тапе.
   const requestFullscreen = () => {

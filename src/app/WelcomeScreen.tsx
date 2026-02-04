@@ -42,11 +42,12 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
 
   return (
     <div
-      style={{ paddingTop: 'calc(1.5rem + var(--app-safe-top))' }}
+      style={{ paddingTop: 'calc(1.5rem + var(--app-top-offset))' }}
       className={`fixed inset-0 z-[9999] flex flex-col justify-between p-6 overflow-hidden transition-colors duration-300 ${
       theme === 'dark' ? 'bg-[#1C1C1E]' : 'bg-[#FFE5E0]'
     }`}
     >
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/75 via-white/40 to-transparent dark:from-[#0B0F14]/85 dark:via-[#0B0F14]/60" />
 
       <AnimatePresence mode="wait">
 
