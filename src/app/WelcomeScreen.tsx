@@ -41,9 +41,12 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
 
 
   return (
-    <div className={`fixed inset-0 z-[9999] flex flex-col justify-between p-6 overflow-hidden transition-colors duration-300 ${
+    <div
+      style={{ paddingTop: 'calc(1.5rem + var(--app-safe-top))' }}
+      className={`fixed inset-0 z-[9999] flex flex-col justify-between p-6 overflow-hidden transition-colors duration-300 ${
       theme === 'dark' ? 'bg-[#1C1C1E]' : 'bg-[#FFE5E0]'
-    }`}>
+    }`}
+    >
 
       <AnimatePresence mode="wait">
 

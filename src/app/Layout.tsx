@@ -223,7 +223,7 @@ export const Layout = () => {
   );
 
   return (
-    <div className="bg-[#F2F2F7] dark:bg-[#1C1C1E] flex justify-center font-sans text-slate-900 dark:text-white h-[100dvh] w-screen overflow-hidden fixed inset-0">
+    <div className="bg-[#F2F2F7] dark:bg-[#1C1C1E] flex justify-center font-sans text-slate-900 dark:text-white h-[100dvh] w-screen overflow-hidden fixed inset-0 pt-[var(--app-safe-top)]">
 
       <div className="w-full max-w-md bg-[#F2F2F7] dark:bg-[#1C1C1E] h-full relative flex flex-col shadow-2xl overflow-hidden">
 
