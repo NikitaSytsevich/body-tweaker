@@ -233,7 +233,10 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             transition={{ duration: 0.2 }}
             className="absolute inset-0 z-[10000] flex flex-col app-surface"
           >
-            <div className="px-4 pt-10 pb-2">
+            <div
+              className="px-4 pb-2"
+              style={{ paddingTop: 'calc(3.5rem + var(--app-top-offset))' }}
+            >
               <p className="text-xs uppercase tracking-widest font-bold app-muted">
                 Правовые документы
               </p>
