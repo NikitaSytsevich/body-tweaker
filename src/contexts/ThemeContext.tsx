@@ -45,6 +45,31 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [mode, setModeState] = useState<ThemeMode>('auto')
   const [isInitialized, setIsInitialized] = useState(false)
 
+  const MANUAL_THEME_VARS: Record<Theme, Record<string, string>> = {
+    light: {
+      '--tg-bg': '#F2F2F7',
+      '--tg-surface': '#FFFFFF',
+      '--tg-text': '#0F172A',
+      '--tg-muted': '#64748B',
+      '--tg-accent': '#0A84FF',
+      '--tg-accent-contrast': '#FFFFFF',
+      '--tg-border': 'rgba(15, 23, 42, 0.08)',
+      '--tg-glass': 'rgba(255, 255, 255, 0.72)',
+      '--tg-glass-strong': 'rgba(255, 255, 255, 0.88)',
+    },
+    dark: {
+      '--tg-bg': '#0F1115',
+      '--tg-surface': '#1C1F26',
+      '--tg-text': '#F8FAFC',
+      '--tg-muted': '#98A2B3',
+      '--tg-accent': '#4C8DFF',
+      '--tg-accent-contrast': '#FFFFFF',
+      '--tg-border': 'rgba(255, 255, 255, 0.08)',
+      '--tg-glass': 'rgba(18, 20, 24, 0.7)',
+      '--tg-glass-strong': 'rgba(20, 22, 27, 0.85)',
+    },
+  }
+
   // 1. Загрузка сохранённой темы при старте
   useEffect(() => {
     const loadTheme = async () => {
@@ -76,6 +101,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       root.classList.remove('dark')
     }
 
+    // Если режим НЕ auto — фиксируем палитру вручную и игнорируем Telegram theme vars
+    if (mode !== 'auto') {
+      const vars = MANUAL_THEME_VARS[theme]
+      Object.entries(vars).forEach(([key, value]) => {
+        root.style.setProperty(key, value)
+      })
+    } else {
+      // Возвращаем управление Telegram'у
+      Object.keys(MANUAL_THEME_VARS.light).forEach((key) => {
+        root.style.removeProperty(key)
+      })
+    }
+
     // Sync Telegram header and background colors (только если WebApp готов)
     try {
       const headerColor = theme === 'dark' ? '#1C1C1E' : '#F2F2F7'
@@ -86,7 +124,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     } catch {
       // Игнорируем ошибки WebApp
     }
-  }, [theme, isInitialized])
+  }, [theme, mode, isInitialized])
 
   // 4. Слушаем изменения темы из Telegram (только для режима auto)
   useEffect(() => {
