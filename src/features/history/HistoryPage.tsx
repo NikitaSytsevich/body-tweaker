@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Trophy,
   Zap,
-  Calendar as CalendarIcon,
   Hourglass
 } from 'lucide-react';
 import dayjs from 'dayjs';
