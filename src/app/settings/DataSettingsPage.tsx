@@ -99,6 +99,19 @@ export const DataSettingsPage = () => {
     const isObject = (value: unknown): value is Record<string, unknown> =>
       Boolean(value) && typeof value === 'object' && !Array.isArray(value);
     const isString = (value: unknown): value is string => typeof value === 'string';
+    const isNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+    const isHistoryRecord = (value: unknown) => {
+      if (!isObject(value)) return false;
+      const type = value.type;
+      return (
+        isString(value.id) &&
+        (type === 'fasting' || type === 'breathing') &&
+        isString(value.scheme) &&
+        isString(value.startTime) &&
+        isString(value.endTime) &&
+        isNumber(value.durationSeconds)
+      );
+    };
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -113,8 +126,9 @@ export const DataSettingsPage = () => {
 
         const promises = [];
         if (Array.isArray(data.history_fasting)) {
+          const safeHistory = data.history_fasting.filter(isHistoryRecord);
           await storageRemove('history_fasting');
-          await storageSaveHistory('history_fasting', data.history_fasting);
+          await storageSaveHistory('history_fasting', safeHistory);
         }
         if (isString(data.fasting_startTime)) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
         if (isString(data.fasting_scheme)) promises.push(storageSet('fasting_scheme', data.fasting_scheme));

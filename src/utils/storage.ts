@@ -66,12 +66,12 @@ const isCloudAvailable = () => {
 /**
  * Внутренняя функция шифрования
  */
-const encrypt = (value: string): string => {
+const encrypt = (value: string): string | null => {
   try {
     return AES.encrypt(value, STORAGE_KEY_FINAL).toString();
   } catch (e) {
     console.error('Encryption error:', e);
-    return value;
+    return null;
   }
 };
 
@@ -108,13 +108,21 @@ export async function storageGet(key: string): Promise<string | null> {
     return cached.value;
   }
 
+  const readLocal = () => {
+    try {
+      return localStorage.getItem(namespacedKey) || '';
+    } catch {
+      return '';
+    }
+  };
+
   if (isCloudAvailable()) {
     try {
       return new Promise((resolve) => {
         WebApp.CloudStorage.getItem(namespacedKey, (err, value) => {
           if (err) {
             console.warn('[Cloud] Get Error, falling back to local:', err);
-            const decrypted = decrypt(localStorage.getItem(namespacedKey) || '');
+            const decrypted = decrypt(readLocal());
             if (decrypted) {
               storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
             }
@@ -133,7 +141,7 @@ export async function storageGet(key: string): Promise<string | null> {
     }
   }
 
-  const decrypted = decrypt(localStorage.getItem(namespacedKey) || '');
+  const decrypted = decrypt(readLocal());
   if (decrypted) {
     storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
   }
@@ -147,6 +155,11 @@ export async function storageGet(key: string): Promise<string | null> {
 export async function storageSet(key: string, value: string): Promise<boolean> {
   const namespacedKey = getKey(key);
   const encrypted = encrypt(value);
+
+  if (!encrypted) {
+    console.warn('[Storage] Encryption failed, aborting write');
+    return false;
+  }
 
   // OPTIMIZATION: Update cache immediately
   storageCache.set(namespacedKey, { value, timestamp: Date.now() });
@@ -227,6 +240,10 @@ export async function storageSetJSON<T>(key: string, value: T): Promise<boolean>
  * Чтение истории с поддержкой чанков и миграцией
  */
 export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
+  return enqueueHistoryOp(baseKey, () => getHistoryInternal<T>(baseKey));
+}
+
+async function getHistoryInternal<T>(baseKey: string): Promise<T[]> {
   // 1. Попытка миграции (если есть данные в старом ключе)
   const legacyData = await storageGetJSON<T[] | null>(baseKey, null);
   if (legacyData && Array.isArray(legacyData) && legacyData.length > 0) {
@@ -240,21 +257,22 @@ export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
   const meta = await storageGetJSON<HistoryMeta | null>(getHistoryMetaKey(baseKey), null);
   if (!meta) {
     const recovered: T[] = [];
-    let chunksFound = 0;
+
     for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
       const chunk = await storageGetJSON<T[]>(`${baseKey}_${i}`, []);
-      if (!chunk.length) break;
-      chunksFound += 1;
-      recovered.push(...chunk);
+      if (chunk.length > 0) {
+        recovered.push(...chunk);
+      }
     }
 
     if (recovered.length > 0) {
+      await saveHistoryInternal(baseKey, recovered);
+    } else {
       await storageSetJSON(getHistoryMetaKey(baseKey), {
-        chunks: Math.min(chunksFound, HISTORY_MAX_CHUNKS),
-        total: recovered.length,
+        chunks: 0,
+        total: 0,
         updatedAt: new Date().toISOString(),
       } satisfies HistoryMeta);
-      notifyHistoryUpdated(baseKey);
     }
     return recovered;
   }
@@ -284,6 +302,8 @@ export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise
 }
 
 async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boolean> {
+  const metaKey = getHistoryMetaKey(baseKey);
+  const meta = await storageGetJSON<HistoryMeta | null>(metaKey, null);
   const maxItems = HISTORY_MAX_CHUNKS * HISTORY_CHUNK_SIZE;
 
   // Warn and truncate if list exceeds maximum
@@ -297,8 +317,10 @@ async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boole
 
   let success = true;
   const chunkCount = Math.ceil(list.length / HISTORY_CHUNK_SIZE);
+  const prevChunkCount = meta?.chunks ?? 0;
+  const maxChunkIndex = Math.max(prevChunkCount, chunkCount);
 
-  for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
+  for (let i = 0; i < maxChunkIndex; i++) {
     const chunk = list.slice(i * HISTORY_CHUNK_SIZE, (i + 1) * HISTORY_CHUNK_SIZE);
     const key = `${baseKey}_${i}`;
 
@@ -311,9 +333,12 @@ async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boole
     }
   }
 
-  const metaKey = getHistoryMetaKey(baseKey);
   if (list.length === 0) {
-    await storageRemove(metaKey);
+    await storageSetJSON(metaKey, {
+      chunks: 0,
+      total: 0,
+      updatedAt: new Date().toISOString(),
+    } satisfies HistoryMeta);
   } else {
     await storageSetJSON(metaKey, {
       chunks: Math.min(chunkCount, HISTORY_MAX_CHUNKS),
@@ -335,7 +360,7 @@ export async function storageUpdateHistory<T>(
 ): Promise<T[]> {
   return enqueueHistoryOp(key, async () => {
     try {
-      const currentList = await storageGetHistory<T>(key);
+      const currentList = await getHistoryInternal<T>(key);
       // Добавляем в начало и обрезаем
       const newList = [newItem, ...currentList].slice(0, maxItems);
       await saveHistoryInternal(key, newList);

@@ -43,6 +43,21 @@
     <title>Body Tweaker</title>
   </head>
   <body>
+    <script>
+      (function () {
+        try {
+          var redirect = sessionStorage.getItem('spa-redirect');
+          if (!redirect) return;
+          sessionStorage.removeItem('spa-redirect');
+          var current = location.pathname + location.search + location.hash;
+          if (redirect !== current) {
+            history.replaceState(null, '', redirect);
+          }
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

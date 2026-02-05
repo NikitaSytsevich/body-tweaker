@@ -1,5 +1,5 @@
 // src/components/ui/ProfileAvatar.tsx
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { UserCircle2 } from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
 import { cn } from '../../utils/cn';
@@ -32,6 +32,12 @@ const textSizes = {
 // Кеш для хранения данных пользователя
 let globalAvatarCache: { photoUrl: string | null; firstName: string; timestamp: number } | null = null;
 const CACHE_DURATION = 5000;
+
+type UserData = { photoUrl: string | null; firstName: string };
+let globalUserData: UserData = { photoUrl: null, firstName: '' };
+const listeners = new Set<(data: UserData) => void>();
+let pollIntervalId: number | null = null;
+let initialChecksScheduled = false;
 
 // Функция для получения данных пользователя с проверкой
 const fetchUserData = () => {
@@ -69,8 +75,73 @@ const fetchUserData = () => {
   return data;
 };
 
+const notifyListeners = () => {
+  listeners.forEach((listener) => listener(globalUserData));
+};
+
+const updateGlobalUserData = () => {
+  const next = fetchUserData();
+  const changed =
+    next.photoUrl !== globalUserData.photoUrl || next.firstName !== globalUserData.firstName;
+  if (changed) {
+    globalUserData = next;
+    notifyListeners();
+  }
+  return globalUserData;
+};
+
+const scheduleInitialChecks = () => {
+  if (initialChecksScheduled || typeof window === 'undefined') return;
+  initialChecksScheduled = true;
+
+  const run = () => updateGlobalUserData();
+  const t1 = window.setTimeout(run, 50);
+  const t2 = window.setTimeout(run, 200);
+  const t3 = window.setTimeout(run, 500);
+  const t4 = window.setTimeout(run, 1000);
+  const t5 = window.setTimeout(() => {
+    initialChecksScheduled = false;
+  }, 1500);
+
+  window.setTimeout(() => {
+    clearTimeout(t1);
+    clearTimeout(t2);
+    clearTimeout(t3);
+    clearTimeout(t4);
+    clearTimeout(t5);
+  }, 1600);
+};
+
+const startPolling = () => {
+  if (pollIntervalId != null || typeof window === 'undefined') return;
+  pollIntervalId = window.setInterval(() => {
+    if (listeners.size === 0) return;
+    updateGlobalUserData();
+  }, 3000);
+};
+
+const stopPolling = () => {
+  if (pollIntervalId == null || typeof window === 'undefined') return;
+  clearInterval(pollIntervalId);
+  pollIntervalId = null;
+};
+
+const subscribe = (listener: (data: UserData) => void) => {
+  listeners.add(listener);
+  startPolling();
+  scheduleInitialChecks();
+  listener(globalUserData);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) stopPolling();
+  };
+};
+
 export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: ProfileAvatarProps) => {
-  const [userData, setUserData] = useState(() => fetchUserData());
+  const [userData, setUserData] = useState<UserData>(() => {
+    globalUserData = updateGlobalUserData();
+    return globalUserData;
+  });
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const hasMounted = useRef(false);
@@ -80,65 +151,23 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
 
   const initials = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : '?';
 
-  // Функция обновления данных
-  const refreshData = useCallback(() => {
-    const newData = fetchUserData();
-    const hasChanged = newData.photoUrl !== userData.photoUrl || newData.firstName !== userData.firstName;
-
-    if (hasChanged) {
-      setUserData(newData);
-      // Сбрасываем ошибку если появился новый photoUrl
-      if (newData.photoUrl && newData.photoUrl !== userData.photoUrl) {
-        setImageError(false);
-      }
-    }
-
-    // Уведомляем родительский компонент
-    if (onUpdate) {
-      onUpdate(newData);
-    }
-
-    // Отключаем состояние загрузки после первой попытки
-    if (hasMounted.current) {
-      setIsLoading(false);
-    }
-  }, [userData.photoUrl, userData.firstName, onUpdate]);
-
   // Основной useEffect для инициализации
   useEffect(() => {
     hasMounted.current = true;
-
-    // Проверяем готовность Telegram WebApp
-    const checkReady = () => {
-      if (WebApp.initDataUnsafe?.user) {
-        setIsLoading(false);
-        refreshData();
-      }
-    };
-
-    // Сразу проверяем
-    checkReady();
-
-    // Повторяем с задержками на случай если SDK еще не готов
-    const t1 = setTimeout(checkReady, 50);
-    const t2 = setTimeout(checkReady, 200);
-    const t3 = setTimeout(checkReady, 500);
-    const t4 = setTimeout(checkReady, 1000);
-    const t5 = setTimeout(() => setIsLoading(false), 1500); // В любом случае отключаем loading
-
-    // Периодическая проверка
-    const interval = setInterval(refreshData, 3000);
+    const fallback = window.setTimeout(() => setIsLoading(false), 1500);
+    const unsubscribe = subscribe((data) => {
+      setUserData(data);
+      if (data.photoUrl) setImageError(false);
+      if (onUpdate) onUpdate(data);
+      if (hasMounted.current) setIsLoading(false);
+    });
 
     return () => {
       hasMounted.current = false;
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
-      clearInterval(interval);
+      clearTimeout(fallback);
+      unsubscribe();
     };
-  }, [refreshData]);
+  }, [onUpdate]);
 
   useEffect(() => {
     return () => {

@@ -18,7 +18,8 @@ export const NativeDatePicker = ({
   onChange,
   disabled 
 }: Props) => {
-  const inputValue = dayjs(dateValue).format('YYYY-MM-DDTHH:mm');
+  const safeDate = dayjs(dateValue).isValid() ? dayjs(dateValue) : dayjs();
+  const inputValue = safeDate.format('YYYY-MM-DDTHH:mm');
 
   return (
     <div className={cn("text-center relative group", disabled && "opacity-50 grayscale cursor-not-allowed")}>
@@ -32,7 +33,7 @@ export const NativeDatePicker = ({
         "text-sm font-bold text-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg border border-transparent transition-all",
         !disabled && "group-hover:bg-slate-50 dark:group-hover:bg-[#3A3A3C] group-active:border-blue-200 dark:group-active:border-blue-500/30 group-active:bg-blue-50 dark:group-active:bg-blue-500/10"
       )}>
-        {dayjs(dateValue).format('HH:mm')}
+        {safeDate.format('HH:mm')}
       </p>
 
       {!disabled && (

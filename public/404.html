@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=/" />
+    <script>
+      (function () {
+        try {
+          var path = location.pathname + location.search + location.hash;
+          sessionStorage.setItem('spa-redirect', path);
+          location.replace('/');
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
+    <title>Redirecting...</title>
+  </head>
+  <body>
+    Redirecting...
+  </body>
+</html>
