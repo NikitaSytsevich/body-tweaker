@@ -1,202 +1,103 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
 
-## Project Overview
+## Project Summary
 
-Body Tweaker is a Telegram Mini Web App for scientific biohacking. It helps users track intermittent fasting, breathing exercises, biorhythms, and provides educational articles.
-
-**Technology Stack:**
-- React 19 + TypeScript + Vite
-- Telegram Web App SDK (@twa-dev/sdk)
-- Framer Motion (animations)
-- React Router v7
-- Tailwind CSS
-- Recharts (charts)
-- Day.js (date/time)
-- Crypto-js (encryption)
+**Body Tweaker** is a Telegram Mini App (also works in a standalone browser) for fasting tracking, breathing practice, a metabolism map with phase details, a knowledge base of articles, and progress history. It stores data in Telegram Cloud Storage when available and falls back to localStorage, with AES client-side encryption.
 
 ## Commands
 
 ```bash
-# Development
-npm run dev          # Start dev server (http://localhost:5173)
-
-# Build & Type Check
-npm run build        # Run TypeScript check + Vite build
-tsc -b              # TypeScript check only (without build)
-
-# Code Quality
-npm run lint         # Run ESLint
-
-# Preview & Analysis
-npm run preview      # Preview production build locally
-# After build, open dist/stats.html for bundle analysis
-
-# Assets
-npm run generate-icons  # Generate PWA icons from source SVG
-
-# Audit (for sharing with AI tools)
-npm run audit           # Generate code audit files in audit-output/
+npm run dev            # Start dev server (http://localhost:5173)
+npm run build          # TypeScript check + Vite build
+npm run lint           # ESLint
+npm run preview        # Preview production build
+npm run generate-icons # Generate PWA icons
+npm run audit          # Generate audit files (scripts/generate-audit.js)
 ```
 
-## Architecture
+## Routes and Navigation
 
-### App Structure
+- `/` — Metabolism map + knowledge base tab
+- `/timer` — Fasting timer
+- `/breathing` — Breathing practice
+- `/history` — History (fasting + breathing)
+- `/profile` — Settings hub
+- `/profile/settings/appearance`
+- `/profile/settings/app`
+- `/profile/settings/data`
+- `/profile/settings/legal`
+- `/profile/settings/about`
+- `/articles/:slug` — Article detail
+- `*` — Redirect to `/`
 
-```
-src/
-├── app/
-│   ├── Layout.tsx           # Main layout with draggable navigation
-│   ├── WelcomeScreen.tsx    # First-run terms screen
-│   └── modals/              # Settings, Info, InstallGuide modals
-├── features/
-│   ├── fasting/             # Fasting timer & metabolism map
-│   │   ├── context/TimerContext.tsx    # Global timer state
-│   │   ├── hooks/useFastingTimer.ts    # Timer hook
-│   │   ├── data/schemes.ts             # Protocol definitions
-│   │   ├── data/stages.ts              # Metabolic phases
-│   │   └── data/preparationSteps.ts    # Pre-fast preparation guide
-│   ├── breathing/           # Breathing exercises
-│   │   ├── data/patterns.ts            # Exercise patterns
-│   │   └── hooks/useBreathingSession.ts
-│   ├── biorhythm/          # Biorhythm charts
-│   │   └── hooks/useBiorhythms.ts      # Biorhythm calculations
-│   ├── history/            # Activity history
-│   └── articles/           # Educational articles
-├── contexts/
-│   └── ThemeContext.tsx    # Dark mode theme management
-├── hooks/
-│   ├── useStorage.ts       # React hook for persistent storage
-│   └── useAddToHomeScreen.ts
-├── utils/
-│   ├── storage.ts          # Cloud + local storage with encryption
-│   ├── sounds.ts           # Audio utilities
-│   └── cn.ts               # clsx + tailwind-merge
-└── main.tsx                # Entry point (Telegram SDK init)
-```
+Navigation for main pages is a draggable dock in `src/app/Layout.tsx`. Main pages stay mounted and are shown/hidden via CSS; do not use React Router links for main tabs.
 
-### Key Architectural Patterns
+## Key Modules
 
-**1. Telegram Cloud Storage with Fallback**
+- `src/app/Layout.tsx` — Main shell, dock navigation, lazy loading of feature pages.
+- `src/app/WelcomeScreen.tsx` — First-run legal acceptance flow.
+- `src/app/ProfilePage.tsx` and `src/app/settings/*` — Settings UI (theme, app install, data backup, legal docs, about).
+- `src/features/fasting/*` — Fasting timer, protocols, and metabolism phases.
+- `src/features/breathing/*` — Breathing practice, audio, and session logic.
+- `src/features/history/*` — History UI, stats, calendar, record editing.
+- `src/features/articles/*` — Knowledge base list + detail pages.
+- `src/contexts/ThemeContext.tsx` — Theme mode and Telegram theme sync.
+- `src/utils/storage.ts` — Encrypted storage + CloudStorage fallback + history chunking.
+- `src/utils/sounds.ts` — Ambient audio and SFX engine.
+- `src/hooks/useStorage.ts` — Async storage hook for settings/data.
+- `src/main.tsx` — Telegram WebApp init, safe-area insets, fullscreen request, Vercel analytics.
 
-The app uses Telegram CloudStorage with automatic fallback to localStorage. All data is encrypted using AES with a key from `VITE_STORAGE_KEY`. Storage utilities are in `src/utils/storage.ts`:
-- `storageGet/ storageSet` - Basic string storage
-- `storageGetJSON/ storageSetJSON` - JSON storage
-- `storageGetHistory/ storageSaveHistory/ storageUpdateHistory` - Chunked history storage (bypasses 4096 byte limit)
+## Fasting Flow
 
-**2. Feature-Based Organization**
+- Protocols are defined in `src/features/fasting/data/schemes.ts` (7 protocols).
+- Metabolism phases are defined in `src/features/fasting/data/stages.ts` (15 phases).
+- `TimerContext` loads `fasting_scheme` and `fasting_startTime` on boot and persists changes.
+- Starting/stopping the timer is handled by `toggleFasting()`.
+- History record is saved on stop if duration > 60 seconds.
+- `MetabolismMapPage` shows phase cards and a detail sheet with physiology, sensations, recommendations, and precautions.
 
-Each feature (fasting, breathing, biorhythm, articles) is self-contained with:
-- `components/` - Feature-specific UI components
-- `hooks/` - Feature-specific hooks
-- `data/` - Static data (schemes, patterns, content)
-- `*.tsx` page files
+## Breathing Flow
 
-**3. Global State with Context**
+- Levels are in `src/features/breathing/data/patterns.ts` (0–12).
+- `useBreathingSession()` drives inhale/hold/exhale phases, timers, and haptics.
+- Session duration is fixed to 10 minutes in `BreathingPage`.
+- History record is saved when session duration exceeds 15 seconds.
+- Audio is controlled via `soundManager` (ambient tracks + SFX cues).
 
-`TimerContext.tsx` provides global fasting timer state across the app. It handles:
-- Timer state and persistence (async initialization with `isLoading` flag)
-- Phase change detection and notifications
-- History recording on completion
+## History
 
-**4. Custom Navigation (Draggable Dock)**
+- All records (fasting + breathing) are stored under `history_fasting`.
+- `HistoryPage` loads, filters by type, and renders stats + calendar.
+- `RecordDetails` allows editing start/end times and deleting records.
+- History updates trigger a window event `bt:history-updated` to refresh UI.
 
-The app uses a custom draggable bottom navigation implemented in `Layout.tsx`. Key implementation details:
-- Not using standard React Router navigation for main pages - instead manages page visibility with the `PageView` component
-- Navigation state is controlled by dragging a floating dock with spring animations (Framer Motion)
-- All four main pages (Map, Timer, Breathing, History) are mounted simultaneously, with visibility toggled via CSS
-- Article detail pages (`/articles/*`) are handled differently and hide the main navigation
-- Navigation position is determined by current URL path (via React Router), not by stored state
+## Articles
 
-**5. First-Run Flow**
+- Article metadata list: `src/features/articles/content/metadata.ts`.
+- Each article lives in `src/features/articles/content/*.tsx` and is routed by slug.
 
-`App.tsx` checks for `has_accepted_terms` storage key. If not present, shows `WelcomeScreen.tsx` before the main app.
+## Storage and Security
 
-### Important Details
+- Encryption is AES with `VITE_STORAGE_KEY` from env.
+- Production build throws if `VITE_STORAGE_KEY` is missing.
+- Telegram Cloud Storage is used when available (SDK >= 6.9), otherwise localStorage.
+- History is chunked: 8 records per chunk, up to 1000 records.
+- Storage helpers are async; avoid direct localStorage access.
 
-- **Environment Variable**: `VITE_STORAGE_KEY` is used for encryption. Must be set in production builds.
-- **History Chunking**: History records are split into chunks of 8 items (HISTORY_CHUNK_SIZE) to bypass Telegram's 4096 byte storage limit. Supports up to 1000 records (HISTORY_MAX_CHUNKS = 125).
-- **Telegram SDK**: Initialized in `main.tsx` with header/background color configuration. Always call `WebApp.ready()` and `WebApp.expand()` to ensure proper Telegram integration.
-- **Route Handling**: Special handling for article detail pages (`/articles/*`) which hide the main navigation and header.
-- **Notifications**: Phase change notifications are handled through `TimerContext` and displayed via `ToastNotification` component.
-- **No Test Suite**: This project does not currently have automated tests.
+## Theme and Telegram Integration
 
-### Data Flow
+- Theme modes: `light`, `dark`, `auto`. Stored in `theme_mode`.
+- `ThemeProvider` syncs Telegram header/background colors and listens for `themeChanged` events.
+- `main.tsx` applies safe-area insets and requests fullscreen when possible.
 
-1. **Fasting Timer**: TimerContext → storage (encrypted) → persisted across sessions
-2. **History Records**: On timer stop → record created → chunked storage → displayed in HistoryPage
-3. **Settings**: Stored in `user_settings` key, retrieved for notification preferences
+## Build, PWA, and Analytics
 
-### UI Components
+- PWA is configured in `vite.config.ts` using `vite-plugin-pwa` with runtime caching for fonts, images, and Telegram assets.
+- Bundle analyzer creates `dist/stats.html` after build.
+- `@vercel/analytics/react` is mounted in `src/main.tsx`.
 
-Common UI components in `src/components/ui/`:
-- `Modal.tsx` - Base modal with Framer Motion animations
-- `ConfirmModal.tsx` - Confirmation dialogs
-- `DatePicker.tsx` - Date selection
-- `SegmentedControl.tsx` - Segmented control
-- `ToastNotification.tsx` - Toast notifications
+## Tests
 
-### Theme System
-
-The app uses a custom `ThemeProvider` (ThemeContext.tsx) that:
-- Auto-detects Telegram's theme (light/dark)
-- Syncs with Telegram's theme changes via `WebApp.onEvent('themeChanged')`
-- Updates Telegram header/background colors to match
-- Applies `dark` class to document root
-
-### Build Configuration
-
-The Vite config (`vite.config.ts`) includes:
-- **Bundle Splitting**: Separates React, Framer Motion, icons, charts, Telegram SDK, and utilities into separate chunks for optimal caching
-- **PWA Support**: Service worker with caching for fonts, images, and Telegram assets
-- **Terser Optimization**: Removes console.log, debugger, dead code, and comments in production
-- **Bundle Analysis**: Generates `dist/stats.html` after build - open this file to inspect bundle size and composition
-
-### Storage Implementation Details
-
-**Encryption:**
-- All data is encrypted using AES-256 before storage via crypto-js
-- Keys are namespaced with `bt_app_` prefix
-- Automatic fallback from Telegram Cloud to localStorage
-
-**History Chunking:**
-- Each chunk holds 8 records (~400 bytes each, under 4096 byte limit)
-- Supports up to 1000 history records (125 chunks, configurable via HISTORY_MAX_CHUNKS)
-- Automatic migration from legacy non-chunked format
-- Empty chunks are automatically deleted to save space
-
-**Working with Storage:**
-```typescript
-// Always use the storage utilities, never direct localStorage/WebAPI calls
-import { storageGet, storageSet, storageGetJSON, storageSetJSON } from '@/utils/storage';
-
-// For history records (chunked storage)
-import { storageSaveHistory, storageGetHistory, storageUpdateHistory } from '@/utils/storage';
-
-// All storage operations are async - always await or handle promises
-await storageSet('key', 'value');
-const data = await storageGetJSON('key', defaultValue);
-```
-
-## Common Patterns & Gotchas
-
-**Telegram SDK Integration:**
-- The app runs both inside Telegram (via Mini App) and standalone as PWA
-- Always check `WebApp.initDataUnsafe?.user` before accessing user data
-- Theme colors must be synced with Telegram using `WebApp.setHeaderColor()` and `WebApp.setBackgroundColor()`
-
-**Navigation Gotchas:**
-- Do not use `<Link>` or `useNavigate()` for main page navigation - it won't work with the custom dock
-- Use `useNavigate()` only for article detail pages and modal routes
-- Main pages are switched via visibility toggling in `Layout.tsx`
-
-**Styling:**
-- Use the `cn()` utility (from `src/utils/cn.ts`) for conditional className merging
-- Tailwind classes are available - prefer utility classes over custom CSS
-- Dark mode is handled automatically via ThemeContext - use `dark:` prefix for dark mode styles
-
-**Component Organization:**
-- Feature components should be co-located with their feature in `src/features/*/`
-- Reusable UI components go in `src/components/ui/`
-- Keep components small and focused - extract complex logic into custom hooks
+No automated test suite exists in this repo.
