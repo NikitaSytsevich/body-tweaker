@@ -165,8 +165,13 @@ class SoundManager {
 
   startSession() {
     this.isSessionActive = true;
-    void this.ensurePreloaded();
-    if (this.isMusicEnabled) this.playAmbient();
+    const boot = async () => {
+      await this.ensurePreloaded();
+      if (this.isSessionActive && this.isMusicEnabled) {
+        this.playAmbient();
+      }
+    };
+    void boot();
   }
 
   stopSession() {
@@ -178,7 +183,15 @@ class SoundManager {
     if (!this.ctx) return;
 
     const buffer = this.buffers[this.currentTrackId];
-    if (!buffer) return;
+    if (!buffer) {
+      // Buffer may still be loading on first session start
+      void this.loadTrack(this.currentTrackId).then(() => {
+        if (this.isSessionActive && this.isMusicEnabled) {
+          this.playAmbient();
+        }
+      });
+      return;
+    }
 
     if (this.ambientSource) {
       try { this.ambientSource.stop(); } catch {}
