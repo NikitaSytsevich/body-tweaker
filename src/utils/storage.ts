@@ -1,6 +1,7 @@
 import WebApp from '@twa-dev/sdk';
 import AES from 'crypto-js/aes';
 import encUtf8 from 'crypto-js/enc-utf8';
+import type { HistoryRecord } from './types';
 
 // ================= SECURITY CHECK =================
 // Берем ключ из .env файла
@@ -29,6 +30,7 @@ const HISTORY_CHUNK_SIZE = 8;
 const HISTORY_MAX_CHUNKS = 125; // Поддержка до 1000 записей (125 * 8 = 1000)
 const HISTORY_META_SUFFIX = '__meta';
 const HISTORY_UPDATED_EVENT = 'bt:history-updated';
+const STORAGE_READONLY_EVENT = 'bt:storage-readonly';
 
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
 const getHistoryMetaKey = (baseKey: string) => `${baseKey}${HISTORY_META_SUFFIX}`;
@@ -40,6 +42,12 @@ type HistoryMeta = {
 };
 
 export const HISTORY_UPDATED_EVENT_NAME = HISTORY_UPDATED_EVENT;
+export const STORAGE_READONLY_EVENT_NAME = STORAGE_READONLY_EVENT;
+
+const CLOUD_RETRY_DELAYS = import.meta.env.MODE === 'test' ? [0] : [150, 400, 900];
+const CLOUD_READONLY_TTL = import.meta.env.MODE === 'test' ? 50 : 5 * 60 * 1000;
+let cloudReadonlyUntil = 0;
+let cloudReadonlyNotifiedUntil = 0;
 
 // History operations queue to prevent concurrent read-modify-write races
 const historyQueue = new Map<string, Promise<unknown>>();
@@ -56,11 +64,97 @@ const notifyHistoryUpdated = (baseKey: string) => {
   window.dispatchEvent(new CustomEvent(HISTORY_UPDATED_EVENT, { detail: { key: baseKey } }));
 };
 
+const notifyStorageReadonly = (reason?: unknown) => {
+  if (typeof window === 'undefined') return;
+  const message = reason instanceof Error ? reason.message : String(reason ?? '');
+  window.dispatchEvent(
+    new CustomEvent(STORAGE_READONLY_EVENT, {
+      detail: {
+        until: cloudReadonlyUntil,
+        reason: message
+      }
+    })
+  );
+};
+
 // Проверка: доступны ли облачные функции (Telegram Environment)
 const isCloudAvailable = () => {
   return typeof WebApp !== 'undefined' && 
          WebApp.CloudStorage && 
          WebApp.isVersionAtLeast('6.9');
+};
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isCloudWriteDisabled = () => Date.now() < cloudReadonlyUntil;
+
+const setCloudReadonly = (reason?: unknown) => {
+  const until = Date.now() + CLOUD_READONLY_TTL;
+  if (until > cloudReadonlyUntil) {
+    cloudReadonlyUntil = until;
+  }
+  if (cloudReadonlyNotifiedUntil < cloudReadonlyUntil) {
+    cloudReadonlyNotifiedUntil = cloudReadonlyUntil;
+    notifyStorageReadonly(reason);
+  }
+};
+
+const clearCloudReadonly = () => {
+  cloudReadonlyUntil = 0;
+  cloudReadonlyNotifiedUntil = 0;
+};
+
+const retryCloud = async <T>(operation: () => Promise<T>): Promise<T> => {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= CLOUD_RETRY_DELAYS.length; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      const delay = CLOUD_RETRY_DELAYS[attempt];
+      if (delay == null) break;
+      if (delay > 0) {
+        await sleep(delay);
+      }
+    }
+  }
+  throw lastError;
+};
+
+const cloudGetItem = (key: string): Promise<string | null> => {
+  return new Promise((resolve, reject) => {
+    WebApp.CloudStorage.getItem(key, (err, value) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(value ?? null);
+      }
+    });
+  });
+};
+
+const cloudSetItem = (key: string, value: string): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    WebApp.CloudStorage.setItem(key, value, (err, stored) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(stored || false);
+      }
+    });
+  });
+};
+
+const cloudRemoveItem = (key: string): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    WebApp.CloudStorage.removeItem(key, (err, deleted) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(deleted || false);
+      }
+    });
+  });
 };
 
 /**
@@ -93,6 +187,29 @@ const decrypt = (value: string): string | null => {
   }
 };
 
+const isHistoryRecord = (value: unknown): value is HistoryRecord => {
+  if (!value || typeof value !== 'object') return false;
+  const record = value as HistoryRecord;
+  return (
+    typeof record.id === 'string' &&
+    (record.type === 'fasting' || record.type === 'breathing') &&
+    typeof record.scheme === 'string' &&
+    typeof record.startTime === 'string' &&
+    typeof record.endTime === 'string' &&
+    typeof record.durationSeconds === 'number' &&
+    Number.isFinite(record.durationSeconds)
+  );
+};
+
+const sanitizeHistoryList = <T>(list: T[]): T[] => {
+  if (!list.length) return list;
+  const filtered = (list as unknown[]).filter(isHistoryRecord) as T[];
+  if (filtered.length !== list.length) {
+    console.warn('[Storage] Dropped invalid history records during save');
+  }
+  return filtered;
+};
+
 // ================= API =================
 
 /**
@@ -118,24 +235,12 @@ export async function storageGet(key: string): Promise<string | null> {
 
   if (isCloudAvailable()) {
     try {
-      return new Promise((resolve) => {
-        WebApp.CloudStorage.getItem(namespacedKey, (err, value) => {
-          if (err) {
-            console.warn('[Cloud] Get Error, falling back to local:', err);
-            const decrypted = decrypt(readLocal());
-            if (decrypted) {
-              storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
-            }
-            resolve(decrypted);
-          } else {
-            const decrypted = decrypt(value || '');
-            if (decrypted) {
-              storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
-            }
-            resolve(decrypted);
-          }
-        });
-      });
+      const value = await retryCloud(() => cloudGetItem(namespacedKey));
+      const decrypted = decrypt(value || '');
+      if (decrypted) {
+        storageCache.set(namespacedKey, { value: decrypted, timestamp: Date.now() });
+      }
+      return decrypted;
     } catch (e) {
       console.warn('[Cloud] Read failed, falling back to local', e);
     }
@@ -164,24 +269,26 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
   // OPTIMIZATION: Update cache immediately
   storageCache.set(namespacedKey, { value, timestamp: Date.now() });
 
+  let localOk = true;
   try {
     localStorage.setItem(namespacedKey, encrypted);
-  } catch { /* ignore quota errors */ }
-
-  if (isCloudAvailable()) {
-    return new Promise((resolve) => {
-      WebApp.CloudStorage.setItem(namespacedKey, encrypted, (err, stored) => {
-        if (err) {
-            console.error('[Cloud] Set Error:', err);
-            resolve(false);
-        } else {
-            resolve(stored || false);
-        }
-      });
-    });
+  } catch {
+    localOk = false;
   }
 
-  return true;
+  if (isCloudAvailable() && !isCloudWriteDisabled()) {
+    try {
+      const stored = await retryCloud(() => cloudSetItem(namespacedKey, encrypted));
+      clearCloudReadonly();
+      return localOk && stored;
+    } catch (e) {
+      console.error('[Cloud] Set Error:', e);
+      setCloudReadonly(e);
+      return localOk;
+    }
+  }
+
+  return localOk;
 }
 
 /**
@@ -194,18 +301,25 @@ export async function storageRemove(key: string): Promise<boolean> {
   // OPTIMIZATION: Remove from cache
   storageCache.delete(namespacedKey);
 
+  let localOk = true;
   try {
     localStorage.removeItem(namespacedKey);
-  } catch { /* ignore */ }
-  
-  if (isCloudAvailable()) {
-    return new Promise((resolve) => {
-      WebApp.CloudStorage.removeItem(namespacedKey, (err, deleted) => {
-         resolve(!err && (deleted || false));
-      });
-    });
+  } catch {
+    localOk = false;
   }
-  return true;
+  
+  if (isCloudAvailable() && !isCloudWriteDisabled()) {
+    try {
+      const deleted = await retryCloud(() => cloudRemoveItem(namespacedKey));
+      clearCloudReadonly();
+      return localOk && deleted;
+    } catch (e) {
+      console.error('[Cloud] Remove Error:', e);
+      setCloudReadonly(e);
+      return localOk;
+    }
+  }
+  return localOk;
 }
 
 /**
@@ -306,6 +420,8 @@ async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boole
   const meta = await storageGetJSON<HistoryMeta | null>(metaKey, null);
   const maxItems = HISTORY_MAX_CHUNKS * HISTORY_CHUNK_SIZE;
 
+  list = sanitizeHistoryList(list);
+
   // Warn and truncate if list exceeds maximum
   if (list.length > maxItems) {
     console.warn(
@@ -350,6 +466,53 @@ async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boole
   return success;
 }
 
+async function updateHistoryIncremental<T>(
+  baseKey: string,
+  newItem: T,
+  maxItems: number
+): Promise<T[]> {
+  const metaKey = getHistoryMetaKey(baseKey);
+  const meta = await storageGetJSON<HistoryMeta | null>(metaKey, null);
+  const maxAllowed = Math.min(maxItems, HISTORY_MAX_CHUNKS * HISTORY_CHUNK_SIZE);
+  const allowedChunks = Math.ceil(maxAllowed / HISTORY_CHUNK_SIZE);
+  let carry: T | null = newItem;
+  let index = 0;
+
+  while (carry && index < allowedChunks) {
+    const key = `${baseKey}_${index}`;
+    const rawChunk = await storageGetJSON<T[]>(key, []);
+    const chunk = sanitizeHistoryList(rawChunk);
+    const next = [carry, ...chunk];
+
+    if (next.length > HISTORY_CHUNK_SIZE) {
+      carry = next.pop() as T;
+    } else {
+      carry = null;
+    }
+
+    // Drop overflow beyond max allowed
+    if ((index + 1) * HISTORY_CHUNK_SIZE >= maxAllowed) {
+      carry = null;
+    }
+
+    await storageSetJSON(key, next);
+    index += 1;
+  }
+
+  const currentTotal = meta?.total ?? 0;
+  const newTotal = Math.min(currentTotal + 1, maxAllowed);
+  const newChunkCount = Math.min(Math.max(meta?.chunks ?? 0, index), allowedChunks);
+
+  await storageSetJSON(metaKey, {
+    chunks: newChunkCount,
+    total: newTotal,
+    updatedAt: new Date().toISOString(),
+  } satisfies HistoryMeta);
+
+  notifyHistoryUpdated(baseKey);
+  return getHistoryInternal<T>(baseKey);
+}
+
 /**
  * Обновление истории (добавление в начало)
  */
@@ -360,11 +523,11 @@ export async function storageUpdateHistory<T>(
 ): Promise<T[]> {
   return enqueueHistoryOp(key, async () => {
     try {
-      const currentList = await getHistoryInternal<T>(key);
-      // Добавляем в начало и обрезаем
-      const newList = [newItem, ...currentList].slice(0, maxItems);
-      await saveHistoryInternal(key, newList);
-      return newList;
+      if (!isHistoryRecord(newItem)) {
+        console.warn('[Storage] Ignoring invalid history record');
+        return getHistoryInternal<T>(key);
+      }
+      return updateHistoryIncremental<T>(key, newItem, maxItems);
     } catch (e) {
       console.error(`[Storage] Failed to update history for "${key}"`, e);
       return [];

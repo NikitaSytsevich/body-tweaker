@@ -5,6 +5,9 @@ import './index.css'
 import WebApp from '@twa-dev/sdk'
 import { Analytics } from '@vercel/analytics/react'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
+import { registerSW } from 'virtual:pwa-register'
+import { PWA_UPDATE_EVENT_NAME, PWA_OFFLINE_READY_EVENT_NAME } from './utils/pwa'
 
 // ============================================
 // TELEGRAM MINI APP INITIALIZATION
@@ -85,11 +88,25 @@ try {
   console.warn('[Telegram] WebApp initialization failed (running in standalone mode):', error);
 }
 
+if (typeof window !== 'undefined') {
+  const updateSW = registerSW({
+    onNeedRefresh() {
+      window.__btUpdateSW = updateSW;
+      window.dispatchEvent(new CustomEvent(PWA_UPDATE_EVENT_NAME));
+    },
+    onOfflineReady() {
+      window.dispatchEvent(new CustomEvent(PWA_OFFLINE_READY_EVENT_NAME));
+    },
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </ErrorBoundary>
     <Analytics />
   </React.StrictMode>,
 )

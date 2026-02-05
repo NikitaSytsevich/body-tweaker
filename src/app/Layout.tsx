@@ -4,8 +4,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, Timer, Wind, History, LineChart } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '../utils/cn';
-import { storageGet, storageSet } from '../utils/storage';
+import { storageGet, storageSet, STORAGE_READONLY_EVENT_NAME } from '../utils/storage';
 import WebApp from '@twa-dev/sdk';
+import { ToastNotification } from '../components/ui/ToastNotification';
+import { PWA_UPDATE_EVENT_NAME, PWA_OFFLINE_READY_EVENT_NAME } from '../utils/pwa';
 
 // OPTIMIZATION: Lazy load feature pages for smaller initial bundle
 const MetabolismMapPage = lazy(() => import('../features/fasting/MetabolismMapPage').then(m => ({ default: m.MetabolismMapPage })));
@@ -50,6 +52,11 @@ export const Layout = () => {
   const [mountedRoutes, setMountedRoutes] = useState<string[]>(() =>
     isMainRoute ? [currentPath] : ['/']
   );
+  const [isOffline, setIsOffline] = useState(() => (typeof navigator !== 'undefined' ? !navigator.onLine : false));
+  const [storageToast, setStorageToast] = useState({ title: '', message: '' });
+  const [showStorageToast, setShowStorageToast] = useState(false);
+  const [showPwaToast, setShowPwaToast] = useState(false);
+  const [showOfflineReadyToast, setShowOfflineReadyToast] = useState(false);
   
   const xPx = useMotionValue(0);
   const dragBaseRef = useRef<number | null>(null);
@@ -181,6 +188,48 @@ export const Layout = () => {
         checkUser();
 
     } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const updateOnlineStatus = () => setIsOffline(!navigator.onLine);
+    updateOnlineStatus();
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleStorageReadonly = (event: Event) => {
+      const detail = (event as CustomEvent<{ reason?: string }>).detail;
+      setStorageToast({
+        title: 'Облачное хранилище недоступно',
+        message: detail?.reason
+          ? `Данные сохраняются локально. ${detail.reason}`
+          : 'Данные сохраняются локально. Синхронизацию восстановим автоматически.'
+      });
+      setShowStorageToast(true);
+    };
+    window.addEventListener(STORAGE_READONLY_EVENT_NAME, handleStorageReadonly);
+    return () => {
+      window.removeEventListener(STORAGE_READONLY_EVENT_NAME, handleStorageReadonly);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePwaUpdate = () => setShowPwaToast(true);
+    const handleOfflineReady = () => setShowOfflineReadyToast(true);
+    window.addEventListener(PWA_UPDATE_EVENT_NAME, handlePwaUpdate);
+    window.addEventListener(PWA_OFFLINE_READY_EVENT_NAME, handleOfflineReady);
+    return () => {
+      window.removeEventListener(PWA_UPDATE_EVENT_NAME, handlePwaUpdate);
+      window.removeEventListener(PWA_OFFLINE_READY_EVENT_NAME, handleOfflineReady);
+    };
   }, []);
 
   useEffect(() => {
@@ -362,6 +411,36 @@ export const Layout = () => {
         )}
 
       </div>
+
+      {isOffline && (
+        <div className="fixed top-[calc(var(--app-top-offset)+8px)] left-4 right-4 z-[10000] flex justify-center pointer-events-none">
+          <div className="pointer-events-auto rounded-full px-4 py-2 bg-amber-500 text-white text-xs font-semibold shadow-lg">
+            Нет сети. Работаем оффлайн.
+          </div>
+        </div>
+      )}
+
+      <ToastNotification
+        isVisible={showStorageToast}
+        title={storageToast.title}
+        message={storageToast.message}
+        onClose={() => setShowStorageToast(false)}
+      />
+
+      <ToastNotification
+        isVisible={showPwaToast}
+        title="Доступна новая версия"
+        message="Нажмите, чтобы обновить приложение."
+        onClose={() => setShowPwaToast(false)}
+        onPress={() => window.__btUpdateSW?.(true)}
+      />
+
+      <ToastNotification
+        isVisible={showOfflineReadyToast}
+        title="Готово к работе оффлайн"
+        message="Приложение закэшировано и доступно без сети."
+        onClose={() => setShowOfflineReadyToast(false)}
+      />
     </div>
   );
 };

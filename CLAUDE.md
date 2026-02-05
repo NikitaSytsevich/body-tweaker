@@ -15,6 +15,7 @@ npm run lint           # ESLint
 npm run preview        # Preview production build
 npm run generate-icons # Generate PWA icons
 npm run audit          # Generate audit files (scripts/generate-audit.js)
+npm run test           # Run unit tests (vitest)
 ```
 
 ## Routes and Navigation

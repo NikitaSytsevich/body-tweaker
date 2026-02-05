@@ -94,6 +94,8 @@ export const HistoryPage = () => {
   // Calendar State
   const [currentDate, setCurrentDate] = useState(dayjs()); 
   const [selectedDate, setSelectedDate] = useState(dayjs()); 
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Modals
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
@@ -164,6 +166,15 @@ export const HistoryPage = () => {
           dayjs(r.endTime).isSame(selectedDate, 'day')
       );
   }, [filteredRecords, selectedDate]);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [selectedDate, activeTab, PAGE_SIZE]);
+
+  const visibleRecords = useMemo(
+    () => recordsForSelectedDate.slice(0, visibleCount),
+    [recordsForSelectedDate, visibleCount]
+  );
 
   const emptyContext = useMemo(() => (
     activeTab === 'fasting' ? 'fasting' : 'breathing'
@@ -322,7 +333,7 @@ export const HistoryPage = () => {
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {recordsForSelectedDate.map(record => {
+                    {visibleRecords.map(record => {
                         const isFasting = record.type === 'fasting';
                         const hours = Math.floor(record.durationSeconds / 3600);
                         const minutes = Math.floor((record.durationSeconds % 3600) / 60);
@@ -402,6 +413,14 @@ export const HistoryPage = () => {
                             </div>
                         );
                     })}
+                    {recordsForSelectedDate.length > visibleCount && (
+                      <button
+                        onClick={() => setVisibleCount((count) => Math.min(count + PAGE_SIZE, recordsForSelectedDate.length))}
+                        className="w-full py-3 rounded-2xl border border-[color:var(--tg-border)] text-xs font-bold uppercase tracking-widest text-[color:var(--tg-muted)] hover:bg-[color:var(--tg-glass)] transition-colors"
+                      >
+                        Показать ещё
+                      </button>
+                    )}
                 </div>
             )}
         </div>
