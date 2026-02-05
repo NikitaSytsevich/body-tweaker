@@ -5,7 +5,7 @@ import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
 import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
 import WebApp from '@twa-dev/sdk';
-import { AnimatedEmoji } from '../components/ui/AnimatedEmoji';
+import { TelegramSticker } from '../components/ui/TelegramSticker';
 
 interface Props {
   onComplete: () => void;
@@ -86,7 +86,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             className="flex-1 flex flex-col items-center justify-center text-center"
           >
             <div className="relative mb-10">
-              <AnimatedEmoji name="sparkles" size={220} fallback="✨" className="mx-auto" />
+              <TelegramSticker context="generic" size={220} fallback="✨" className="mx-auto" />
             </div>
 
             {/* Заголовок и описание */}

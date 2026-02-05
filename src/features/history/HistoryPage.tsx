@@ -19,8 +19,7 @@ import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { HistorySkeleton } from './components/HistorySkeleton';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
-import { AnimatedEmoji } from '../../components/ui/AnimatedEmoji';
-import { getRandomTelegramEmoji } from '../../utils/emoji';
+import { TelegramSticker } from '../../components/ui/TelegramSticker';
 
 // Utils
 import { storageGetHistory, storageSaveHistory, HISTORY_UPDATED_EVENT_NAME } from '../../utils/storage';
@@ -166,10 +165,9 @@ export const HistoryPage = () => {
       );
   }, [filteredRecords, selectedDate]);
 
-  const emptyEmoji = useMemo(() => {
-    const context = activeTab === 'fasting' ? 'fasting' : 'breathing';
-    return getRandomTelegramEmoji(context);
-  }, [activeTab, selectedDate.valueOf()]);
+  const emptyContext = useMemo(() => (
+    activeTab === 'fasting' ? 'fasting' : 'breathing'
+  ), [activeTab]);
 
 
   // ACTIONS
@@ -319,7 +317,7 @@ export const HistoryPage = () => {
                 <HistorySkeleton />
             ) : recordsForSelectedDate.length === 0 ? (
                 <div className="text-center py-10 border-2 border-dashed border-[color:var(--tg-border)] rounded-2xl bg-[color:var(--tg-glass)]">
-                    <AnimatedEmoji name={emptyEmoji} size={120} fallback="✨" className="mx-auto mb-2" />
+                    <TelegramSticker context={emptyContext} size={120} fallback="✨" className="mx-auto mb-2" />
                     <p className="text-sm font-medium app-muted">Нет активности</p>
                 </div>
             ) : (

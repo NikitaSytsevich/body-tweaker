@@ -3,7 +3,8 @@ import lottie, { type AnimationItem } from 'lottie-web';
 import pako from 'pako';
 
 interface AnimatedEmojiProps {
-  name: string;
+  name?: string;
+  src?: string;
   size?: number;
   className?: string;
   fallback?: string;
@@ -17,6 +18,7 @@ const prefersReducedMotion = () =>
 
 export const AnimatedEmoji = ({
   name,
+  src: overrideSrc,
   size = 160,
   className,
   fallback = '✨',
@@ -27,10 +29,18 @@ export const AnimatedEmoji = ({
   const animationRef = useRef<AnimationItem | null>(null);
   const [useFallback, setUseFallback] = useState(false);
 
-  const src = useMemo(() => `/emoji/${name}.tgs`, [name]);
+  const src = useMemo(() => {
+    if (overrideSrc) return overrideSrc;
+    if (name) return `/emoji/${name}.tgs`;
+    return '';
+  }, [overrideSrc, name]);
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (!src) {
+      setUseFallback(true);
+      return;
+    }
     if (prefersReducedMotion()) {
       setUseFallback(true);
       return;
