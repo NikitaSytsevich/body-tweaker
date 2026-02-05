@@ -1,7 +1,7 @@
 // src/app/Layout.tsx
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, memo, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BookOpen, Timer, Wind, History } from 'lucide-react';
+import { BookOpen, Timer, Wind, History, LineChart } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '../utils/cn';
 import { storageGet, storageSet } from '../utils/storage';
@@ -11,6 +11,7 @@ import WebApp from '@twa-dev/sdk';
 const MetabolismMapPage = lazy(() => import('../features/fasting/MetabolismMapPage').then(m => ({ default: m.MetabolismMapPage })));
 const FastingPage = lazy(() => import('../features/fasting/FastingPage').then(m => ({ default: m.FastingPage })));
 const BreathingPage = lazy(() => import('../features/breathing/BreathingPage').then(m => ({ default: m.BreathingPage })));
+const BiorhythmPage = lazy(() => import('../features/biorhythm/BiorhythmPage').then(m => ({ default: m.BiorhythmPage })));
 const HistoryPage = lazy(() => import('../features/history/HistoryPage').then(m => ({ default: m.HistoryPage })));
 // ArticleDetailPage stays eager as it's rarely used but needs instant load
 import { ArticleDetailPage } from '../features/articles/pages/ArticleDetailPage';
@@ -35,7 +36,7 @@ const PageView = memo(({ isActive, children }: { isActive: boolean, children: Re
 });
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-const MAIN_ROUTES = ['/', '/timer', '/breathing', '/history'];
+const MAIN_ROUTES = ['/', '/timer', '/breathing', '/biorhythm', '/history'];
 const normalizePath = (path: string) => (path === '' ? '/' : path);
 
 export const Layout = () => {
@@ -57,6 +58,7 @@ export const Layout = () => {
     { id: 'knowledge', path: '/', icon: BookOpen, label: 'Знания' },
     { id: 'timer', path: '/timer', icon: Timer, label: 'Таймер' },
     { id: 'breath', path: '/breathing', icon: Wind, label: 'Дыхание' },
+    { id: 'biorhythm', path: '/biorhythm', icon: LineChart, label: 'Биоритмы' },
     { id: 'history', path: '/history', icon: History, label: 'История' },
   ]), []);
 
@@ -260,6 +262,11 @@ export const Layout = () => {
             {shouldRender('/breathing') && (
               <PageView isActive={!isArticleDetail && currentPath === '/breathing'}>
                   <BreathingPage />
+              </PageView>
+            )}
+            {shouldRender('/biorhythm') && (
+              <PageView isActive={!isArticleDetail && currentPath === '/biorhythm'}>
+                  <BiorhythmPage />
               </PageView>
             )}
             {shouldRender('/history') && (

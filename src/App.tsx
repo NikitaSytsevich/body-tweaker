@@ -12,7 +12,6 @@ import {
   LegalSettingsPage,
   AboutSettingsPage,
 } from './app/settings';
-import { ArticleDetailPage } from './features/articles/pages/ArticleDetailPage';
 import { storageGet } from './utils/storage';
 
 // Контейнер для профильных страниц с правильной высотой
@@ -49,6 +48,7 @@ function App() {
           <Route path="/" element={<Layout />} />
           <Route path="/timer" element={<Layout />} />
           <Route path="/breathing" element={<Layout />} />
+          <Route path="/biorhythm" element={<Layout />} />
           <Route path="/history" element={<Layout />} />
           <Route path="/profile" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
           <Route path="/profile/settings" element={<Navigate to="/profile" replace />} />
@@ -58,7 +58,7 @@ function App() {
           <Route path="/profile/settings/legal" element={<ProfileLayout><LegalSettingsPage /></ProfileLayout>} />
           <Route path="/profile/settings/about" element={<ProfileLayout><AboutSettingsPage /></ProfileLayout>} />
           <Route path="/profile/about" element={<Navigate to="/profile/settings/about" replace />} />
-          <Route path="/articles/:slug" element={<ArticleDetailPage />} />
+          <Route path="/articles/:slug" element={<Layout />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -22,13 +22,18 @@ export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) =>
 
   if (!record) return null;
 
-  const durationSeconds = dayjs(editedEnd).diff(dayjs(editedStart), 'second');
+  const rawDurationSeconds = dayjs(editedEnd).diff(dayjs(editedStart), 'second');
+  const durationSeconds = Math.max(rawDurationSeconds, 0);
   const hours = Math.floor(durationSeconds / 3600);
   const minutes = Math.floor((durationSeconds % 3600) / 60);
   
   const passedPhases = FASTING_PHASES.filter(p => (durationSeconds / 3600) >= p.hoursStart);
 
   const handleSave = () => {
+    if (rawDurationSeconds <= 0) {
+      alert('Время окончания должно быть позже времени начала');
+      return;
+    }
     onUpdate({
         ...record,
         startTime: editedStart,

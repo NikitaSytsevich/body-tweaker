@@ -4,7 +4,7 @@ import { SettingsShell } from './SettingsShell';
 import { SettingsSection, SettingsGroup, SettingsRow } from '../../components/ui/SettingsList';
 import { ConfirmModal } from '../../components/ui/ConfirmModal';
 import { ToastNotification } from '../../components/ui/ToastNotification';
-import { storageGet, storageRemove, storageGetJSON, storageSetJSON, storageSet } from '../../utils/storage';
+import { storageGet, storageRemove, storageGetJSON, storageSetJSON, storageSet, storageGetHistory, storageSaveHistory } from '../../utils/storage';
 
 export const DataSettingsPage = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -18,6 +18,7 @@ export const DataSettingsPage = () => {
   const confirmReset = async () => {
     setIsProcessing(true);
     try {
+      await storageSaveHistory('history_fasting', []);
       await Promise.all([
         storageRemove('history_fasting'),
         storageRemove('fasting_startTime'),
@@ -25,6 +26,8 @@ export const DataSettingsPage = () => {
         storageRemove('user_name'),
         storageRemove('has_accepted_terms'),
         storageRemove('legal_acceptance_v1'),
+        storageRemove('theme_mode'),
+        storageRemove('bio_birthDate'),
       ]);
       window.location.reload();
     } catch (e) {
@@ -36,13 +39,15 @@ export const DataSettingsPage = () => {
   const handleExport = async () => {
     setIsProcessing(true);
     try {
-      const [history, startTime, scheme, userName, terms, legalAcceptance] = await Promise.all([
-        storageGetJSON('history_fasting', []),
+      const [history, startTime, scheme, userName, terms, legalAcceptance, themeMode, bioBirthDate] = await Promise.all([
+        storageGetHistory('history_fasting'),
         storageGet('fasting_startTime'),
         storageGet('fasting_scheme'),
         storageGet('user_name'),
         storageGet('has_accepted_terms'),
         storageGetJSON('legal_acceptance_v1', null),
+        storageGet('theme_mode'),
+        storageGetJSON('bio_birthDate', null),
       ]);
 
       const backupData = {
@@ -55,6 +60,8 @@ export const DataSettingsPage = () => {
           user_name: userName,
           has_accepted_terms: terms,
           legal_acceptance_v1: legalAcceptance,
+          theme_mode: themeMode,
+          bio_birthDate: bioBirthDate,
         },
       };
 
@@ -93,10 +100,17 @@ export const DataSettingsPage = () => {
         const { data } = parsed;
 
         const promises = [];
-        if (data.history_fasting) promises.push(storageSetJSON('history_fasting', data.history_fasting));
+        if (Array.isArray(data.history_fasting)) {
+          await storageRemove('history_fasting');
+          await storageSaveHistory('history_fasting', data.history_fasting);
+        }
         if (data.fasting_startTime) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
         if (data.fasting_scheme) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
+        if (data.user_name) promises.push(storageSet('user_name', data.user_name));
+        if (data.has_accepted_terms) promises.push(storageSet('has_accepted_terms', data.has_accepted_terms));
         if (data.legal_acceptance_v1) promises.push(storageSetJSON('legal_acceptance_v1', data.legal_acceptance_v1));
+        if (data.theme_mode) promises.push(storageSet('theme_mode', data.theme_mode));
+        if (data.bio_birthDate) promises.push(storageSetJSON('bio_birthDate', data.bio_birthDate));
 
         await Promise.all(promises);
         window.location.reload();
