@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { AnimatedEmoji } from './AnimatedEmoji';
 import {
   type EmojiContext,
+  allowAllForContext,
   getRandomLocalStickerName,
   getSafeEmojiQuery,
+  getStickerConfig,
 } from '../../utils/emoji';
 
 interface TelegramStickerProps {
@@ -13,17 +15,18 @@ interface TelegramStickerProps {
   fallback?: string;
   loop?: boolean;
   autoplay?: boolean;
+  set?: string;
+  emoji?: string;
+  allowAll?: boolean;
 }
 
 type StickerItem = { file_id: string; emoji?: string };
 
 const CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
-const getCacheKey = (context: EmojiContext) => `bt_tg_stickers_${context}`;
-
-const readCache = (context: EmojiContext): StickerItem[] | null => {
+const readCache = (cacheKey: string): StickerItem[] | null => {
   try {
-    const raw = sessionStorage.getItem(getCacheKey(context));
+    const raw = sessionStorage.getItem(cacheKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as { timestamp: number; stickers: StickerItem[] };
     if (!parsed?.timestamp || !parsed.stickers) return null;
@@ -34,10 +37,10 @@ const readCache = (context: EmojiContext): StickerItem[] | null => {
   }
 };
 
-const writeCache = (context: EmojiContext, stickers: StickerItem[]) => {
+const writeCache = (cacheKey: string, stickers: StickerItem[]) => {
   try {
     sessionStorage.setItem(
-      getCacheKey(context),
+      cacheKey,
       JSON.stringify({ timestamp: Date.now(), stickers })
     );
   } catch {
@@ -52,26 +55,41 @@ export const TelegramSticker = ({
   fallback = '✨',
   loop = true,
   autoplay = true,
+  set,
+  emoji,
+  allowAll,
 }: TelegramStickerProps) => {
   const [stickerSrc, setStickerSrc] = useState<string | null>(null);
   const [useLocalFallback, setUseLocalFallback] = useState(false);
 
   const fallbackName = useMemo(() => getRandomLocalStickerName(context), [context]);
+  const resolvedSet = useMemo(() => set || getStickerConfig(context).set, [context, set]);
+  const resolvedEmoji = useMemo(() => emoji ?? getSafeEmojiQuery(context), [context, emoji]);
+  const resolvedAllowAll = useMemo(() => (
+    allowAll ?? allowAllForContext(context)
+  ), [allowAll, context]);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        const cached = readCache(context);
+        const cacheKey = `bt_tg_stickers_${context}_${resolvedSet}_${resolvedEmoji}_${resolvedAllowAll ? 'all' : 'filter'}`;
+        const cached = readCache(cacheKey);
         let stickers = cached ?? [];
 
         if (!stickers.length) {
-          const emojiQuery = getSafeEmojiQuery(context);
-          const res = await fetch(`/api/stickers?emoji=${encodeURIComponent(emojiQuery)}`);
+          const params = new URLSearchParams();
+          params.set('set', resolvedSet);
+          if (resolvedAllowAll) {
+            params.set('all', '1');
+          } else if (resolvedEmoji) {
+            params.set('emoji', resolvedEmoji);
+          }
+          const res = await fetch(`/api/stickers?${params.toString()}`);
           if (!res.ok) throw new Error('Sticker list failed');
           const json = await res.json();
           stickers = Array.isArray(json.stickers) ? json.stickers : [];
-          if (stickers.length) writeCache(context, stickers);
+          if (stickers.length) writeCache(cacheKey, stickers);
         }
 
         if (!stickers.length) throw new Error('No stickers');
@@ -87,7 +105,7 @@ export const TelegramSticker = ({
     return () => {
       cancelled = true;
     };
-  }, [context]);
+  }, [context, resolvedAllowAll, resolvedEmoji, resolvedSet]);
 
   if (useLocalFallback) {
     return (

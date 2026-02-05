@@ -86,7 +86,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             className="flex-1 flex flex-col items-center justify-center text-center"
           >
             <div className="relative mb-10">
-              <TelegramSticker context="generic" size={220} fallback="✨" className="mx-auto" />
+              <TelegramSticker context="welcome" size={220} fallback="✨" className="mx-auto" />
             </div>
 
             {/* Заголовок и описание */}

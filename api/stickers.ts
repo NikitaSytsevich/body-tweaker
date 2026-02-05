@@ -2,7 +2,16 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const DEFAULT_SET = process.env.TELEGRAM_STICKER_SET || 'animatedemojies';
-const DEFAULT_SAFE_EMOJI = '✨,🔥,🚀,🏆,🌬️,✅,📘';
+const DEFAULT_ALLOWED_SETS = [
+  'animatedemojies',
+  'fullduck',
+];
+const ALLOWED_SETS = (process.env.TELEGRAM_STICKER_SETS_ALLOWLIST || DEFAULT_ALLOWED_SETS.join(','))
+  .split(',')
+  .map((setName) => setName.trim())
+  .filter(Boolean);
+const ALLOW_ALL_SETS = new Set(['fullduck']);
+const DEFAULT_SAFE_EMOJI = '✨,🔥,🚀,🏆,🌬️,✅,📘,👋,😊,🎉';
 const SAFE_EMOJI = (process.env.TELEGRAM_SAFE_EMOJI || DEFAULT_SAFE_EMOJI)
   .split(',')
   .map((e) => e.trim())
@@ -21,15 +30,17 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return response.status(500).json({ ok: false, error: 'BOT token missing' });
   }
 
-  const setName = typeof request.query.set === 'string' ? request.query.set : DEFAULT_SET;
+  const setParam = typeof request.query.set === 'string' ? request.query.set : DEFAULT_SET;
+  const setName = ALLOWED_SETS.includes(setParam) ? setParam : DEFAULT_SET;
+  const allowAll = request.query.all === '1' && ALLOW_ALL_SETS.has(setName);
   const emojiQuery = typeof request.query.emoji === 'string' ? request.query.emoji : '';
   const requested = emojiQuery
     ? emojiQuery.split(',').map((e) => decodeURIComponent(e).trim()).filter(Boolean)
     : [];
   const safeRequested = requested.filter((emoji) => SAFE_EMOJI.includes(emoji));
-  const emojiFilter = safeRequested.length ? safeRequested : SAFE_EMOJI;
+  const emojiFilter = allowAll ? [] : (safeRequested.length ? safeRequested : SAFE_EMOJI);
 
-  const cacheKey = `${setName}|${emojiFilter.join(',')}`;
+  const cacheKey = `${setName}|${allowAll ? 'all' : emojiFilter.join(',')}`;
   const now = Date.now();
   if (cached && cached.key === cacheKey && cached.expires > now) {
     response.setHeader('Cache-Control', 'public, max-age=300');
@@ -48,6 +59,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const stickers = (payload.result?.stickers || [])
       .filter((sticker: any) => sticker?.is_animated)
       .filter((sticker: any) => {
+        if (allowAll) return true;
         if (!emojiFilter.length) return true;
         return sticker?.emoji && emojiFilter.includes(sticker.emoji);
       })
