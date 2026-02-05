@@ -23,9 +23,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   const setName = typeof request.query.set === 'string' ? request.query.set : DEFAULT_SET;
   const emojiQuery = typeof request.query.emoji === 'string' ? request.query.emoji : '';
-  const emojiFilter = emojiQuery
+  const requested = emojiQuery
     ? emojiQuery.split(',').map((e) => decodeURIComponent(e).trim()).filter(Boolean)
-    : SAFE_EMOJI;
+    : [];
+  const safeRequested = requested.filter((emoji) => SAFE_EMOJI.includes(emoji));
+  const emojiFilter = safeRequested.length ? safeRequested : SAFE_EMOJI;
 
   const cacheKey = `${setName}|${emojiFilter.join(',')}`;
   const now = Date.now();
