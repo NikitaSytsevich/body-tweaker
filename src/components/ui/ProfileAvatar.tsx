@@ -76,6 +76,7 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
   const hasMounted = useRef(false);
   const retryCount = useRef(0);
   const [retryKey, setRetryKey] = useState(0);
+  const retryTimeouts = useRef<number[]>([]);
 
   const initials = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : '?';
 
@@ -139,6 +140,13 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
     };
   }, [refreshData]);
 
+  useEffect(() => {
+    return () => {
+      retryTimeouts.current.forEach((id) => clearTimeout(id));
+      retryTimeouts.current = [];
+    };
+  }, []);
+
   // Сбрасываем ошибку когда photoUrl меняется
   useEffect(() => {
     if (userData.photoUrl && userData.photoUrl !== globalAvatarCache?.photoUrl) {
@@ -200,10 +208,12 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
             if (retryCount.current < 2) {
               retryCount.current += 1;
               const delay = 600 * retryCount.current;
-              window.setTimeout(() => {
+              const id = window.setTimeout(() => {
+                if (!hasMounted.current) return;
                 setImageError(false);
                 setRetryKey((prev) => prev + 1);
               }, delay);
+              retryTimeouts.current.push(id);
             }
           }}
           onLoad={(e) => {

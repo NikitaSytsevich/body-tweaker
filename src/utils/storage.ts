@@ -41,6 +41,16 @@ type HistoryMeta = {
 
 export const HISTORY_UPDATED_EVENT_NAME = HISTORY_UPDATED_EVENT;
 
+// History operations queue to prevent concurrent read-modify-write races
+const historyQueue = new Map<string, Promise<unknown>>();
+
+const enqueueHistoryOp = <T>(key: string, task: () => Promise<T>): Promise<T> => {
+  const previous = historyQueue.get(key) ?? Promise.resolve();
+  const next = previous.then(task, task);
+  historyQueue.set(key, next.catch(() => {}));
+  return next;
+};
+
 const notifyHistoryUpdated = (baseKey: string) => {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new CustomEvent(HISTORY_UPDATED_EVENT, { detail: { key: baseKey } }));
@@ -221,14 +231,35 @@ export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
   const legacyData = await storageGetJSON<T[] | null>(baseKey, null);
   if (legacyData && Array.isArray(legacyData) && legacyData.length > 0) {
     console.log('[Storage] Migrating legacy history to chunks...');
-    await storageSaveHistory(baseKey, legacyData);
+    await saveHistoryInternal(baseKey, legacyData);
     await storageRemove(baseKey);
     return legacyData;
   }
 
   // 2. Чтение чанков
   const meta = await storageGetJSON<HistoryMeta | null>(getHistoryMetaKey(baseKey), null);
-  if (meta && meta.chunks === 0) return [];
+  if (!meta) {
+    const recovered: T[] = [];
+    let chunksFound = 0;
+    for (let i = 0; i < HISTORY_MAX_CHUNKS; i++) {
+      const chunk = await storageGetJSON<T[]>(`${baseKey}_${i}`, []);
+      if (!chunk.length) break;
+      chunksFound += 1;
+      recovered.push(...chunk);
+    }
+
+    if (recovered.length > 0) {
+      await storageSetJSON(getHistoryMetaKey(baseKey), {
+        chunks: Math.min(chunksFound, HISTORY_MAX_CHUNKS),
+        total: recovered.length,
+        updatedAt: new Date().toISOString(),
+      } satisfies HistoryMeta);
+      notifyHistoryUpdated(baseKey);
+    }
+    return recovered;
+  }
+
+  if (meta.chunks === 0) return [];
   const chunkCount = meta?.chunks && meta.chunks > 0
     ? Math.min(meta.chunks, HISTORY_MAX_CHUNKS)
     : HISTORY_MAX_CHUNKS;
@@ -249,6 +280,10 @@ export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
  * Строго соблюдает лимит HISTORY_MAX_CHUNKS
  */
 export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise<boolean> {
+  return enqueueHistoryOp(baseKey, () => saveHistoryInternal(baseKey, list));
+}
+
+async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boolean> {
   const maxItems = HISTORY_MAX_CHUNKS * HISTORY_CHUNK_SIZE;
 
   // Warn and truncate if list exceeds maximum
@@ -298,14 +333,16 @@ export async function storageUpdateHistory<T>(
   newItem: T, 
   maxItems: number = 1000
 ): Promise<T[]> {
-  try {
-    const currentList = await storageGetHistory<T>(key);
-    // Добавляем в начало и обрезаем
-    const newList = [newItem, ...currentList].slice(0, maxItems);
-    await storageSaveHistory(key, newList);
-    return newList;
-  } catch (e) {
-    console.error(`[Storage] Failed to update history for "${key}"`, e);
-    return [];
-  }
+  return enqueueHistoryOp(key, async () => {
+    try {
+      const currentList = await storageGetHistory<T>(key);
+      // Добавляем в начало и обрезаем
+      const newList = [newItem, ...currentList].slice(0, maxItems);
+      await saveHistoryInternal(key, newList);
+      return newList;
+    } catch (e) {
+      console.error(`[Storage] Failed to update history for "${key}"`, e);
+      return [];
+    }
+  });
 }

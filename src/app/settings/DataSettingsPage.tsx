@@ -12,6 +12,7 @@ export const DataSettingsPage = () => {
   const [toastMessage, setToastMessage] = useState({ title: '', message: '' });
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const MAX_BACKUP_SIZE = 5 * 1024 * 1024; // 5MB safety limit
 
   const handleReset = () => setShowResetConfirm(true);
 
@@ -89,6 +90,15 @@ export const DataSettingsPage = () => {
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_BACKUP_SIZE) {
+      alert('Файл слишком большой. Пожалуйста, выберите другой бэкап.');
+      event.target.value = '';
+      return;
+    }
+
+    const isObject = (value: unknown): value is Record<string, unknown> =>
+      Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+    const isString = (value: unknown): value is string => typeof value === 'string';
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -96,7 +106,9 @@ export const DataSettingsPage = () => {
       try {
         const content = e.target?.result as string;
         const parsed = JSON.parse(content);
-        if (!parsed.data) throw new Error('Invalid backup');
+        if (!isObject(parsed) || (parsed.version != null && parsed.version !== 1) || !isObject(parsed.data)) {
+          throw new Error('Invalid backup');
+        }
         const { data } = parsed;
 
         const promises = [];
@@ -104,13 +116,16 @@ export const DataSettingsPage = () => {
           await storageRemove('history_fasting');
           await storageSaveHistory('history_fasting', data.history_fasting);
         }
-        if (data.fasting_startTime) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
-        if (data.fasting_scheme) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
-        if (data.user_name) promises.push(storageSet('user_name', data.user_name));
-        if (data.has_accepted_terms) promises.push(storageSet('has_accepted_terms', data.has_accepted_terms));
-        if (data.legal_acceptance_v1) promises.push(storageSetJSON('legal_acceptance_v1', data.legal_acceptance_v1));
-        if (data.theme_mode) promises.push(storageSet('theme_mode', data.theme_mode));
-        if (data.bio_birthDate) promises.push(storageSetJSON('bio_birthDate', data.bio_birthDate));
+        if (isString(data.fasting_startTime)) promises.push(storageSet('fasting_startTime', data.fasting_startTime));
+        if (isString(data.fasting_scheme)) promises.push(storageSet('fasting_scheme', data.fasting_scheme));
+        if (isString(data.user_name)) promises.push(storageSet('user_name', data.user_name));
+        if (data.has_accepted_terms === true) promises.push(storageSet('has_accepted_terms', 'true'));
+        if (isString(data.has_accepted_terms)) promises.push(storageSet('has_accepted_terms', data.has_accepted_terms));
+        if (isObject(data.legal_acceptance_v1)) promises.push(storageSetJSON('legal_acceptance_v1', data.legal_acceptance_v1));
+        if (isString(data.theme_mode) && ['light', 'dark', 'auto'].includes(data.theme_mode)) {
+          promises.push(storageSet('theme_mode', data.theme_mode));
+        }
+        if (isString(data.bio_birthDate)) promises.push(storageSetJSON('bio_birthDate', data.bio_birthDate));
 
         await Promise.all(promises);
         window.location.reload();
