@@ -4,7 +4,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './app/Layout';
 import { WelcomeScreen } from './app/WelcomeScreen';
 import { TimerProvider } from './features/fasting/context/TimerContext';
-import { ProfilePage, SettingsSubPage, AboutSubPage } from './app/ProfilePage';
+import { ProfilePage } from './app/ProfilePage';
+import {
+  AppearanceSettingsPage,
+  AppSettingsPage,
+  DataSettingsPage,
+  LegalSettingsPage,
+  AboutSettingsPage,
+} from './app/settings';
 import { ArticleDetailPage } from './features/articles/pages/ArticleDetailPage';
 import { storageGet } from './utils/storage';
 
@@ -44,8 +51,13 @@ function App() {
           <Route path="/breathing" element={<Layout />} />
           <Route path="/history" element={<Layout />} />
           <Route path="/profile" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
-          <Route path="/profile/settings" element={<ProfileLayout><SettingsSubPage /></ProfileLayout>} />
-          <Route path="/profile/about" element={<ProfileLayout><AboutSubPage /></ProfileLayout>} />
+          <Route path="/profile/settings" element={<Navigate to="/profile" replace />} />
+          <Route path="/profile/settings/appearance" element={<ProfileLayout><AppearanceSettingsPage /></ProfileLayout>} />
+          <Route path="/profile/settings/app" element={<ProfileLayout><AppSettingsPage /></ProfileLayout>} />
+          <Route path="/profile/settings/data" element={<ProfileLayout><DataSettingsPage /></ProfileLayout>} />
+          <Route path="/profile/settings/legal" element={<ProfileLayout><LegalSettingsPage /></ProfileLayout>} />
+          <Route path="/profile/settings/about" element={<ProfileLayout><AboutSettingsPage /></ProfileLayout>} />
+          <Route path="/profile/about" element={<Navigate to="/profile/settings/about" replace />} />
           <Route path="/articles/:slug" element={<ArticleDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
