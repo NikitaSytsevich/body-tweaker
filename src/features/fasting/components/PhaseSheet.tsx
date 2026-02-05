@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'; // 👈 Импорт Портала
 import { X, Activity, AlertTriangle, Lightbulb, Thermometer } from 'lucide-react';
+import { getPhaseBgClasses, getPhaseTextClasses } from '../data/stages';
 import type { FastingStage } from '../data/stages';
 import { cn } from '../../../utils/cn';
 
@@ -10,6 +11,8 @@ interface Props {
 
 export const PhaseSheet = ({ phase, onClose }: Props) => {
   if (!phase) return null;
+  const iconBgClass = getPhaseBgClasses(phase);
+  const iconTextClass = getPhaseTextClasses(phase);
 
   // Контент модалки
   const content = (
@@ -38,9 +41,9 @@ export const PhaseSheet = ({ phase, onClose }: Props) => {
               <div className="text-center mb-6 px-4">
                 <div className={cn(
                     "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-3 shadow-lg",
-                    phase.color.replace('text-', 'bg-').replace('600', '100')
+                    iconBgClass
                 )}>
-                    <phase.icon className={cn("w-8 h-8", phase.color)} />
+                    <phase.icon className={cn("w-8 h-8", iconTextClass)} />
                 </div>
                 <h2 className="text-2xl font-black app-header leading-tight">
                     {phase.title}

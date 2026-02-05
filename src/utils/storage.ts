@@ -28,6 +28,7 @@ const CACHE_TTL = 5000; // 5 seconds
 const HISTORY_CHUNK_SIZE = 8;
 const HISTORY_MAX_CHUNKS = 125; // Поддержка до 1000 записей (125 * 8 = 1000)
 const HISTORY_META_SUFFIX = '__meta';
+const HISTORY_UPDATED_EVENT = 'bt:history-updated';
 
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
 const getHistoryMetaKey = (baseKey: string) => `${baseKey}${HISTORY_META_SUFFIX}`;
@@ -36,6 +37,13 @@ type HistoryMeta = {
   chunks: number;
   total: number;
   updatedAt: string;
+};
+
+export const HISTORY_UPDATED_EVENT_NAME = HISTORY_UPDATED_EVENT;
+
+const notifyHistoryUpdated = (baseKey: string) => {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(HISTORY_UPDATED_EVENT, { detail: { key: baseKey } }));
 };
 
 // Проверка: доступны ли облачные функции (Telegram Environment)
@@ -278,6 +286,7 @@ export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise
       updatedAt: new Date().toISOString(),
     } satisfies HistoryMeta);
   }
+  notifyHistoryUpdated(baseKey);
   return success;
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, Play, Clock, Activity, ChevronDown, Zap, PartyPopper } from 'lucide-react';
 import { FASTING_SCHEMES } from '../data/schemes';
-import { FASTING_PHASES } from '../data/stages';
+import { FASTING_PHASES, getPhaseAccentTextClasses } from '../data/stages';
 import { cn } from '../../../utils/cn';
 
 interface Props {
@@ -110,7 +110,7 @@ export const ProtocolDetails = ({ schemeId, onBack, onStart }: Props) => {
 
             {relevantPhases.map((phase, index) => {
               const isExpanded = expandedPhaseId === phase.id;
-              const iconColorClass = phase.color.replace('bg-', 'text-').replace('100', '500');
+              const iconColorClass = getPhaseAccentTextClasses(phase);
 
               return (
                 <div key={phase.id} className="relative">

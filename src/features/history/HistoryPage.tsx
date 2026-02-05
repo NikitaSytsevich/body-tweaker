@@ -1,5 +1,5 @@
 // src/features/history/HistoryPage.tsx
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Flame,
@@ -23,7 +23,7 @@ import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
 import { AnimatedEmoji } from '../../components/ui/AnimatedEmoji';
 
 // Utils
-import { storageGetHistory, storageSaveHistory } from '../../utils/storage';
+import { storageGetHistory, storageSaveHistory, HISTORY_UPDATED_EVENT_NAME } from '../../utils/storage';
 import type { HistoryRecord } from '../../utils/types';
 import { cn } from '../../utils/cn';
 
@@ -99,24 +99,39 @@ export const HistoryPage = () => {
   // Modals
   const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(null);
 
-  // LOAD DATA
-  useEffect(() => {
-    const loadHistory = async () => {
-      setIsLoading(true);
-      try {
-        const saved = await storageGetHistory<HistoryRecord>('history_fasting');
-        const validRecords = saved
-            .filter(r => r && typeof r.id === 'string' && (r.type === 'fasting' || r.type === 'breathing'))
-            .sort((a, b) => new Date(b.endTime).getTime() - new Date(a.endTime).getTime());
-        setAllRecords(validRecords);
-      } catch (e) {
-        console.error(e);
-      } finally {
+  const loadHistory = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) setIsLoading(true);
+    try {
+      const saved = await storageGetHistory<HistoryRecord>('history_fasting');
+      const validRecords = saved
+          .filter(r => r && typeof r.id === 'string' && (r.type === 'fasting' || r.type === 'breathing'))
+          .sort((a, b) => new Date(b.endTime).getTime() - new Date(a.endTime).getTime());
+      setAllRecords(validRecords);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      if (!options?.silent) {
         setTimeout(() => setIsLoading(false), 300);
       }
-    };
-    loadHistory();
+    }
   }, []);
+
+  // LOAD DATA
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  // RELOAD ON HISTORY UPDATES
+  useEffect(() => {
+    const handleHistoryUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ key?: string }>).detail;
+      if (!detail?.key || detail.key === 'history_fasting') {
+        loadHistory({ silent: true });
+      }
+    };
+    window.addEventListener(HISTORY_UPDATED_EVENT_NAME, handleHistoryUpdate);
+    return () => window.removeEventListener(HISTORY_UPDATED_EVENT_NAME, handleHistoryUpdate);
+  }, [loadHistory]);
 
   // FILTERS
   const filteredRecords = useMemo(() => 

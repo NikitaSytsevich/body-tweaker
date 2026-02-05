@@ -18,11 +18,15 @@ try {
 
   // Настройка внешнего вида (расширяем на весь экран)
   WebApp.expand();
+  if (typeof document !== 'undefined') {
+    document.title = 'Body Tweaker';
+  }
 
   const applyTelegramInsets = () => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
-    const isTelegram = Boolean(WebApp.initDataUnsafe?.user || WebApp.initData);
+    const hasTelegramWebApp = typeof window !== 'undefined' && Boolean((window as any).Telegram?.WebApp);
+    const isTelegram = hasTelegramWebApp || Boolean(WebApp.initDataUnsafe?.user || WebApp.initData);
     const platform = WebApp.platform as string | undefined;
     const overlayByPlatform: Record<string, number> = {
       ios: 56,

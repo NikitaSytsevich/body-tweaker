@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calendar, Trash2, Edit3, Check, Sunrise, Moon, Clock, Trophy } from 'lucide-react';
-import { FASTING_PHASES } from '../../fasting/data/stages';
+import { FASTING_PHASES, getPhaseSoftBgClasses, getPhaseTextClasses } from '../../fasting/data/stages';
 import { NativeDatePicker } from '../../../components/ui/DatePicker';
 import dayjs from 'dayjs';
 import { cn } from '../../../utils/cn';
@@ -190,10 +190,8 @@ export const RecordDetails = ({ record, onClose, onDelete, onUpdate }: Props) =>
                       </h3>
                       <div className="space-y-3">
                           {passedPhases.map((phase) => {
-                              // Extract the text color from phase.color (e.g., "text-blue-600" from "bg-blue-100 text-blue-600")
-                              const textColor = phase.color.split(' ').find(c => c.startsWith('text-')) || 'text-slate-600';
-                              // Extract the bg color for the icon container (e.g., "bg-blue-50" from "bg-blue-100 text-blue-600")
-                              const bgColor = phase.color.split(' ').find(c => c.startsWith('bg-'))?.replace('100', '50').replace('600', '50') || 'bg-slate-50';
+                              const textColor = getPhaseTextClasses(phase);
+                              const bgColor = getPhaseSoftBgClasses(phase);
 
                               const IconComponent = phase.icon;
 

@@ -75,6 +75,17 @@ export const MetabolismMapPage = () => {
     return 0;
   }, [elapsedHours]);
 
+  const activeProgress = useMemo(() => {
+    if (!isFasting) return 0;
+    const phase = FASTING_PHASES[activeIndex];
+    if (!phase) return 0;
+    if (elapsedHours < phase.hoursStart) return 0;
+    if (!phase.hoursEnd || phase.hoursEnd <= phase.hoursStart) return 100;
+    const duration = phase.hoursEnd - phase.hoursStart;
+    const progress = ((elapsedHours - phase.hoursStart) / duration) * 100;
+    return Math.min(Math.max(progress, 0), 100);
+  }, [activeIndex, elapsedHours, isFasting]);
+
   const tabs = [
     { value: 'map', label: 'Процессы', icon: Activity },
     { value: 'articles', label: 'База знаний', icon: BookOpen }
@@ -245,8 +256,8 @@ export const MetabolismMapPage = () => {
                                             layoutId="activeProgress"
                                             className={cn("h-full", theme.progress)}
                                             initial={{ width: 0 }}
-                                            animate={{ width: "45%" }}
-                                            transition={{ duration: 1 }}
+                                            animate={{ width: `${activeProgress}%` }}
+                                            transition={{ duration: 0.6, ease: 'easeOut' }}
                                         />
                                     </div>
                                 )}
