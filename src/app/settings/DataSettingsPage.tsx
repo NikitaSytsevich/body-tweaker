@@ -28,7 +28,6 @@ export const DataSettingsPage = () => {
         storageRemove('has_accepted_terms'),
         storageRemove('legal_acceptance_v1'),
         storageRemove('theme_mode'),
-        storageRemove('bio_birthDate'),
       ]);
       window.location.reload();
     } catch (e) {
@@ -40,7 +39,7 @@ export const DataSettingsPage = () => {
   const handleExport = async () => {
     setIsProcessing(true);
     try {
-      const [history, startTime, scheme, userName, terms, legalAcceptance, themeMode, bioBirthDate, schemaVersion] = await Promise.all([
+      const [history, startTime, scheme, userName, terms, legalAcceptance, themeMode, schemaVersion] = await Promise.all([
         storageGetHistory('history_fasting'),
         storageGet('fasting_startTime'),
         storageGet('fasting_scheme'),
@@ -48,7 +47,6 @@ export const DataSettingsPage = () => {
         storageGet('has_accepted_terms'),
         storageGetJSON('legal_acceptance_v1', null),
         storageGet('theme_mode'),
-        storageGetJSON('bio_birthDate', null),
         storageGet('schema_version'),
       ]);
 
@@ -63,7 +61,6 @@ export const DataSettingsPage = () => {
           has_accepted_terms: terms,
           legal_acceptance_v1: legalAcceptance,
           theme_mode: themeMode,
-          bio_birthDate: bioBirthDate,
           schema_version: schemaVersion,
         },
       };
@@ -141,7 +138,6 @@ export const DataSettingsPage = () => {
         if (isString(data.theme_mode) && ['light', 'dark', 'auto'].includes(data.theme_mode)) {
           promises.push(storageSet('theme_mode', data.theme_mode));
         }
-        if (isString(data.bio_birthDate)) promises.push(storageSetJSON('bio_birthDate', data.bio_birthDate));
         if (isString(data.schema_version)) promises.push(storageSet('schema_version', data.schema_version));
 
         await Promise.all(promises);

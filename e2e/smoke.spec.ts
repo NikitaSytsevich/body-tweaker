@@ -120,16 +120,6 @@ test('history shows empty state without records', async ({ page }) => {
   await expect(page.getByText('Нет активности')).toBeVisible();
 });
 
-test('biorhythm page updates birth date', async ({ page }) => {
-  await page.goto('/biorhythm');
-  await completeWelcome(page);
-  await expect(page.getByText('Энергетические волны')).toBeVisible();
-
-  const birthDateInput = page.locator('input[type="date"]');
-  await birthDateInput.fill('1990-01-01');
-  await expect(birthDateInput).toHaveValue('1990-01-01');
-});
-
 test('profile settings navigation opens data screen', async ({ page }) => {
   await page.goto('/');
   await completeWelcome(page);

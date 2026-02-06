@@ -48,7 +48,6 @@ function App() {
           <Route path="/" element={<Layout />} />
           <Route path="/timer" element={<Layout />} />
           <Route path="/breathing" element={<Layout />} />
-          <Route path="/biorhythm" element={<Layout />} />
           <Route path="/history" element={<Layout />} />
           <Route path="/profile" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
           <Route path="/profile/settings" element={<Navigate to="/profile" replace />} />

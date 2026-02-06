@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repository.
 
 ## Project Summary
 
-**Body Tweaker** is a Telegram Mini App (also works in a standalone browser) for fasting tracking, breathing practice, biorhythm charts, a metabolism map with phase details, a knowledge base of articles, and progress history. It stores data in Telegram Cloud Storage when available and falls back to localStorage, with AES client-side encryption.
+**Body Tweaker** is a Telegram Mini App (also works in a standalone browser) for fasting tracking, breathing practice, a metabolism map with phase details, a knowledge base of articles, and progress history. It stores data in Telegram Cloud Storage when available and falls back to localStorage, with AES client-side encryption.
 
 ## Commands
 
@@ -24,7 +24,6 @@ npm run test:e2e       # Run Playwright E2E tests (requires `npx playwright inst
 - `/` — Metabolism map + knowledge base tab
 - `/timer` — Fasting timer
 - `/breathing` — Breathing practice
-- `/biorhythm` — Biorhythm charts
 - `/history` — History (fasting + breathing)
 - `/profile` — Settings hub
 - `/profile/settings/appearance`
@@ -44,7 +43,6 @@ Navigation for main pages is a draggable dock in `src/app/Layout.tsx`. Main page
 - `src/app/ProfilePage.tsx` and `src/app/settings/*` — Settings UI (theme, app install, data backup, legal docs, about).
 - `src/features/fasting/*` — Fasting timer, protocols, and metabolism phases.
 - `src/features/breathing/*` — Breathing practice, audio, and session logic.
-- `src/features/biorhythm/*` — Biorhythm calculations and charts.
 - `src/features/history/*` — History UI, stats, calendar, record editing.
 - `src/features/articles/*` — Knowledge base list + detail pages.
 - `src/contexts/ThemeContext.tsx` — Theme mode and Telegram theme sync.
