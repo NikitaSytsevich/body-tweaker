@@ -62,3 +62,51 @@ test('breathing page loads', async ({ page }) => {
   await expect(page.getByText('Знания')).toBeVisible();
   await expect(page.getByText('Пранаяма')).toBeVisible();
 });
+
+test('fasting protocol can start and stop', async ({ page }) => {
+  await page.goto('/timer');
+  await completeWelcome(page);
+  await expect(page.getByText(/Ожидание|Голодание/)).toBeVisible();
+
+  const chooseProtocolButton = page.getByRole('button', { name: 'Выбрать протокол' });
+  await chooseProtocolButton.click();
+
+  await page.getByText('База аутофагии').click();
+  await page.getByRole('button', { name: 'Начать голодание' }).click();
+
+  const stayHereButton = page.getByRole('button', { name: 'Остаться здесь' });
+  if (await stayHereButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await stayHereButton.click();
+  }
+
+  await expect(page.getByText('Голодание')).toBeVisible();
+  const stopButton = page.getByRole('button', { name: 'Завершить цикл' });
+  await stopButton.click();
+  await expect(page.getByText('Ожидание')).toBeVisible();
+});
+
+test('history shows empty state without records', async ({ page }) => {
+  await page.goto('/history');
+  await completeWelcome(page);
+  await expect(page.getByText('Прогресс')).toBeVisible();
+  await expect(page.getByText('Нет активности')).toBeVisible();
+});
+
+test('biorhythm page updates birth date', async ({ page }) => {
+  await page.goto('/biorhythm');
+  await completeWelcome(page);
+  await expect(page.getByText('Энергетические волны')).toBeVisible();
+
+  const birthDateInput = page.locator('input[type="date"]');
+  await birthDateInput.fill('1990-01-01');
+  await expect(birthDateInput).toHaveValue('1990-01-01');
+});
+
+test('profile settings navigation opens data screen', async ({ page }) => {
+  await page.goto('/');
+  await completeWelcome(page);
+  await page.getByRole('button', { name: 'Открыть профиль' }).click();
+  await expect(page.getByText('Настройки')).toBeVisible();
+  await page.getByText('Резервные копии').click();
+  await expect(page.getByText('Резервная копия')).toBeVisible();
+});
