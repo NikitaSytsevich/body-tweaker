@@ -1,4 +1,4 @@
-import { storageGet, storageGetJSON, storageSet, storageSetJSON } from './storage';
+import { storageGet, storageGetJSON, storageSet } from './storage';
 
 const SCHEMA_VERSION = 1;
 

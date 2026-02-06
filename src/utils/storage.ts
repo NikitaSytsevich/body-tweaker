@@ -298,7 +298,7 @@ const isHistoryRecord = (value: unknown): value is HistoryRecord => {
   );
 };
 
-const sanitizeHistoryList = <T>(list: T[]): T[] => {
+const sanitizeHistoryList = <T extends HistoryRecord>(list: T[]): T[] => {
   if (!list.length) return list;
   let filtered = (list as unknown[]).filter(isHistoryRecord) as T[];
   if (HISTORY_RETENTION_MS > 0) {
@@ -467,11 +467,11 @@ export async function storageSetJSON<T>(key: string, value: T): Promise<boolean>
 /**
  * Чтение истории с поддержкой чанков и миграцией
  */
-export async function storageGetHistory<T>(baseKey: string): Promise<T[]> {
+export async function storageGetHistory<T extends HistoryRecord = HistoryRecord>(baseKey: string): Promise<T[]> {
   return enqueueHistoryOp(baseKey, () => getHistoryInternal<T>(baseKey));
 }
 
-async function getHistoryInternal<T>(baseKey: string): Promise<T[]> {
+async function getHistoryInternal<T extends HistoryRecord>(baseKey: string): Promise<T[]> {
   // 1. Попытка миграции (если есть данные в старом ключе)
   const legacyData = await storageGetJSON<T[] | null>(baseKey, null);
   if (legacyData && Array.isArray(legacyData) && legacyData.length > 0) {
@@ -536,11 +536,11 @@ async function getHistoryInternal<T>(baseKey: string): Promise<T[]> {
  * Сохранение истории в чанки
  * Строго соблюдает лимит HISTORY_MAX_CHUNKS
  */
-export async function storageSaveHistory<T>(baseKey: string, list: T[]): Promise<boolean> {
+export async function storageSaveHistory<T extends HistoryRecord = HistoryRecord>(baseKey: string, list: T[]): Promise<boolean> {
   return enqueueHistoryOp(baseKey, () => saveHistoryInternal(baseKey, list));
 }
 
-async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boolean> {
+async function saveHistoryInternal<T extends HistoryRecord>(baseKey: string, list: T[]): Promise<boolean> {
   const metaKey = getHistoryMetaKey(baseKey);
   const meta = await storageGetJSON<HistoryMeta | null>(metaKey, null);
   const maxItems = HISTORY_MAX_CHUNKS * HISTORY_CHUNK_SIZE;
@@ -591,7 +591,7 @@ async function saveHistoryInternal<T>(baseKey: string, list: T[]): Promise<boole
   return success;
 }
 
-async function updateHistoryIncremental<T>(
+async function updateHistoryIncremental<T extends HistoryRecord>(
   baseKey: string,
   newItem: T,
   maxItems: number
@@ -641,7 +641,7 @@ async function updateHistoryIncremental<T>(
 /**
  * Обновление истории (добавление в начало)
  */
-export async function storageUpdateHistory<T>(
+export async function storageUpdateHistory<T extends HistoryRecord = HistoryRecord>(
   key: string, 
   newItem: T, 
   maxItems: number = 1000
