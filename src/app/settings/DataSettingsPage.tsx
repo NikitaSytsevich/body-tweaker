@@ -40,7 +40,7 @@ export const DataSettingsPage = () => {
   const handleExport = async () => {
     setIsProcessing(true);
     try {
-      const [history, startTime, scheme, userName, terms, legalAcceptance, themeMode, bioBirthDate] = await Promise.all([
+      const [history, startTime, scheme, userName, terms, legalAcceptance, themeMode, bioBirthDate, schemaVersion] = await Promise.all([
         storageGetHistory('history_fasting'),
         storageGet('fasting_startTime'),
         storageGet('fasting_scheme'),
@@ -49,6 +49,7 @@ export const DataSettingsPage = () => {
         storageGetJSON('legal_acceptance_v1', null),
         storageGet('theme_mode'),
         storageGetJSON('bio_birthDate', null),
+        storageGet('schema_version'),
       ]);
 
       const backupData = {
@@ -63,6 +64,7 @@ export const DataSettingsPage = () => {
           legal_acceptance_v1: legalAcceptance,
           theme_mode: themeMode,
           bio_birthDate: bioBirthDate,
+          schema_version: schemaVersion,
         },
       };
 
@@ -140,6 +142,7 @@ export const DataSettingsPage = () => {
           promises.push(storageSet('theme_mode', data.theme_mode));
         }
         if (isString(data.bio_birthDate)) promises.push(storageSetJSON('bio_birthDate', data.bio_birthDate));
+        if (isString(data.schema_version)) promises.push(storageSet('schema_version', data.schema_version));
 
         await Promise.all(promises);
         window.location.reload();

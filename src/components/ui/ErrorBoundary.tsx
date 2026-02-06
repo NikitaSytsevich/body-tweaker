@@ -1,4 +1,5 @@
 import React from 'react';
+import { captureError } from '../../utils/monitoring';
 
 interface Props {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[ErrorBoundary] Unhandled error', error, info);
+    captureError(error, { componentStack: info.componentStack });
   }
 
   handleReload = () => {

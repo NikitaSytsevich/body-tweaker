@@ -8,6 +8,8 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { registerSW } from 'virtual:pwa-register'
 import { PWA_UPDATE_EVENT_NAME, PWA_OFFLINE_READY_EVENT_NAME } from './utils/pwa'
+import { runMigrations } from './utils/migrations'
+import { initMonitoring } from './utils/monitoring'
 
 // ============================================
 // TELEGRAM MINI APP INITIALIZATION
@@ -87,6 +89,9 @@ try {
 } catch (error) {
   console.warn('[Telegram] WebApp initialization failed (running in standalone mode):', error);
 }
+
+initMonitoring();
+void runMigrations();
 
 if (typeof window !== 'undefined') {
   const updateSW = registerSW({

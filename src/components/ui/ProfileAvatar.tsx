@@ -150,6 +150,7 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
   const retryTimeouts = useRef<number[]>([]);
 
   const initials = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : '?';
+  const ariaLabel = onClick ? 'Открыть профиль' : 'Профиль';
 
   // Основной useEffect для инициализации
   useEffect(() => {
@@ -202,6 +203,7 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
     return (
       <button
         onClick={onClick}
+        aria-label={ariaLabel}
         className={cn(
           "rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0 animate-pulse",
           sizeClasses[size],
@@ -219,6 +221,7 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
     return (
       <button
         onClick={onClick}
+        aria-label={ariaLabel}
         className={cn(
           "rounded-full overflow-hidden transition-colors shrink-0 relative",
           sizeClasses[size],
@@ -264,9 +267,10 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
 
   // Fallback: initials or UserCircle2 icon
   return (
-    <button
-      onClick={onClick}
-      className={cn(
+      <button
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className={cn(
         "rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors shrink-0",
         sizeClasses[size],
         onClick && "hover:ring-2 hover:ring-purple-500/50 cursor-pointer",

@@ -31,6 +31,8 @@ const HISTORY_MAX_CHUNKS = 125; // Поддержка до 1000 записей (
 const HISTORY_META_SUFFIX = '__meta';
 const HISTORY_UPDATED_EVENT = 'bt:history-updated';
 const STORAGE_READONLY_EVENT = 'bt:storage-readonly';
+const HISTORY_RETENTION_DAYS = Number(import.meta.env.VITE_HISTORY_RETENTION_DAYS || 0);
+const HISTORY_RETENTION_MS = HISTORY_RETENTION_DAYS > 0 ? HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000 : 0;
 
 const getKey = (key: string) => `${KEY_PREFIX}${key}`;
 const getHistoryMetaKey = (baseKey: string) => `${baseKey}${HISTORY_META_SUFFIX}`;
@@ -48,6 +50,8 @@ const CLOUD_RETRY_DELAYS = import.meta.env.MODE === 'test' ? [0] : [150, 400, 90
 const CLOUD_READONLY_TTL = import.meta.env.MODE === 'test' ? 50 : 5 * 60 * 1000;
 let cloudReadonlyUntil = 0;
 let cloudReadonlyNotifiedUntil = 0;
+const CLOUD_QUEUE_KEY = `${KEY_PREFIX}__cloud_queue`;
+const CLOUD_QUEUE_LIMIT = 200;
 
 // History operations queue to prevent concurrent read-modify-write races
 const historyQueue = new Map<string, Promise<unknown>>();
@@ -157,6 +161,99 @@ const cloudRemoveItem = (key: string): Promise<boolean> => {
   });
 };
 
+type CloudOp = {
+  op: 'set' | 'remove';
+  key: string;
+  value?: string;
+  ts: number;
+};
+
+let cloudQueueCache: CloudOp[] | null = null;
+
+const readLocalRaw = (key: string) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeLocalRaw = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const loadCloudQueue = (): CloudOp[] => {
+  if (cloudQueueCache) return cloudQueueCache;
+  const raw = readLocalRaw(CLOUD_QUEUE_KEY);
+  if (!raw) {
+    cloudQueueCache = [];
+    return cloudQueueCache;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      cloudQueueCache = parsed.filter((item) =>
+        item && (item.op === 'set' || item.op === 'remove') && typeof item.key === 'string'
+      );
+    } else {
+      cloudQueueCache = [];
+    }
+  } catch {
+    cloudQueueCache = [];
+  }
+  return cloudQueueCache;
+};
+
+const saveCloudQueue = (queue: CloudOp[]) => {
+  cloudQueueCache = queue;
+  if (!queue.length) {
+    writeLocalRaw(CLOUD_QUEUE_KEY, '[]');
+    return;
+  }
+  writeLocalRaw(CLOUD_QUEUE_KEY, JSON.stringify(queue));
+};
+
+const enqueueCloudOp = (op: CloudOp) => {
+  const queue = loadCloudQueue();
+  const next = queue.filter((item) => item.key !== op.key);
+  next.push(op);
+  if (next.length > CLOUD_QUEUE_LIMIT) {
+    next.splice(0, next.length - CLOUD_QUEUE_LIMIT);
+  }
+  saveCloudQueue(next);
+};
+
+export const flushCloudQueue = async (): Promise<boolean> => {
+  if (!isCloudAvailable() || isCloudWriteDisabled()) return false;
+  const queue = loadCloudQueue();
+  if (!queue.length) return true;
+
+  const remaining: CloudOp[] = [];
+  for (const op of queue) {
+    try {
+      if (op.op === 'set' && op.value) {
+        await retryCloud(() => cloudSetItem(op.key, op.value!));
+      } else if (op.op === 'remove') {
+        await retryCloud(() => cloudRemoveItem(op.key));
+      }
+    } catch (error) {
+      remaining.push(op);
+      setCloudReadonly(error);
+      saveCloudQueue(remaining.concat(queue.slice(queue.indexOf(op) + 1)));
+      return false;
+    }
+  }
+
+  saveCloudQueue([]);
+  clearCloudReadonly();
+  return true;
+};
+
 /**
  * Внутренняя функция шифрования
  */
@@ -203,7 +300,14 @@ const isHistoryRecord = (value: unknown): value is HistoryRecord => {
 
 const sanitizeHistoryList = <T>(list: T[]): T[] => {
   if (!list.length) return list;
-  const filtered = (list as unknown[]).filter(isHistoryRecord) as T[];
+  let filtered = (list as unknown[]).filter(isHistoryRecord) as T[];
+  if (HISTORY_RETENTION_MS > 0) {
+    const cutoff = Date.now() - HISTORY_RETENTION_MS;
+    filtered = filtered.filter((record) => {
+      const timestamp = Date.parse(record.endTime);
+      return Number.isNaN(timestamp) ? false : timestamp >= cutoff;
+    });
+  }
   if (filtered.length !== list.length) {
     console.warn('[Storage] Dropped invalid history records during save');
   }
@@ -225,13 +329,7 @@ export async function storageGet(key: string): Promise<string | null> {
     return cached.value;
   }
 
-  const readLocal = () => {
-    try {
-      return localStorage.getItem(namespacedKey) || '';
-    } catch {
-      return '';
-    }
-  };
+  const readLocal = () => readLocalRaw(namespacedKey) || '';
 
   if (isCloudAvailable()) {
     try {
@@ -276,13 +374,21 @@ export async function storageSet(key: string, value: string): Promise<boolean> {
     localOk = false;
   }
 
-  if (isCloudAvailable() && !isCloudWriteDisabled()) {
+  if (isCloudAvailable()) {
+    if (isCloudWriteDisabled()) {
+      enqueueCloudOp({ op: 'set', key: namespacedKey, value: encrypted, ts: Date.now() });
+      return localOk;
+    }
+
     try {
+      await flushCloudQueue();
       const stored = await retryCloud(() => cloudSetItem(namespacedKey, encrypted));
       clearCloudReadonly();
+      await flushCloudQueue();
       return localOk && stored;
     } catch (e) {
       console.error('[Cloud] Set Error:', e);
+      enqueueCloudOp({ op: 'set', key: namespacedKey, value: encrypted, ts: Date.now() });
       setCloudReadonly(e);
       return localOk;
     }
@@ -308,13 +414,21 @@ export async function storageRemove(key: string): Promise<boolean> {
     localOk = false;
   }
   
-  if (isCloudAvailable() && !isCloudWriteDisabled()) {
+  if (isCloudAvailable()) {
+    if (isCloudWriteDisabled()) {
+      enqueueCloudOp({ op: 'remove', key: namespacedKey, ts: Date.now() });
+      return localOk;
+    }
+
     try {
+      await flushCloudQueue();
       const deleted = await retryCloud(() => cloudRemoveItem(namespacedKey));
       clearCloudReadonly();
+      await flushCloudQueue();
       return localOk && deleted;
     } catch (e) {
       console.error('[Cloud] Remove Error:', e);
+      enqueueCloudOp({ op: 'remove', key: namespacedKey, ts: Date.now() });
       setCloudReadonly(e);
       return localOk;
     }
@@ -362,9 +476,10 @@ async function getHistoryInternal<T>(baseKey: string): Promise<T[]> {
   const legacyData = await storageGetJSON<T[] | null>(baseKey, null);
   if (legacyData && Array.isArray(legacyData) && legacyData.length > 0) {
     console.log('[Storage] Migrating legacy history to chunks...');
-    await saveHistoryInternal(baseKey, legacyData);
+    const sanitizedLegacy = sanitizeHistoryList(legacyData);
+    await saveHistoryInternal(baseKey, sanitizedLegacy);
     await storageRemove(baseKey);
-    return legacyData;
+    return sanitizedLegacy;
   }
 
   // 2. Чтение чанков
@@ -380,7 +495,17 @@ async function getHistoryInternal<T>(baseKey: string): Promise<T[]> {
     }
 
     if (recovered.length > 0) {
-      await saveHistoryInternal(baseKey, recovered);
+      const sanitizedRecovered = sanitizeHistoryList(recovered);
+      if (sanitizedRecovered.length > 0) {
+        await saveHistoryInternal(baseKey, sanitizedRecovered);
+      } else {
+        await storageSetJSON(getHistoryMetaKey(baseKey), {
+          chunks: 0,
+          total: 0,
+          updatedAt: new Date().toISOString(),
+        } satisfies HistoryMeta);
+      }
+      return sanitizedRecovered;
     } else {
       await storageSetJSON(getHistoryMetaKey(baseKey), {
         chunks: 0,

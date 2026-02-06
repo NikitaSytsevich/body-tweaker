@@ -16,6 +16,7 @@ npm run preview        # Preview production build
 npm run generate-icons # Generate PWA icons
 npm run audit          # Generate audit files (scripts/generate-audit.js)
 npm run test           # Run unit tests (vitest)
+npm run test:e2e       # Run Playwright E2E tests (requires `npx playwright install`)
 ```
 
 ## Routes and Navigation
@@ -48,9 +49,13 @@ Navigation for main pages is a draggable dock in `src/app/Layout.tsx`. Main page
 - `src/features/articles/*` — Knowledge base list + detail pages.
 - `src/contexts/ThemeContext.tsx` — Theme mode and Telegram theme sync.
 - `src/utils/storage.ts` — Encrypted storage + CloudStorage fallback + history chunking.
+- `src/utils/migrations.ts` — Data migrations (schema_version, legacy fixes).
+- `src/utils/monitoring.ts` — Optional Sentry initialization + error capture.
+- `src/utils/pwa.ts` — App-level PWA update/offline events.
 - `src/utils/sounds.ts` — Ambient audio and SFX engine.
 - `src/hooks/useStorage.ts` — Async storage hook for settings/data.
 - `src/main.tsx` — Telegram WebApp init, safe-area insets, fullscreen request, Vercel analytics.
+- `src/components/ui/ErrorBoundary.tsx` — Runtime crash UI + monitoring hook.
 
 ## Fasting Flow
 
@@ -87,6 +92,8 @@ Navigation for main pages is a draggable dock in `src/app/Layout.tsx`. Main page
 - Production build throws if `VITE_STORAGE_KEY` is missing.
 - Telegram Cloud Storage is used when available (SDK >= 6.9), otherwise localStorage.
 - History is chunked: 8 records per chunk, up to 1000 records.
+- Cloud writes can enter read-only mode; changes are queued locally and flushed when online.
+- History retention can be limited via `VITE_HISTORY_RETENTION_DAYS`.
 - Storage helpers are async; avoid direct localStorage access.
 
 ## Theme and Telegram Integration
@@ -98,9 +105,12 @@ Navigation for main pages is a draggable dock in `src/app/Layout.tsx`. Main page
 ## Build, PWA, and Analytics
 
 - PWA is configured in `vite.config.ts` using `vite-plugin-pwa` with runtime caching for fonts, images, and Telegram assets.
+- PWA update/offline-ready events are surfaced via `bt:pwa-update` and `bt:pwa-offline-ready` and shown in `Layout`.
 - Bundle analyzer creates `dist/stats.html` after build.
 - `@vercel/analytics/react` is mounted in `src/main.tsx`.
+- Optional Sentry monitoring is enabled when `VITE_SENTRY_DSN` is provided.
 
 ## Tests
 
-No automated test suite exists in this repo.
+- Unit tests: `npm run test` (vitest, jsdom).
+- E2E: `npm run test:e2e` (Playwright, requires `npx playwright install` once).

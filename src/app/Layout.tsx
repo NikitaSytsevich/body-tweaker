@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, Timer, Wind, History, LineChart } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { cn } from '../utils/cn';
-import { storageGet, storageSet, STORAGE_READONLY_EVENT_NAME } from '../utils/storage';
+import { storageGet, storageSet, STORAGE_READONLY_EVENT_NAME, flushCloudQueue } from '../utils/storage';
 import WebApp from '@twa-dev/sdk';
 import { ToastNotification } from '../components/ui/ToastNotification';
 import { PWA_UPDATE_EVENT_NAME, PWA_OFFLINE_READY_EVENT_NAME } from '../utils/pwa';
@@ -192,7 +192,13 @@ export const Layout = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const updateOnlineStatus = () => setIsOffline(!navigator.onLine);
+    const updateOnlineStatus = () => {
+      const offline = !navigator.onLine;
+      setIsOffline(offline);
+      if (!offline) {
+        void flushCloudQueue();
+      }
+    };
     updateOnlineStatus();
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
@@ -210,7 +216,7 @@ export const Layout = () => {
         title: 'Облачное хранилище недоступно',
         message: detail?.reason
           ? `Данные сохраняются локально. ${detail.reason}`
-          : 'Данные сохраняются локально. Синхронизацию восстановим автоматически.'
+          : 'Данные сохраняются локально. Нажмите, чтобы синхронизировать.'
       });
       setShowStorageToast(true);
     };
@@ -219,6 +225,18 @@ export const Layout = () => {
       window.removeEventListener(STORAGE_READONLY_EVENT_NAME, handleStorageReadonly);
     };
   }, []);
+
+  const handleStorageSync = () => {
+    void flushCloudQueue().then((ok) => {
+      setStorageToast({
+        title: ok ? 'Синхронизация завершена' : 'Синхронизация недоступна',
+        message: ok
+          ? 'Все изменения отправлены в облако.'
+          : 'Не удалось синхронизировать сейчас. Попробуйте позже.',
+      });
+      setTimeout(() => setShowStorageToast(true), 0);
+    });
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -340,6 +358,7 @@ export const Layout = () => {
             <motion.nav
               ref={navRef}
               style={{ touchAction: 'none', padding: `${pillGap}px` }}
+              aria-label="Основная навигация"
               onPointerDown={(e) => {
                 e.preventDefault();
                 if (!metrics.pillWidth || !metrics.itemWidth) return;
@@ -425,6 +444,7 @@ export const Layout = () => {
         title={storageToast.title}
         message={storageToast.message}
         onClose={() => setShowStorageToast(false)}
+        onPress={handleStorageSync}
       />
 
       <ToastNotification
