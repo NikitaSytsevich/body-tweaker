@@ -128,43 +128,6 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        // Улучшенное разделение чанков
-        manualChunks: (id) => {
-          // React ecosystem
-          if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-            return 'react-vendor'
-          }
-
-          // Framer Motion (разделяем отдельно, так как это самый тяжёлый)
-          if (id.includes('framer-motion')) {
-            return 'motion-vendor'
-          }
-
-          // UI библиотеки
-          if (id.includes('lucide-react')) {
-            return 'icons-vendor'
-          }
-
-          // Charts
-          if (id.includes('recharts')) {
-            return 'charts-vendor'
-          }
-
-          // Telegram SDK
-          if (id.includes('@twa-dev/sdk')) {
-            return 'telegram-vendor'
-          }
-
-          // Utils
-          if (id.includes('dayjs') || id.includes('clsx') || id.includes('tailwind-merge') || id.includes('crypto-js')) {
-            return 'utils-vendor'
-          }
-
-          // Node modules (остальное)
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
-        },
         // Имена чанков
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
