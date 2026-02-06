@@ -8,8 +8,11 @@ import type { HistoryRecord } from './types';
 const STORAGE_KEY = import.meta.env.VITE_STORAGE_KEY;
 
 // SECURITY: В продакшене обязательно должен быть задан VITE_STORAGE_KEY
-if (import.meta.env.PROD && (!STORAGE_KEY || STORAGE_KEY === 'dev-key-change-in-prod-build')) {
-  throw new Error(
+export const isStorageKeyValid =
+  !import.meta.env.PROD || Boolean(STORAGE_KEY && STORAGE_KEY !== 'dev-key-change-in-prod-build');
+
+if (!isStorageKeyValid) {
+  console.error(
     '[Security] VITE_STORAGE_KEY must be set in production builds. ' +
     'Add it to your .env.production file or build environment variables.'
   );

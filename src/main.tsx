@@ -10,16 +10,36 @@ import { registerSW } from 'virtual:pwa-register'
 import { PWA_UPDATE_EVENT_NAME, PWA_OFFLINE_READY_EVENT_NAME } from './utils/pwa'
 import { runMigrations } from './utils/migrations'
 import { initMonitoring } from './utils/monitoring'
+import { isStorageKeyValid } from './utils/storage'
+
+const renderFatal = (title: string, message: string) => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <div className="app-surface min-h-screen w-full flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white dark:bg-[#2C2C2E] rounded-[2rem] p-6 shadow-xl border border-slate-100 dark:border-white/10 text-center">
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h1>
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{message}</p>
+        </div>
+      </div>
+    </React.StrictMode>,
+  );
+};
 
 // ============================================
 // TELEGRAM MINI APP INITIALIZATION
 // ============================================
 
-// SECURITY: Wrap WebApp calls in try-catch to prevent crashes
-// when running outside Telegram or if API fails
-try {
-  // Инициализация Telegram Mini App
-  WebApp.ready();
+if (!isStorageKeyValid) {
+  renderFatal(
+    'Ошибка конфигурации',
+    'Не задан VITE_STORAGE_KEY. Добавьте переменную окружения и выполните повторный деплой.'
+  );
+} else {
+  // SECURITY: Wrap WebApp calls in try-catch to prevent crashes
+  // when running outside Telegram or if API fails
+  try {
+    // Инициализация Telegram Mini App
+    WebApp.ready();
 
   // Настройка внешнего вида (расширяем на весь экран)
   WebApp.expand();
@@ -85,33 +105,34 @@ try {
     window.addEventListener('pointerdown', handleFirstTap, { once: true, passive: true });
   }
 
-  console.log('[Telegram] WebApp initialized successfully');
-} catch (error) {
-  console.warn('[Telegram] WebApp initialization failed (running in standalone mode):', error);
+    console.log('[Telegram] WebApp initialized successfully');
+  } catch (error) {
+    console.warn('[Telegram] WebApp initialization failed (running in standalone mode):', error);
+  }
+
+  initMonitoring();
+  void runMigrations();
+
+  if (typeof window !== 'undefined') {
+    const updateSW = registerSW({
+      onNeedRefresh() {
+        window.__btUpdateSW = updateSW;
+        window.dispatchEvent(new CustomEvent(PWA_UPDATE_EVENT_NAME));
+      },
+      onOfflineReady() {
+        window.dispatchEvent(new CustomEvent(PWA_OFFLINE_READY_EVENT_NAME));
+      },
+    });
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
+      </ErrorBoundary>
+      <Analytics />
+    </React.StrictMode>,
+  );
 }
-
-initMonitoring();
-void runMigrations();
-
-if (typeof window !== 'undefined') {
-  const updateSW = registerSW({
-    onNeedRefresh() {
-      window.__btUpdateSW = updateSW;
-      window.dispatchEvent(new CustomEvent(PWA_UPDATE_EVENT_NAME));
-    },
-    onOfflineReady() {
-      window.dispatchEvent(new CustomEvent(PWA_OFFLINE_READY_EVENT_NAME));
-    },
-  });
-}
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <ThemeProvider>
-        <App />
-      </ThemeProvider>
-    </ErrorBoundary>
-    <Analytics />
-  </React.StrictMode>,
-)
