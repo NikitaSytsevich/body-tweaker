@@ -86,7 +86,7 @@ export const ArticleDetailPage = () => {
         } as CSSProperties
       }
     >
-      <div className="sticky top-0 z-20 px-4 pt-[calc(var(--app-top-offset)+10px)] pb-3 bg-[linear-gradient(180deg,var(--tg-bg)_0%,color-mix(in_srgb,var(--tg-bg)_88%,transparent)_100%)] backdrop-blur-xl">
+      <div className="sticky top-0 z-20 px-4 pt-3 pb-3 bg-[linear-gradient(180deg,var(--tg-bg)_0%,color-mix(in_srgb,var(--tg-bg)_88%,transparent)_100%)] backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <button
             onClick={() => navigate('/')}

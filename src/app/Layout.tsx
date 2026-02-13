@@ -347,7 +347,10 @@ export const Layout = () => {
 
         {/* ИЗМЕНЕНИЕ: Скрываем навигацию на странице статьи */}
         {!isArticleDetail && (
-          <div className="fixed bottom-6 left-0 right-0 z-40 flex justify-center pointer-events-none">
+          <div
+            className="fixed left-0 right-0 z-40 flex justify-center pointer-events-none"
+            style={{ bottom: 'calc(12px + var(--app-safe-bottom))' }}
+          >
             <motion.nav
               ref={navRef}
               style={{ touchAction: 'none', padding: `${pillGap}px` }}

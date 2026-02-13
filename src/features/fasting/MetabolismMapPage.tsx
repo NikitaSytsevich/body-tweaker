@@ -62,7 +62,7 @@ export const MetabolismMapPage = () => {
 
   return (
     <>
-      <div className="flex flex-col pb-28 relative z-0">
+      <div className="relative z-0 flex flex-col pb-[calc(6.5rem+var(--app-safe-bottom))]">
         
         {/* MAIN CONTAINER */}
         <div className="app-card relative flex flex-col z-10 min-h-[85vh] overflow-hidden">
