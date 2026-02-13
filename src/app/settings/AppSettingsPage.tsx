@@ -53,9 +53,9 @@ export const AppSettingsPage = () => {
             title="Подсказка"
             description="После установки приложение запускается в полноэкранном режиме."
           >
-            <div className="rounded-[1.8rem] border border-white/60 dark:border-white/10 bg-white/70 dark:bg-[#1C1C1E]/80 backdrop-blur-xl p-4 text-xs text-slate-400 dark:text-slate-500">
-              Для Android установка доступна напрямую, для iOS нужно открыть меню «Поделиться» и выбрать «На экран Домой».
-            </div>
+          <div className="rounded-[1.8rem] border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)]/92 backdrop-blur-xl p-4 text-xs app-muted">
+            Для Android установка доступна напрямую, для iOS нужно открыть меню «Поделиться» и выбрать «На экран Домой».
+          </div>
           </SettingsSection>
         </div>
       </SettingsShell>

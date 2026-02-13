@@ -308,7 +308,7 @@ export const Layout = () => {
   return (
     <div className="app-surface flex justify-center font-sans h-[100dvh] w-screen overflow-hidden fixed inset-0 pt-[var(--app-top-offset)] relative">
 
-      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/80 via-white/40 to-transparent dark:from-[#0B0F14]/80 dark:via-[#0B0F14]/50" />
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-[color:var(--tg-surface)]/80 via-[color:var(--tg-surface)]/45 to-transparent" />
 
       <div className="w-full max-w-md h-full relative flex flex-col shadow-2xl overflow-hidden app-surface">
 
@@ -338,7 +338,7 @@ export const Layout = () => {
             {/* ИЗМЕНЕНИЕ: Отображение детальной страницы статьи */}
             <AnimatePresence>
                 {isArticleDetail && (
-                    <div className="w-full h-full absolute inset-0 z-40 bg-[#F2F2F7] dark:bg-[#1C1C1E]">
+                    <div className="w-full h-full absolute inset-0 z-40 app-surface">
                         <ArticleDetailPage />
                     </div>
                 )}

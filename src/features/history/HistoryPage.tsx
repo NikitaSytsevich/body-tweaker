@@ -19,7 +19,6 @@ import { RecordDetails } from './components/RecordDetails';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { HistorySkeleton } from './components/HistorySkeleton';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
-import { TelegramSticker } from '../../components/ui/TelegramSticker';
 
 // Utils
 import { storageGetHistory, storageSaveHistory, HISTORY_UPDATED_EVENT_NAME } from '../../utils/storage';
@@ -37,14 +36,14 @@ const StatCard = ({ label, value, unit, icon: Icon, colorClass, bgClass }: any) 
   <div className={cn("app-card flex flex-col items-center justify-center p-3 rounded-2xl flex-1 min-w-[85px]", bgClass)}>
     <div className="flex items-center gap-1.5 mb-1.5 opacity-90">
        <Icon className={cn("w-3.5 h-3.5", colorClass)} />
-       <span className={cn("text-[9px] font-bold uppercase tracking-wide", colorClass)}>{label}</span>
+       <span className={cn("text-[10px] font-bold uppercase tracking-wide", colorClass)}>{label}</span>
     </div>
     <div className="flex flex-col items-center">
         <span className={cn("text-xl font-black leading-none mb-0.5", colorClass)}>
             {value}
         </span>
         {unit && (
-            <span className="text-[9px] font-bold app-muted uppercase">
+            <span className="text-[10px] font-bold app-muted uppercase">
                 {unit}
             </span>
         )}
@@ -176,11 +175,6 @@ export const HistoryPage = () => {
     [recordsForSelectedDate, visibleCount]
   );
 
-  const emptyContext = useMemo(() => (
-    activeTab === 'fasting' ? 'fasting' : 'breathing'
-  ), [activeTab]);
-
-
   // ACTIONS
   const handleDelete = async (id: string) => {
     const newRecords = allRecords.filter(r => r.id !== id);
@@ -269,7 +263,7 @@ export const HistoryPage = () => {
             {/* Days Grid */}
             <div className="grid grid-cols-7 gap-y-4 mb-2">
                 {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
-                    <div key={d} className="text-center text-[10px] font-bold app-muted uppercase">
+                    <div key={d} className="text-center text-[11px] font-bold app-muted uppercase">
                         {d}
                     </div>
                 ))}
@@ -291,7 +285,7 @@ export const HistoryPage = () => {
                             <button
                                 onClick={() => setSelectedDate(date)}
                                 className={cn(
-                                    "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all relative",
+                                    "w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold transition-all relative",
                                     // Стиль выбранной даты
                                     isSelected 
                                         ? "bg-[color:var(--tg-text)] text-[color:var(--tg-bg)] shadow-lg scale-110 z-10" 
@@ -328,7 +322,13 @@ export const HistoryPage = () => {
                 <HistorySkeleton />
             ) : recordsForSelectedDate.length === 0 ? (
                 <div className="text-center py-10 border-2 border-dashed border-[color:var(--tg-border)] rounded-2xl bg-[color:var(--tg-glass)]">
-                    <TelegramSticker context={emptyContext} size={120} fallback="✨" className="mx-auto mb-2" />
+                    <div className="mx-auto mb-3 w-16 h-16 rounded-2xl border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] flex items-center justify-center">
+                      {activeTab === 'fasting' ? (
+                        <Flame className="w-8 h-8 text-emerald-500" />
+                      ) : (
+                        <Wind className="w-8 h-8 text-blue-500" />
+                      )}
+                    </div>
                     <p className="text-sm font-medium app-muted">Нет активности</p>
                 </div>
             ) : (

@@ -7,16 +7,21 @@
     /* Typography */
     --font-sans: "Golos Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-    /* Telegram-compatible tokens (light) */
-    --tg-bg: var(--tg-theme-bg-color, #F2F2F7);
+    /* Telegram-compatible tokens (light, neutral premium) */
+    --tg-bg: var(--tg-theme-bg-color, #F3F4F6);
     --tg-surface: var(--tg-theme-secondary-bg-color, #FFFFFF);
-    --tg-text: var(--tg-theme-text-color, #0F172A);
-    --tg-muted: var(--tg-theme-hint-color, #64748B);
-    --tg-accent: var(--tg-theme-button-color, #0A84FF);
+    --tg-text: var(--tg-theme-text-color, #17191D);
+    --tg-muted: var(--tg-theme-hint-color, #6B7280);
+    --tg-accent: var(--tg-theme-button-color, #3B82F6);
     --tg-accent-contrast: var(--tg-theme-button-text-color, #FFFFFF);
-    --tg-border: rgba(15, 23, 42, 0.08);
+    --tg-border: rgba(23, 25, 29, 0.09);
     --tg-glass: rgba(255, 255, 255, 0.72);
-    --tg-glass-strong: rgba(255, 255, 255, 0.88);
+    --tg-glass-strong: rgba(255, 255, 255, 0.9);
+    --app-shadow-soft: 0 10px 26px -22px rgba(15, 23, 42, 0.45);
+    --app-shadow-card: 0 16px 44px -34px rgba(15, 23, 42, 0.35);
+    --app-shadow-float: 0 20px 56px -30px rgba(15, 23, 42, 0.42);
+    --app-radius-card: 28px;
+    --app-radius-soft: 22px;
 
     /* Legacy aliases */
     --bg-primary: var(--tg-bg);
@@ -40,9 +45,9 @@
     margin: 0;
     padding: 0;
 
-    /* Отключаем выделение текста (как в приложении) */
-    -webkit-user-select: none;
-    user-select: none;
+    /* Базово разрешаем выделение текста, выборочно отключаем в интерактивах */
+    -webkit-user-select: text;
+    user-select: text;
 
     /* Отключаем "резинку" при скролле всей страницы */
     overscroll-behavior-y: none;
@@ -52,16 +57,19 @@
   }
 
   .dark {
-    /* Telegram-compatible tokens (dark) */
-    --tg-bg: var(--tg-theme-bg-color, #0F1115);
-    --tg-surface: var(--tg-theme-secondary-bg-color, #1C1F26);
-    --tg-text: var(--tg-theme-text-color, #F8FAFC);
-    --tg-muted: var(--tg-theme-hint-color, #98A2B3);
-    --tg-accent: var(--tg-theme-button-color, #4C8DFF);
+    /* Telegram-compatible tokens (dark, neutral premium) */
+    --tg-bg: var(--tg-theme-bg-color, #121417);
+    --tg-surface: var(--tg-theme-secondary-bg-color, #1D2127);
+    --tg-text: var(--tg-theme-text-color, #F3F4F6);
+    --tg-muted: var(--tg-theme-hint-color, #9CA3AF);
+    --tg-accent: var(--tg-theme-button-color, #5EA0FF);
     --tg-accent-contrast: var(--tg-theme-button-text-color, #FFFFFF);
-    --tg-border: rgba(255, 255, 255, 0.08);
-    --tg-glass: rgba(18, 20, 24, 0.7);
-    --tg-glass-strong: rgba(20, 22, 27, 0.85);
+    --tg-border: rgba(255, 255, 255, 0.1);
+    --tg-glass: rgba(25, 28, 34, 0.75);
+    --tg-glass-strong: rgba(28, 32, 38, 0.9);
+    --app-shadow-soft: 0 10px 26px -22px rgba(0, 0, 0, 0.8);
+    --app-shadow-card: 0 18px 46px -34px rgba(0, 0, 0, 0.75);
+    --app-shadow-float: 0 24px 64px -34px rgba(0, 0, 0, 0.85);
 
     --bg-primary: var(--tg-bg);
     --bg-secondary: var(--tg-surface);
@@ -87,7 +95,7 @@
   /* Плавные переходы для темы */
   * {
     transition-property: background-color, border-color, color, fill, stroke;
-    transition-duration: 180ms;
+    transition-duration: 140ms;
     transition-timing-function: ease-out;
   }
 
@@ -107,15 +115,16 @@
     background-color: var(--tg-surface);
     color: var(--tg-text);
     border: 1px solid var(--tg-border);
-    border-radius: 24px;
-    box-shadow: 0 18px 50px -36px rgba(15, 23, 42, 0.4);
+    border-radius: var(--app-radius-card);
+    box-shadow: var(--app-shadow-card);
   }
 
   .app-card-soft {
     background-color: var(--tg-glass);
     color: var(--tg-text);
     border: 1px solid var(--tg-border);
-    border-radius: 24px;
+    border-radius: var(--app-radius-soft);
+    box-shadow: var(--app-shadow-soft);
   }
 
   .app-header {
@@ -131,7 +140,7 @@
     color: var(--tg-accent-contrast);
     border-radius: 18px;
     font-weight: 600;
-    box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--app-shadow-float);
   }
 
   .tg-button:disabled {
@@ -162,6 +171,27 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.18em;
+  }
+
+  .app-page {
+    min-height: 100%;
+    background-color: var(--tg-bg);
+    color: var(--tg-text);
+  }
+
+  .app-panel {
+    background-color: var(--tg-surface);
+    border: 1px solid var(--tg-border);
+    border-radius: var(--app-radius-soft);
+    box-shadow: var(--app-shadow-soft);
+  }
+
+  .app-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tg-muted);
   }
 }
 

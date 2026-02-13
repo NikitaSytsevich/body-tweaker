@@ -5,7 +5,6 @@ import { ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 import { storageSet, storageSetJSON } from '../utils/storage';
 import { LEGAL_DOCS, LEGAL_VERSION, getLegalDocById, type LegalDocId } from './legal/legalDocs';
 import WebApp from '@twa-dev/sdk';
-import { TelegramSticker } from '../components/ui/TelegramSticker';
 
 interface Props {
   onComplete: () => void;
@@ -68,7 +67,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
 
   return (
     <div
-      style={{ paddingTop: 'calc(1.5rem + var(--app-top-offset))' }}
+      style={{ paddingTop: 'calc(0.75rem + var(--app-top-offset))' }}
       className="fixed inset-0 z-[9999] flex flex-col justify-between p-6 overflow-hidden app-surface"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_0%,rgba(76,141,255,0.22)_0%,rgba(76,141,255,0)_55%)]" />
@@ -86,7 +85,15 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             className="flex-1 flex flex-col items-center justify-center text-center"
           >
             <div className="relative mb-10">
-              <TelegramSticker context="welcome" size={220} fallback="✨" className="mx-auto" />
+              <div className="mx-auto w-[300px] h-[300px] rounded-[68px] border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)]/55 backdrop-blur-xl shadow-[var(--app-shadow-float)] p-8 flex items-center justify-center">
+                <div className="w-full h-full bg-[color:var(--tg-surface)]/92 rounded-[42px] flex items-center justify-center">
+                  <img
+                    src="/apple-touch-icon.png"
+                    alt="Body Tweaker Icon"
+                    className="w-[184px] h-[184px] rounded-[40px] object-cover shadow-[0_16px_34px_-24px_rgba(15,23,42,0.45)]"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Заголовок и описание */}
@@ -115,7 +122,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             key="legal"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex-1 flex flex-col h-full pt-10"
+            className="flex-1 flex flex-col h-full pt-3"
           >
             <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
               <div className="flex items-center gap-3 mb-6">
@@ -232,7 +239,7 @@ export const WelcomeScreen = ({ onComplete }: Props) => {
             exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.2 }}
             className="absolute inset-0 z-[10000] flex flex-col app-surface"
-            style={{ paddingTop: 'calc(var(--app-top-offset) + 96px)' }}
+            style={{ paddingTop: 'calc(var(--app-top-offset) + 16px)' }}
           >
             <div className="px-4 pb-2">
               <p className="text-xs uppercase tracking-widest font-bold app-muted">

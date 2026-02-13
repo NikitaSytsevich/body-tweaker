@@ -57,7 +57,7 @@ const TimerVisual = memo(({
                     </div>
 
                     {/* Подпись */}
-                    <span className="text-[10px] font-bold app-muted uppercase tracking-[0.2em]">
+                    <span className="text-[11px] font-bold app-muted uppercase tracking-[0.18em]">
                         {isFasting ? elapsedFormatted.split(':')[2] : 'Часов'}
                     </span>
                 </div>
@@ -152,7 +152,7 @@ export const FastingPage = () => {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className={cn("w-2 h-2 rounded-full", isFasting ? "bg-[color:var(--tg-accent)] animate-pulse" : "bg-[color:var(--tg-border)]")} />
-                        <span className="text-[10px] font-bold app-muted uppercase tracking-widest">
+                        <span className="text-[11px] font-bold app-muted uppercase tracking-widest">
                             {isFasting ? "Активность" : "Статус"}
                         </span>
                     </div>
@@ -191,7 +191,7 @@ export const FastingPage = () => {
                     )}
                 >
                     <div className="flex flex-col items-start z-10">
-                        <span className="text-[9px] font-bold uppercase tracking-wider opacity-70">
+                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">
                             {isFasting ? "Удержание..." : isReadyToStart ? "Подтверждено" : "Шаг 1"}
                         </span>
                         <span className="font-bold text-sm tracking-wide">

@@ -47,26 +47,26 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const MANUAL_THEME_VARS: Record<Theme, Record<string, string>> = {
     light: {
-      '--tg-bg': '#F2F2F7',
+      '--tg-bg': '#F3F4F6',
       '--tg-surface': '#FFFFFF',
-      '--tg-text': '#0F172A',
-      '--tg-muted': '#64748B',
-      '--tg-accent': '#0A84FF',
+      '--tg-text': '#17191D',
+      '--tg-muted': '#6B7280',
+      '--tg-accent': '#3B82F6',
       '--tg-accent-contrast': '#FFFFFF',
-      '--tg-border': 'rgba(15, 23, 42, 0.08)',
+      '--tg-border': 'rgba(23, 25, 29, 0.09)',
       '--tg-glass': 'rgba(255, 255, 255, 0.72)',
-      '--tg-glass-strong': 'rgba(255, 255, 255, 0.88)',
+      '--tg-glass-strong': 'rgba(255, 255, 255, 0.9)',
     },
     dark: {
-      '--tg-bg': '#0F1115',
-      '--tg-surface': '#1C1F26',
-      '--tg-text': '#F8FAFC',
-      '--tg-muted': '#98A2B3',
-      '--tg-accent': '#4C8DFF',
+      '--tg-bg': '#121417',
+      '--tg-surface': '#1D2127',
+      '--tg-text': '#F3F4F6',
+      '--tg-muted': '#9CA3AF',
+      '--tg-accent': '#5EA0FF',
       '--tg-accent-contrast': '#FFFFFF',
-      '--tg-border': 'rgba(255, 255, 255, 0.08)',
-      '--tg-glass': 'rgba(18, 20, 24, 0.7)',
-      '--tg-glass-strong': 'rgba(20, 22, 27, 0.85)',
+      '--tg-border': 'rgba(255, 255, 255, 0.1)',
+      '--tg-glass': 'rgba(25, 28, 34, 0.75)',
+      '--tg-glass-strong': 'rgba(28, 32, 38, 0.9)',
     },
   }
 
@@ -116,7 +116,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
     // Sync Telegram header and background colors (только если WebApp готов)
     try {
-      const headerColor = theme === 'dark' ? '#1C1C1E' : '#F2F2F7'
+      const headerColor = theme === 'dark' ? '#121417' : '#F3F4F6'
       if (WebApp.setHeaderColor && WebApp.setBackgroundColor) {
         WebApp.setHeaderColor(headerColor)
         WebApp.setBackgroundColor(headerColor)
@@ -140,7 +140,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       }
 
       try {
-        const headerColor = newTheme === 'dark' ? '#1C1C1E' : '#F2F2F7'
+        const headerColor = newTheme === 'dark' ? '#121417' : '#F3F4F6'
         if (WebApp.setHeaderColor && WebApp.setBackgroundColor) {
           WebApp.setHeaderColor(headerColor)
           WebApp.setBackgroundColor(headerColor)

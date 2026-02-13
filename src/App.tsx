@@ -16,8 +16,8 @@ import { storageGet } from './utils/storage';
 
 // Контейнер для профильных страниц с правильной высотой
 const ProfileLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="h-[100dvh] w-screen overflow-hidden bg-[#F2F2F7] dark:bg-[#1C1C1E] pt-[var(--app-top-offset)] relative">
-    <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-white/90 via-white/70 to-transparent dark:from-[#0B0F14]/90 dark:via-[#0B0F14]/70" />
+  <div className="h-[100dvh] w-screen overflow-hidden app-surface pt-[var(--app-top-offset)] relative">
+    <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-[color:var(--tg-surface)]/85 via-[color:var(--tg-surface)]/55 to-transparent" />
     {children}
   </div>
 );

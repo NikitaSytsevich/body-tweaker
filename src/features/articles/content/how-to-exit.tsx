@@ -5,6 +5,7 @@ import {
   ArticleLead,
   ArticleList,
   ArticleParagraph,
+  ArticleProgressChart,
   ArticleSection,
   ArticleSteps,
   ArticleSurface,
@@ -176,25 +177,10 @@ export const howToExit: Article = {
           Клинические рекомендации описывают, что симптомы рефидинг‑синдрома чаще всего проявляются в первые 5 дней после
           возобновления питания, пик — в первые 24–72 часа. Это «критическое окно», когда важны маленькие порции и наблюдение.
         </ArticleParagraph>
-        <ArticleSurface className="space-y-4">
-          {RISK_WINDOW.map(item => (
-            <div key={item.label} className="space-y-2">
-              <div className="flex items-center justify-between text-[12px] uppercase tracking-[0.2em] text-[color:var(--article-muted)]">
-                <span>{item.label}</span>
-                <span>{item.note}</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-[color:var(--article-surface)]">
-                <div
-                  className="h-full rounded-full bg-[color:var(--article-accent)]"
-                  style={{ width: `${item.value}%` }}
-                />
-              </div>
-            </div>
-          ))}
-          <p className="text-[12px] text-[color:var(--article-muted)]">
-            Иллюстративная шкала: ASPEN описывает проявления рефидинг‑синдрома в первые 5 дней после возобновления питания.
-          </p>
-        </ArticleSurface>
+        <ArticleProgressChart items={RISK_WINDOW} />
+        <p className="text-[12px] text-[color:var(--article-muted)]">
+          Иллюстративная шкала: ASPEN описывает проявления рефидинг‑синдрома в первые 5 дней после возобновления питания.
+        </p>
       </ArticleSection>
 
       <ArticleSection>
@@ -214,22 +200,7 @@ export const howToExit: Article = {
           Переход лучше строить по текстуре: от жидкого к мягкому и только затем к плотной пище. Ниже — условная шкала,
           которая показывает, как «усложнять» еду день за днем.
         </ArticleParagraph>
-        <ArticleSurface className="space-y-4">
-          {TEXTURE_RAMP.map(item => (
-            <div key={item.label} className="flex items-center gap-3">
-              <div className="w-20 text-[12px] font-semibold text-[color:var(--article-text)]">{item.label}</div>
-              <div className="flex-1">
-                <div className="h-2 w-full rounded-full bg-[color:var(--article-surface)]">
-                  <div
-                    className="h-full rounded-full bg-[color:var(--article-accent)]"
-                    style={{ width: `${item.value}%` }}
-                  />
-                </div>
-              </div>
-              <div className="w-32 text-[12px] text-[color:var(--article-muted)]">{item.note}</div>
-            </div>
-          ))}
-        </ArticleSurface>
+        <ArticleProgressChart items={TEXTURE_RAMP} />
       </ArticleSection>
 
       <ArticleSection>
@@ -282,22 +253,7 @@ export const howToExit: Article = {
           Это ориентировочная шкала: чем сильнее симптомы, тем осторожнее нужно быть. Если появляются выраженные
           симптомы — прекращайте выход и обращайтесь за помощью.
         </ArticleParagraph>
-        <ArticleSurface className="space-y-4">
-          {STOP_SIGNALS.map(item => (
-            <div key={item.label} className="flex items-center gap-3">
-              <div className="w-36 text-[12px] font-semibold text-[color:var(--article-text)]">{item.label}</div>
-              <div className="flex-1">
-                <div className="h-2 w-full rounded-full bg-[color:var(--article-surface)]">
-                  <div
-                    className="h-full rounded-full bg-[color:var(--article-accent)]"
-                    style={{ width: `${item.value}%` }}
-                  />
-                </div>
-              </div>
-              <div className="w-40 text-[12px] text-[color:var(--article-muted)]">{item.note}</div>
-            </div>
-          ))}
-        </ArticleSurface>
+        <ArticleProgressChart items={STOP_SIGNALS} />
       </ArticleSection>
 
       <ArticleSection>

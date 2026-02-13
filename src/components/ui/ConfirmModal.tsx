@@ -49,22 +49,22 @@ export const ConfirmModal = ({
 
       {/* Wrapper для центрирования */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
-        <div className="bg-white dark:bg-[#2C2C2E] rounded-[2rem] shadow-2xl max-w-sm w-full pointer-events-auto overflow-hidden animate-pop-in">
+        <div className="bg-[color:var(--tg-surface)] rounded-[2rem] shadow-2xl border border-[color:var(--tg-border)] max-w-sm w-full pointer-events-auto overflow-hidden animate-pop-in">
           <div className="p-6">
             <div className="flex items-start gap-4 mb-4">
-              <div className={cn('p-3 rounded-2xl bg-slate-50 dark:bg-[#3A3A3C] shrink-0', styles.icon)}>
+              <div className={cn('p-3 rounded-2xl bg-[color:var(--tg-glass)] shrink-0', styles.icon)}>
                 <AlertTriangle className={cn('w-6 h-6', styles.icon)} />
               </div>
               <div className="flex-1 pt-1">
-                <h3 className="text-lg font-[900] text-slate-800 dark:text-white leading-tight mb-1">{title}</h3>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-snug">{message}</p>
+                <h3 className="text-lg font-[900] app-header leading-tight mb-1">{title}</h3>
+                <p className="text-sm font-medium app-muted leading-snug">{message}</p>
               </div>
             </div>
 
             <div className="flex gap-3 mt-6">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-3.5 bg-slate-100 dark:bg-[#3A3A3C] hover:bg-slate-200 dark:hover:bg-[#4A4A4C] text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm transition-colors active:scale-95"
+                className="flex-1 px-4 py-3.5 bg-[color:var(--tg-glass)] hover:bg-[color:var(--tg-glass-strong)] app-header rounded-xl font-bold text-sm transition-colors active:scale-95"
               >
                 {cancelText}
               </button>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { loadArticleById } from '../content';
 import WebApp from '@twa-dev/sdk';
 import type { Article } from '../types';
+import { ChevronLeft, X } from 'lucide-react';
 
 export const ArticleDetailPage = () => {
   const { slug } = useParams();
@@ -62,7 +64,7 @@ export const ArticleDetailPage = () => {
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-[101] flex items-center justify-center bg-black/50 backdrop-blur-md">
-        <div className="rounded-2xl bg-white/90 px-6 py-4 text-sm font-semibold text-slate-700 shadow-lg dark:bg-[#2C2C2E] dark:text-white">
+        <div className="rounded-2xl bg-[color:var(--tg-surface)]/95 px-6 py-4 text-sm font-semibold app-header shadow-lg border border-[color:var(--tg-border)]">
           Загрузка статьи...
         </div>
       </div>
@@ -72,24 +74,41 @@ export const ArticleDetailPage = () => {
   if (!article) return null;
 
   return (
-    <>
-      <div
-        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md animate-fade-in"
-        onClick={() => navigate('/')}
-      />
+    <div
+      className="app-page w-full h-full overflow-y-auto animate-fade-in"
+      style={
+        {
+          ['--article-text' as string]: 'var(--tg-text)',
+          ['--article-muted' as string]: 'var(--tg-muted)',
+          ['--article-accent' as string]: 'var(--tg-accent)',
+          ['--article-border' as string]: 'var(--tg-border)',
+          ['--article-surface-2' as string]: 'var(--tg-glass)',
+        } as CSSProperties
+      }
+    >
+      <div className="sticky top-0 z-20 px-4 pt-[calc(var(--app-top-offset)+10px)] pb-3 bg-[linear-gradient(180deg,var(--tg-bg)_0%,color-mix(in_srgb,var(--tg-bg)_88%,transparent)_100%)] backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="w-10 h-10 rounded-full app-panel flex items-center justify-center app-muted"
+            aria-label="Назад к статьям"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="tg-chip">{article.category}</div>
+          <button
+            onClick={() => navigate('/')}
+            className="w-10 h-10 rounded-full app-panel flex items-center justify-center app-muted"
+            aria-label="Закрыть статью"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
 
-      <div
-        className="app-surface fixed inset-x-0 bottom-0 top-0 z-[101] flex flex-col overflow-hidden rounded-t-[32px] shadow-[0_30px_80px_-50px_rgba(0,0,0,0.7)] pt-[var(--app-top-offset)] animate-sheet-in"
-      >
-        <div
-          className="pointer-events-none absolute top-0 left-0 right-0"
-          style={{
-            height: 'var(--app-top-offset)',
-            background: 'linear-gradient(180deg, var(--tg-bg) 0%, rgba(255,255,255,0) 100%)',
-          }}
-        />
-        <div className="flex-1 overflow-y-auto">
-          <div className="relative h-[42vh] min-h-[280px] w-full bg-[color:var(--tg-surface)]">
+      <div className="px-4 pb-32">
+        <div className="relative rounded-[34px] overflow-hidden border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] shadow-[var(--app-shadow-card)]">
+          <div className="relative h-[34vh] min-h-[250px] bg-[color:var(--tg-glass)]">
             {article.imageUrl && (
               <img
                 src={article.imageUrl}
@@ -97,30 +116,30 @@ export const ArticleDetailPage = () => {
                 className="h-full w-full object-cover"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/80 pointer-events-none" />
-
-            <div className="absolute top-4 left-4 right-4 flex items-center justify-center">
-              <div className="tg-chip bg-black/40 text-white/85">
-                {article.category}
-              </div>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/8 to-black/68 pointer-events-none" />
           </div>
 
-          <div className="relative -mt-12 px-5 pb-28">
-            <div className="app-card rounded-[28px] p-6 shadow-[0_20px_60px_-50px_rgba(0,0,0,0.7)]">
-              <p className="text-[11px] uppercase tracking-[0.25em] app-muted">
-                {article.category}
+          <div className="relative -mt-14 px-4 pb-4">
+            <div className="rounded-[28px] border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)]/95 backdrop-blur-xl p-6 shadow-[var(--app-shadow-soft)]">
+              <p className="text-[11px] uppercase tracking-[0.2em] app-muted">
+                Материал
               </p>
-              <h1 className="mt-3 text-[30px] font-semibold leading-[1.15] tracking-tight app-header">
+              <h1 className="mt-3 text-[30px] font-semibold leading-[1.12] tracking-tight app-header">
                 {article.title}
               </h1>
-              <div className="mt-6 space-y-8">
-                {article.content}
-              </div>
+              <p className="mt-4 text-[17px] leading-[1.65] text-[color:var(--article-muted)] font-[Iowan_Old_Style,Georgia,serif]">
+                {article.summary}
+              </p>
             </div>
           </div>
         </div>
+
+        <div className="mt-4 rounded-[30px] border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] px-5 py-6 shadow-[var(--app-shadow-soft)]">
+          <div className="space-y-8">
+            {article.content}
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 };

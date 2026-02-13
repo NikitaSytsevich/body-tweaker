@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
 import type { ArticleMeta } from '../types';
 
 interface Props {
@@ -7,37 +8,40 @@ interface Props {
 
 export const ArticleCard = ({ article }: Props) => {
   return (
-    <div className="w-full mb-6 last:mb-24 transition-transform hover:scale-[0.99] active:scale-[0.98]">
+    <div className="w-full mb-5 last:mb-24 transition-transform active:scale-[0.99]">
       <Link
         to={`/articles/${article.id}`}
-        className="group block overflow-hidden rounded-[32px] border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] shadow-[0_20px_60px_-45px_rgba(0,0,0,0.45)]"
+        className="group block overflow-hidden rounded-[36px] border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] shadow-[var(--app-shadow-card)]"
       >
-        <div className="relative aspect-[3/2] w-full overflow-hidden bg-[color:var(--tg-glass)]">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[color:var(--tg-glass)]">
           {article.imageUrl ? (
             <img
               src={article.imageUrl}
               alt={article.title}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[color:var(--tg-glass)] text-[color:var(--tg-muted)]">
               Нет изображения
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/10 to-black/65" />
+          <div className="absolute left-4 top-4 rounded-full bg-black/35 text-white text-[11px] font-semibold tracking-wide px-3 py-1 backdrop-blur-md border border-white/25">
+            {article.category}
+          </div>
         </div>
 
-        <div className="space-y-3 p-5">
-          <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] app-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--tg-accent)]" />
-            {article.category}
-          </span>
-          <h3 className="text-[26px] font-semibold leading-tight tracking-tight app-header">
+        <div className="space-y-3 p-6">
+          <h3 className="text-[24px] font-semibold leading-tight tracking-tight app-header">
             {article.title}
           </h3>
-          <p className="text-[15px] leading-relaxed app-muted line-clamp-3">
+          <p className="text-[16px] leading-relaxed app-muted line-clamp-3">
             {article.summary}
           </p>
+          <div className="pt-1 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[color:var(--tg-accent)]">
+            Читать статью
+            <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </div>
         </div>
       </Link>
     </div>

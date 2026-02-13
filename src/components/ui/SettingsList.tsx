@@ -13,13 +13,13 @@ interface SettingsSectionProps {
 export const SettingsSection = ({ title, description, children }: SettingsSectionProps) => (
   <section className="space-y-2">
     {title && (
-      <p className="text-[11px] font-bold text-slate-400 dark:text-white/50 uppercase tracking-widest pl-2">
+      <p className="text-[11px] font-bold app-muted uppercase tracking-widest pl-2">
         {title}
       </p>
     )}
     {children}
     {description && (
-      <p className="text-[11px] leading-relaxed text-slate-400 dark:text-white/50 px-2">
+      <p className="text-[11px] leading-relaxed app-muted px-2">
         {description}
       </p>
     )}
@@ -34,9 +34,9 @@ interface SettingsGroupProps {
 export const SettingsGroup = ({ children, className }: SettingsGroupProps) => (
   <div
     className={cn(
-      "rounded-[1.8rem] overflow-hidden border border-white/60 dark:border-white/10",
-      "bg-white/70 dark:bg-[#1C1C1E]/80 backdrop-blur-xl",
-      "shadow-[0_12px_30px_-26px_rgba(15,23,42,0.45)]",
+      "rounded-[1.8rem] overflow-hidden border border-[color:var(--tg-border)]",
+      "bg-[color:var(--tg-surface)]/92 backdrop-blur-xl",
+      "shadow-[var(--app-shadow-soft)]",
       className
     )}
   >
@@ -99,20 +99,20 @@ export const SettingsRow = ({
           <p
             className={cn(
               "text-sm font-semibold",
-              tone === 'danger' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-white'
+              tone === 'danger' ? 'text-rose-600 dark:text-rose-400' : 'app-header'
             )}
           >
             {label}
           </p>
           {description && (
-            <p className="text-xs text-slate-400 dark:text-slate-500 truncate max-w-[240px]">
+            <p className="text-xs app-muted truncate max-w-[240px]">
               {description}
             </p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 shrink-0">
+      <div className="flex items-center gap-2 text-xs app-muted shrink-0">
         {value && <span className="font-medium">{value}</span>}
         {right}
         {!right && isInteractive && <ChevronRight className="w-4 h-4" />}
@@ -122,7 +122,7 @@ export const SettingsRow = ({
 
   const baseClassName = cn(
     "flex items-center justify-between gap-4 px-4 py-3.5 text-left w-full",
-    isInteractive && "hover:bg-white/60 dark:hover:bg-white/5 transition-colors",
+    isInteractive && "hover:bg-[color:var(--tg-glass)] transition-colors",
     disabled && "opacity-50 pointer-events-none"
   );
 

@@ -206,8 +206,9 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
         aria-label={ariaLabel}
         className={cn(
           "rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center shrink-0 animate-pulse",
+          "border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)]",
           sizeClasses[size],
-          onClick && "hover:ring-2 hover:ring-purple-500/50 cursor-pointer",
+          onClick && "hover:ring-2 hover:ring-[color:var(--tg-accent)]/40 cursor-pointer",
           className
         )}
       >
@@ -225,7 +226,7 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
         className={cn(
           "rounded-full overflow-hidden transition-colors shrink-0 relative",
           sizeClasses[size],
-          onClick && "hover:ring-2 hover:ring-purple-500/50 cursor-pointer",
+          onClick && "hover:ring-2 hover:ring-[color:var(--tg-accent)]/40 cursor-pointer",
           className
         )}
       >
@@ -254,8 +255,6 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
             if (img.naturalWidth === 0 || img.naturalHeight === 0) {
               console.warn('[ProfileAvatar] Image loaded but has zero dimensions');
               setImageError(true);
-            } else {
-              console.log('[ProfileAvatar] Image loaded successfully:', img.naturalWidth, 'x', img.naturalHeight);
             }
           }}
           loading="eager"
@@ -271,9 +270,9 @@ export const ProfileAvatar = ({ onClick, size = 'md', className, onUpdate }: Pro
         onClick={onClick}
         aria-label={ariaLabel}
         className={cn(
-        "rounded-full bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors shrink-0",
+        "rounded-full bg-[color:var(--tg-glass)] border border-[color:var(--tg-border)] flex items-center justify-center app-muted transition-colors shrink-0",
         sizeClasses[size],
-        onClick && "hover:ring-2 hover:ring-purple-500/50 cursor-pointer",
+        onClick && "hover:ring-2 hover:ring-[color:var(--tg-accent)]/40 cursor-pointer",
         className
       )}
     >

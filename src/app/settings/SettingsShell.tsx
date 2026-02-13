@@ -36,21 +36,21 @@ export const SettingsShell = ({ title, subtitle, children, rightSlot, className 
   }, [navigate]);
 
   return (
-    <div className={cn('h-full bg-[#F2F2F7] dark:bg-[#1C1C1E] flex flex-col', className)}>
+    <div className={cn('h-full app-page flex flex-col', className)}>
       <div className="px-5 pt-5 pb-3 shrink-0 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-full bg-white/80 dark:bg-white/10 border border-white/70 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/20 transition-colors"
+          className="w-9 h-9 rounded-full app-panel flex items-center justify-center app-muted hover:brightness-[0.98] transition-colors"
           aria-label="Назад"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="text-[22px] font-[900] text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-[22px] font-[900] app-header tracking-tight">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+            <p className="text-xs app-muted font-medium">
               {subtitle}
             </p>
           )}
