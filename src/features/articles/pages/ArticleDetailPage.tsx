@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { loadArticleById } from '../content';
 import WebApp from '@twa-dev/sdk';
 import type { Article } from '../types';
-import { ChevronLeft, X } from 'lucide-react';
 
 export const ArticleDetailPage = () => {
   const { slug } = useParams();
@@ -87,22 +86,8 @@ export const ArticleDetailPage = () => {
       }
     >
       <div className="sticky top-0 z-20 px-4 pt-3 pb-3 bg-[linear-gradient(180deg,var(--tg-bg)_0%,color-mix(in_srgb,var(--tg-bg)_88%,transparent)_100%)] backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-3">
-          <button
-            onClick={() => navigate('/')}
-            className="w-10 h-10 rounded-full app-panel flex items-center justify-center app-muted"
-            aria-label="Назад к статьям"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+        <div className="flex items-center justify-center">
           <div className="tg-chip">{article.category}</div>
-          <button
-            onClick={() => navigate('/')}
-            className="w-10 h-10 rounded-full app-panel flex items-center justify-center app-muted"
-            aria-label="Закрыть статью"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
       </div>
 

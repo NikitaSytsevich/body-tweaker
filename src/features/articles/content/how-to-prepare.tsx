@@ -11,219 +11,254 @@ import {
   ArticleSurface,
 } from '../components/ArticleBlocks';
 
-const FASTING_PREP_STEPS = [
+const PREP_LOAD_CURVE = [
+  { label: 'День -7', value: 90, note: 'фиксируем режим' },
+  { label: 'День -6', value: 80, note: 'чистим рацион' },
+  { label: 'День -5', value: 68, note: 'снижаем кофеин' },
+  { label: 'День -4', value: 58, note: 'убираем пищевой шум' },
+  { label: 'День -3', value: 45, note: 'легкая структура дня' },
+  { label: 'День -2', value: 32, note: 'подготовка ЖКТ' },
+  { label: 'День -1', value: 20, note: 'мягкий вход' },
+];
+
+const START_DAY_PROTOCOL = [
+  { label: 'Утро', value: 30, note: 'вода + спокойный темп' },
+  { label: 'День', value: 50, note: 'минимум стресса' },
+  { label: 'Вечер', value: 70, note: 'оценка самочувствия' },
+  { label: 'Ночь', value: 40, note: 'ранний сон' },
+];
+
+const PREP_STEPS = [
   {
-    title: 'Оцените риски до старта',
-    text: 'При диабете на инсулине/сульфонилмочевине, беременности, низкой массе тела, расстройствах пищевого поведения, активных хронических заболеваниях или приеме препаратов, требующих еды, старт только через врача.',
+    title: 'Сначала безопасность, потом амбиции',
+    text: 'Определите противопоказания до старта: беременность, активные хронические состояния, низкий вес, эпизоды расстройств пищевого поведения, диабет с терапией, требующей отдельного протокола.',
   },
   {
-    title: 'Снизьте стимуляторы заранее',
-    text: 'Кофеин и никотин снижают комфорт старта. Плавное уменьшение за 5-7 дней уменьшает головную боль и раздражительность в первый день голода.',
+    title: 'Стабилизируйте ритм сна',
+    text: 'За 5-7 дней до старта выровняйте время отхода ко сну. Подготовка работает лучше, когда нервная система не живет в режиме дефицита сна.',
   },
   {
-    title: 'Сделайте рацион проще и мягче',
-    text: 'Переходите от тяжелой и ультрапереработанной еды к цельным продуктам: овощи, бобовые, цельные крупы, рыба/тофу, кисломолочные по переносимости.',
+    title: 'Упростите еду, а не обнуляйте ее резко',
+    text: 'Уберите переедание и тяжелые сочетания, оставьте простые блюда из цельных продуктов. Резкая голодовка на фоне хаотичного рациона почти всегда переносится хуже.',
   },
   {
-    title: 'Синхронизируйте сон и питание',
-    text: 'Стабильное окно приема пищи и ранний ужин обычно дают более мягкий вход. Сон в последние 3 дня подготовки важнее любой добавки.',
+    title: 'Снижайте стимуляторы ступенчато',
+    text: 'Кофеин, никотин и избыток сахара лучше уменьшать постепенно. Это снижает риск головной боли, раздражительности и ложного чувства «непереносимости» протокола.',
   },
   {
-    title: 'Продумайте день старта',
-    text: 'Уберите перегруженные встречи и интенсивные тренировки. Первый день лучше проводить в спокойном режиме с прогулками и водой.',
+    title: 'Планируйте выход заранее',
+    text: 'Подготовка без сценария выхода - неполный протокол. До старта заранее определите, чем и в какой последовательности вы будете возвращать питание.',
   },
 ];
 
-const PREP_TIMELINE = [
-  { label: 'День -7', value: 92, note: 'убираем хаос в питании' },
-  { label: 'День -6', value: 84, note: 'фиксируем режим воды/сна' },
-  { label: 'День -5', value: 74, note: 'снижаем кофеин на 25-30%' },
-  { label: 'День -4', value: 64, note: 'меньше соли и сладкого' },
-  { label: 'День -3', value: 52, note: 'легкий ужин до 19:00-20:00' },
-  { label: 'День -2', value: 38, note: 'простые блюда и мягкая клетчатка' },
-  { label: 'День -1', value: 24, note: 'минимум пищевой нагрузки' },
-];
-
-const RESEARCH_CARDS = [
-  {
-    title: 'Сравнение форматов голодания',
-    source: 'BMJ, 2025 (network meta-analysis, 99 РКИ, n=6582)',
-    quote: '"All intermittent fasting and continuous energy restriction strategies reduced body weight when compared with ad-libitum diet."',
-    href: 'https://www.bmj.com/content/389/bmj-2024-082007.long',
-    note: 'Вывод: формат можно выбирать по удобству и устойчивости, а не по обещаниям «магического» эффекта.',
-  },
-  {
-    title: 'TRE при метаболическом синдроме',
-    source: 'Annals of Internal Medicine, 2024',
-    quote: '"Personalized 8- to 10-hour TRE ... modestly improves glycemic regulation."',
-    href: 'https://pubmed.ncbi.nlm.nih.gov/39348690/',
-    note: 'Практика: фиксированное пищевое окно (8-10 часов) может быть мягким стартом перед более длительным протоколом.',
-  },
-  {
-    title: '4:3 режим и приверженность',
-    source: 'Annals of Internal Medicine, 2025 (12 месяцев, РКИ)',
-    quote: '"4:3 IMF resulted in modestly greater weight loss ... at 12 months."',
-    href: 'https://www.acpjournals.org/doi/10.7326/ANNALS-24-01631',
-    note: 'Практика: заранее продуманные «легкие дни» помогают удерживать режим дольше.',
-  },
-];
-
-const PREP_PLAN_7_DAYS = [
+const PREP_WEEK_PLAN = [
   {
     day: 'День -7',
-    focus: 'Старт без стресса',
-    breakfast: 'Овсянка на воде/молоке 1:1, ягоды, 1 ч. л. семян льна.',
-    lunch: 'Гречка, запеченные овощи, индейка/тофу, зелень.',
-    dinner: 'Овощной суп-пюре + тост цельнозерновой.',
-    extras: [
-      'Вода: 30-35 мл/кг в сутки.',
-      'Кофеин: оставьте привычный уровень, зафиксируйте базу.',
+    focus: 'Стабильность',
+    nutrition: [
+      'Завтрак: каша + ягоды/фрукты + вода.',
+      'Обед: крупа + овощи + умеренный белок.',
+      'Ужин: теплое овощное блюдо, без поздних перекусов.',
+    ],
+    routine: [
+      'Вода: 30-35 мл/кг.',
+      'Сон: фиксируем время отхода.',
       'Активность: 30-40 минут ходьбы.',
     ],
+    avoid: ['Переедание вечером', 'Алкоголь'],
   },
   {
     day: 'День -6',
-    focus: 'Режим и стабильность',
-    breakfast: 'Йогурт без сахара/кефир + яблоко + горсть орехов.',
-    lunch: 'Чечевичный суп, салат из овощей с оливковым маслом.',
-    dinner: 'Рис + тушеные кабачок/морковь + рыба/темпе.',
-    extras: [
-      'Сон: отбой на 30-45 минут раньше.',
-      'Соль: не досаливать готовую еду.',
-      'Алкоголь: полный стоп.',
+    focus: 'Чистый рацион',
+    nutrition: [
+      'Убираем фастфуд, жареное и избыток сладкого.',
+      'Добавляем супы, тушеные овощи, мягкие гарниры.',
+      'Белок оставляем умеренно, без тяжести.',
     ],
+    routine: [
+      'Соль без избытка.',
+      'Последний прием пищи за 3-4 часа до сна.',
+      'Легкая прогулка после ужина.',
+    ],
+    avoid: ['Новые БАДы в высоких дозах', 'Интенсивные вечерние тренировки'],
   },
   {
     day: 'День -5',
-    focus: 'Минус стимуляторы',
-    breakfast: 'Гречневая каша, груша, травяной чай.',
-    lunch: 'Киноа/булгур, овощи, фасоль или нут.',
-    dinner: 'Теплый салат из овощей и листовой зелени.',
-    extras: [
-      'Кофеин: минус 25-30% от обычной дозы.',
-      'Сладкое: заменить на фрукты 1-2 порции.',
-      'Экран вечером: меньше на 1 час перед сном.',
+    focus: 'Снижение кофеина',
+    nutrition: [
+      'Сохраняем простые теплые блюда.',
+      'Клетчатка умеренная, без перегруза кишечника.',
+      'Сладкое заменяем фруктами в контролируемом объеме.',
     ],
+    routine: [
+      'Кофеин: минус 25-30% от привычного.',
+      'Экранное время вечером сокращаем на 1 час.',
+      'Добавляем 10 минут спокойного дыхания перед сном.',
+    ],
+    avoid: ['Энергетики', 'Крепкий кофе после 14:00'],
   },
   {
     day: 'День -4',
-    focus: 'Антивоспалительный уклон',
-    breakfast: 'Чиа-пудинг/овсянка + ягоды.',
-    lunch: 'Овощное рагу + порция бобовых.',
-    dinner: 'Запеченная цветная капуста + йогуртовый соус без сахара.',
-    extras: [
-      'Добавьте 1-2 порции ферментированных продуктов (по переносимости).',
-      'Кофеин: еще минус 20-25%.',
-      'Тренировки: без высокоинтенсивных сессий.',
+    focus: 'Антивоспалительный режим',
+    nutrition: [
+      'Супы, каши, тушеные овощи как база.',
+      'Минимум сильно обработанных продуктов.',
+      'Нормальный, но не высокий объем еды.',
     ],
+    routine: [
+      'Контроль стрессовых триггеров: новости/перегруз.',
+      'Гидратация равномерно в течение дня.',
+      'Планируем «спокойный день 0» в календаре.',
+    ],
+    avoid: ['Поздний плотный ужин', 'Частые сладкие перекусы'],
   },
   {
     day: 'День -3',
     focus: 'Снижение пищевой плотности',
-    breakfast: 'Рисовая каша + банан.',
-    lunch: 'Легкий суп + немного крупы + зелень.',
-    dinner: 'Тушеные овощи, травяной чай.',
-    extras: [
-      'Последний прием пищи: за 3-4 часа до сна.',
-      'Кофеин: до 1 небольшой порции утром или 0.',
-      'Шаги: спокойная прогулка после ужина 20-30 минут.',
+    nutrition: [
+      'Больше мягких блюд и жидких форм.',
+      'Меньше сложных многокомпонентных ужинов.',
+      'Жирные тяжелые блюда убираем.',
     ],
+    routine: [
+      'Кофеин: не более 1 небольшой порции утром.',
+      'Сон: цель 7.5-8 часов.',
+      'Легкая растяжка/йога без усилия.',
+    ],
+    avoid: ['Силовые PR-тренировки', 'Пищевые эксперименты'],
   },
   {
     day: 'День -2',
-    focus: 'Очень легкий рацион',
-    breakfast: 'Печеное яблоко + небольшая порция каши.',
-    lunch: 'Овощной бульон, мягкие овощи, немного риса.',
-    dinner: 'Суп-пюре или рагу без тяжелых жиров.',
-    extras: [
-      'Исключите жареное, фастфуд, колбасы, избыток клетчатки.',
-      'Проверьте план на день старта: вода, график, отсутствие перегруза.',
-      'Сон не менее 7.5-8 часов.',
+    focus: 'Подготовка ЖКТ',
+    nutrition: [
+      'Овощной бульон, каши на воде, мягкие овощи.',
+      'По переносимости - печеные фрукты.',
+      'Порции меньше обычных.',
     ],
+    routine: [
+      'Никакого алкоголя и ночных перекусов.',
+      'Проверяем рабочий график на день старта.',
+      'Собираем воду и легкий план активности.',
+    ],
+    avoid: ['Острое/жареное', 'Избыток соли'],
   },
   {
     day: 'День -1',
     focus: 'Мягкий вход',
-    breakfast: 'Теплый травяной чай, мягкий фрукт/небольшая каша.',
-    lunch: 'Прозрачный овощной бульон + немного риса (по самочувствию).',
-    dinner: 'Либо легкий бульон до 17:00-18:00, либо только вода.',
-    extras: [
-      'Кофеин: 0.',
-      'Только спокойная активность и ранний сон.',
-      'Подготовьте «красные флаги», при которых вы прекращаете протокол.',
+    nutrition: [
+      'Теплые жидкие или полужидкие блюда.',
+      'Последний прием пищи ранний и спокойный.',
+      'Никаких «прощальных застолий».',
     ],
+    routine: [
+      'Кофеин: 0.',
+      'Максимум восстановления и спокойного темпа.',
+      'Подготовка чек-листа сигналов остановки.',
+    ],
+    avoid: ['Ночные дедлайны', 'Сильная эмоциональная перегрузка'],
+  },
+];
+
+const PREP_ERRORS = [
+  'Резко перейти из хаотичного питания в строгий протокол за 1 день.',
+  'Начинать голодание в период недосыпа или на фоне конфликта/перегруза.',
+  'Игнорировать лекарства, которые требуют еды.',
+  'Пытаться «пересидеть» выраженное ухудшение самочувствия.',
+  'Не иметь плана мягкого выхода из голодания.',
+];
+
+const READY_CHECKLIST = [
+  'Я понимаю цель протокола и его продолжительность.',
+  'Я исключил очевидные противопоказания или согласовал протокол с врачом.',
+  'Я заранее снизил кофеин, наладил сон и убрал пищевой хаос.',
+  'У меня есть простой план дня старта и план выхода.',
+  'Я знаю красные флаги, при которых прекращаю практику.',
+];
+
+const PREP_SOURCES = [
+  {
+    label:
+      'Semnani-Azad et al. Intermittent fasting strategies and continuous energy restriction for adults with overweight and obesity (BMJ, 2025).',
+    href: 'https://www.bmj.com/content/389/bmj-2024-082007.long',
+  },
+  {
+    label:
+      'Manoogian et al. Time-Restricted Eating in Adults With Metabolic Syndrome (Annals of Internal Medicine, 2024).',
+    href: 'https://pubmed.ncbi.nlm.nih.gov/39348690/',
+  },
+  {
+    label:
+      'Catenacci et al. Effect of 4:3 Intermittent Fasting on Weight Loss at 12 Months (Annals of Internal Medicine, 2025).',
+    href: 'https://www.acpjournals.org/doi/10.7326/ANNALS-24-01631',
+  },
+  {
+    label: 'AuSPEN Consensus Statements on Refeeding Syndrome (Nutrition & Dietetics, 2025).',
+    href: 'https://pubmed.ncbi.nlm.nih.gov/40090863/',
+  },
+  {
+    label: 'Commissati et al. Prolonged fasting and transient inflammatory response (Molecular Metabolism, 2025).',
+    href: 'https://pubmed.ncbi.nlm.nih.gov/40268190/',
   },
 ];
 
 export const howToPrepare: Article = {
   id: 'how-to-prepare',
-  title: 'Как подготовиться к голоданию: научный протокол на 7 дней',
+  title: 'Как правильно подготовиться к голоданию: большой практический протокол',
   category: 'Гайд',
   summary:
-    'Большой практический план подготовки к голоданию: свежие исследования 2024-2025, безопасность, 7-дневный рацион и чек-лист готовности.',
+    'Пошаговая подготовка без резких срывов: безопасность, режим, питание, кофеин, график на 7 дней, день старта и чек-лист готовности.',
   imageUrl: '/images/articles/new/IMG_0413.webp',
   content: (
     <div className="space-y-10">
       <ArticleSection>
         <ArticleLead>
-          Подготовка к голоданию определяет результат сильнее, чем сам старт. Главная цель недели перед голоданием: снизить
-          физиологический стресс, стабилизировать режим сна и питания, уменьшить стимуляторы и подойти к дню 0 без резких
-          качелей по сахару, аппетиту и самочувствию.
+          Хорошее голодание начинается не в день старта, а за неделю до него. Цель подготовки проста: уменьшить метаболический
+          шум, стабилизировать нервную систему и подойти к первому дню без резких качелей по голоду, энергии и настроению.
+          Чем чище вход, тем мягче сам протокол и тем легче выход.
         </ArticleLead>
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading>Что говорят последние исследования (2024-2025)</ArticleHeading>
-        <div className="space-y-4">
-          {RESEARCH_CARDS.map(card => (
-            <ArticleSurface key={card.title} className="space-y-3">
-              <p className="text-[15px] font-semibold text-[color:var(--article-text)]">{card.title}</p>
-              <p className="text-[13px] uppercase tracking-[0.18em] text-[color:var(--article-muted)]">{card.source}</p>
-              <ArticleCallout tone="neutral" title="Цитата из аннотации">
-                <p className="text-[15px] leading-[1.7] text-[color:var(--article-text)]">{card.quote}</p>
-              </ArticleCallout>
-              <ArticleParagraph className="text-[15px]">{card.note}</ArticleParagraph>
-              <a
-                href={card.href}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex text-[14px] font-medium text-[color:var(--article-accent)] underline"
-              >
-                Открыть исследование
-              </a>
-            </ArticleSurface>
-          ))}
-        </div>
+        <ArticleHeading>Логика подготовки: снижаем нагрузку, сохраняем контроль</ArticleHeading>
+        <ArticleParagraph>
+          Подготовка - это не «диета перед диетой». Это управляемое снижение пищевой и стрессовой нагрузки. Если за 7 дней вы
+          выравниваете сон, убираете пищевые перегибы и снижаете стимуляторы, старт проходит заметно ровнее: меньше головной
+          боли, меньше тяги к быстрым углеводам, меньше импульсивных срывов.
+        </ArticleParagraph>
+        <ArticleProgressChart items={PREP_LOAD_CURVE} />
+        <ArticleCallout tone="info" title="Главный принцип недели">
+          Не делайте резких движений. Мягкая последовательность почти всегда эффективнее, чем строгий «идеальный» план, который
+          ломается на второй день.
+        </ArticleCallout>
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading>Безопасность перед стартом</ArticleHeading>
+        <ArticleHeading>Перед стартом: медицинский фильтр</ArticleHeading>
         <ArticleParagraph>
-          В 2025 году в консенсусе AuSPEN по рефидинг-синдрому отдельно подчеркнуты оценка риска, тиамин/мультивитамины у
-          группы риска и мониторинг электролитов при возобновлении питания. Это особенно важно, если в анамнезе есть эпизоды
-          недоедания, выраженная потеря веса или сопутствующая терапия.
+          Самостоятельный старт уместен только при низком риске. Если есть сомнения по состоянию здоровья, сначала обсуждение с
+          врачом. Это не формальность: именно на этапе отбора предотвращается большая часть осложнений.
         </ArticleParagraph>
-        <ArticleCallout tone="warning" title="Кому нельзя начинать самостоятельно">
+        <ArticleCallout tone="warning" title="Когда нельзя стартовать самостоятельно">
           <ArticleList
             items={[
               'Беременность и грудное вскармливание.',
-              'Диабет на инсулине/сульфонилмочевине без согласованной схемы с врачом.',
-              'Низкий ИМТ, недавняя значимая потеря веса, подозрение на дефициты.',
-              'Расстройства пищевого поведения сейчас или в анамнезе.',
-              'Хронические заболевания в фазе нестабильности (почки, печень, сердце и др.).',
+              'Диабет на инсулине или препаратах с риском гипогликемии без персонального плана.',
+              'Выраженный дефицит массы тела, недавняя значимая потеря веса, дефицитные состояния.',
+              'Текущие или прошлые расстройства пищевого поведения.',
+              'Нестабильные заболевания сердца, почек, печени, ЖКТ или эндокринной системы.',
             ]}
           />
         </ArticleCallout>
-        <ArticleCallout tone="info" title="Новая важная деталь из исследований 2025">
-          В исследовании длительного водного голодания (Molecular Metabolism, 2025) описан транзиторный воспалительный ответ,
-          поэтому длительные протоколы без медицинского наблюдения остаются рискованной стратегией.
+        <ArticleCallout tone="neutral" title="Практический минимум перед стартом">
+          Проверьте список лекарств, которые принимаете ежедневно. Если препарат нужно принимать с едой, это должно быть
+          заранее учтено в протоколе, а не решаться в момент ухудшения самочувствия.
         </ArticleCallout>
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading>5 шагов подготовки за неделю</ArticleHeading>
+        <ArticleHeading>5 опорных шагов подготовки</ArticleHeading>
         <ArticleSteps
-          items={FASTING_PREP_STEPS.map(step => (
+          items={PREP_STEPS.map(step => (
             <>
               <strong>{step.title}.</strong> {step.text}
             </>
@@ -232,42 +267,29 @@ export const howToPrepare: Article = {
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading>Шкала снижения пищевой нагрузки</ArticleHeading>
+        <ArticleHeading>Большой план на 7 дней</ArticleHeading>
         <ArticleParagraph>
-          Это визуальный ориентир: каждый день мы немного уменьшаем плотность и стимуляторную нагрузку, чтобы день 0 не стал
-          метаболическим «обрывом».
-        </ArticleParagraph>
-        <ArticleProgressChart items={PREP_TIMELINE} />
-      </ArticleSection>
-
-      <ArticleSection>
-        <ArticleHeading>План питания на 7 дней до голодания</ArticleHeading>
-        <ArticleParagraph>
-          План ниже сделан как практичный шаблон: завтрак, обед, ужин и «сторонние приемы» (сон, вода, кофеин, активность).
-          Подстройте объем порций под вашу норму и переносимость.
+          Ниже - рабочая схема, которую можно адаптировать под ваш график. Ключевая идея: каждый день немного снижать
+          метаболическую и поведенческую турбулентность, а не пытаться сделать все идеально за один вечер.
         </ArticleParagraph>
         <div className="space-y-4">
-          {PREP_PLAN_7_DAYS.map(day => (
-            <ArticleSurface key={day.day} className="space-y-3">
-              <div className="flex items-center justify-between gap-4">
+          {PREP_WEEK_PLAN.map(day => (
+            <ArticleSurface key={day.day} className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
                 <p className="text-[15px] font-semibold text-[color:var(--article-text)]">{day.day}</p>
                 <span className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--article-muted)]">{day.focus}</span>
               </div>
-              <ArticleList
-                items={[
-                  <>
-                    <strong>Завтрак:</strong> {day.breakfast}
-                  </>,
-                  <>
-                    <strong>Обед:</strong> {day.lunch}
-                  </>,
-                  <>
-                    <strong>Ужин:</strong> {day.dinner}
-                  </>,
-                ]}
-              />
-              <ArticleCallout tone="success" title="Сторонние приемы">
-                <ArticleList items={day.extras} className="space-y-2" />
+
+              <ArticleCallout tone="success" title="Питание">
+                <ArticleList items={day.nutrition} className="space-y-2" />
+              </ArticleCallout>
+
+              <ArticleCallout tone="info" title="Режим и поведение">
+                <ArticleList items={day.routine} className="space-y-2" />
+              </ArticleCallout>
+
+              <ArticleCallout tone="warning" title="Что не делать">
+                <ArticleList items={day.avoid} className="space-y-2" />
               </ArticleCallout>
             </ArticleSurface>
           ))}
@@ -275,99 +297,55 @@ export const howToPrepare: Article = {
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading>День 0: аккуратный запуск</ArticleHeading>
+        <ArticleHeading>День старта: сценарий без спешки</ArticleHeading>
+        <ArticleParagraph>
+          В день 0 важно не «доказать силу воли», а поддерживать управляемый ритм. Чем спокойнее поведение, тем точнее вы
+          отличите нормальную адаптацию от симптомов, при которых нужно остановиться.
+        </ArticleParagraph>
+        <ArticleProgressChart items={START_DAY_PROTOCOL} />
         <ArticleList
           items={[
-            'Утро без спешки: вода, легкая прогулка, минимум информационной нагрузки.',
-            'Тренировки только легкие (ходьба, мобилизация, дыхание).',
-            'Оценка самочувствия каждые 3-4 часа: слабость, головокружение, сердцебиение, тревога.',
-            'Если состояние ухудшается, протокол нужно прервать безопасно и перейти к мягкому питанию.',
+            'Утро: вода, медленный темп, без информационной перегрузки.',
+            'День: прогулка, дыхательные практики, умеренная бытовая активность.',
+            'Вечер: контроль самочувствия (пульс, давление, слабость, головокружение).',
+            'Ночь: ранний сон и минимум стимулов.',
           ]}
         />
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading>Чек-лист готовности</ArticleHeading>
-        <ArticleList
-          items={[
-            'У меня есть понятная цель голодания и план выхода.',
-            'Я исключил ключевые риски или согласовал протокол с врачом.',
-            'Я снизил кофеин заранее и подготовил спокойный график на день 0.',
-            'Я прошел 7-дневный подготовительный рацион без резких срывов.',
-            'Я понимаю, при каких симптомах нужно остановиться.',
-          ]}
-        />
+        <ArticleHeading>Частые ошибки, которые ломают подготовку</ArticleHeading>
+        <ArticleSurface>
+          <ArticleList items={PREP_ERRORS} />
+        </ArticleSurface>
       </ArticleSection>
 
       <ArticleSection>
-        <ArticleHeading as="h3">Источники (актуальные + базовые)</ArticleHeading>
-        <ArticleSurface className="space-y-3">
+        <ArticleHeading>Финальный чек-лист готовности</ArticleHeading>
+        <ArticleSurface>
+          <ArticleList items={READY_CHECKLIST} />
+        </ArticleSurface>
+        <ArticleCallout tone="success" title="Практическое правило">
+          Если по чек-листу выполнено меньше 4 пунктов из 5, лучше перенести старт на несколько дней и доработать подготовку.
+          Это почти всегда лучше, чем идти в протокол на фоне хаоса.
+        </ArticleCallout>
+      </ArticleSection>
+
+      <ArticleSection>
+        <ArticleHeading as="h3">Источники</ArticleHeading>
+        <ArticleSurface>
           <ArticleList
-            items={[
+            items={PREP_SOURCES.map(source => (
               <a
-                key="bmj-2025-meta"
-                href="https://www.bmj.com/content/389/bmj-2024-082007.long"
+                key={source.href}
+                href={source.href}
                 target="_blank"
                 rel="noreferrer"
                 className="text-[color:var(--article-accent)] underline"
               >
-                Semnani-Azad et al. Intermittent fasting strategies... BMJ, 18 June 2025 (systematic review + network meta-analysis)
-              </a>,
-              <a
-                key="annals-2024-tre-mets"
-                href="https://pubmed.ncbi.nlm.nih.gov/39348690/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[color:var(--article-accent)] underline"
-              >
-                Manoogian et al. Time-Restricted Eating in Adults With Metabolic Syndrome. Ann Intern Med, 2024
-              </a>,
-              <a
-                key="annals-2025-43"
-                href="https://www.acpjournals.org/doi/10.7326/ANNALS-24-01631"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[color:var(--article-accent)] underline"
-              >
-                Catenacci et al. The Effect of 4:3 Intermittent Fasting on Weight Loss at 12 Months. Ann Intern Med, 2025
-              </a>,
-              <a
-                key="auspen-2025-refeeding"
-                href="https://pubmed.ncbi.nlm.nih.gov/40090863/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[color:var(--article-accent)] underline"
-              >
-                AuSPEN Consensus Statements on Refeeding Syndrome. Nutrition &amp; Dietetics, 2025
-              </a>,
-              <a
-                key="molmetab-2025-pf"
-                href="https://pubmed.ncbi.nlm.nih.gov/40268190/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[color:var(--article-accent)] underline"
-              >
-                Commissati et al. Prolonged fasting promotes systemic inflammation... Molecular Metabolism, 2025
-              </a>,
-              <a
-                key="nutr-rev-2023-waterfast"
-                href="https://pubmed.ncbi.nlm.nih.gov/37377031/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[color:var(--article-accent)] underline"
-              >
-                Anton et al. Efficacy and safety of prolonged water fasting. Nutrition Reviews, 2023
-              </a>,
-              <a
-                key="caffeine-review"
-                href="https://pubmed.ncbi.nlm.nih.gov/15448977/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[color:var(--article-accent)] underline"
-              >
-                Juliano &amp; Griffiths. A critical review of caffeine withdrawal, 2004 (временная динамика симптомов)
-              </a>,
-            ]}
+                {source.label}
+              </a>
+            ))}
           />
         </ArticleSurface>
       </ArticleSection>

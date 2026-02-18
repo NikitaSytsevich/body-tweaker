@@ -132,21 +132,24 @@ export const ArticleSteps = ({ items, className }: ListProps) => (
 export const ArticleProgressChart = ({ items, className }: ProgressChartProps) => (
   <div
     className={cn(
-      'space-y-3 rounded-[26px] border border-[color:var(--article-border)] bg-[linear-gradient(160deg,rgba(255,255,255,0.92),rgba(248,250,255,0.72))] p-4 shadow-[var(--app-shadow-soft)]',
+      'space-y-3 rounded-[26px] border border-[color:var(--article-border)] bg-[color:var(--article-surface-2)] p-4 shadow-[var(--app-shadow-soft)] backdrop-blur-md',
       className
     )}
   >
     {items.map(item => {
       const safeValue = Math.min(100, Math.max(0, item.value));
       return (
-        <div key={`${item.label}-${item.note ?? ''}`} className="space-y-2 rounded-[18px] bg-white/60 p-3 backdrop-blur-[2px]">
+        <div
+          key={`${item.label}-${item.note ?? ''}`}
+          className="space-y-2 rounded-[18px] border border-[color:var(--article-border)] bg-[color:var(--tg-surface)]/65 p-3 backdrop-blur-[2px]"
+        >
           <div className="flex items-center justify-between gap-3">
             <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[color:var(--article-text)]">{item.label}</p>
             {item.note ? <p className="text-[12px] text-[color:var(--article-muted)]">{item.note}</p> : null}
           </div>
-          <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[rgba(15,23,42,0.08)]">
+          <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[color:var(--article-border)]/80">
             <div
-              className="absolute left-0 top-0 h-full rounded-full bg-[linear-gradient(90deg,var(--article-accent),#7aa9ff)] shadow-[0_0_16px_rgba(59,130,246,0.45)]"
+              className="absolute left-0 top-0 h-full rounded-full bg-[linear-gradient(90deg,var(--article-accent),#7aa9ff)] shadow-[0_0_12px_rgba(59,130,246,0.25)]"
               style={{ width: `${safeValue}%` }}
             />
           </div>

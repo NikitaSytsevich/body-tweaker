@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BREATH_LEVELS } from './data/patterns';
 import { useBreathingSession } from './hooks/useBreathingSession';
@@ -14,6 +14,7 @@ export const BreathingPage = () => {
   const [levelIndex, setLevelIndex] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showSound, setShowSound] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const duration: number = 10;
   
   const [musicEnabled, setMusicEnabled] = useState(soundManager.isMusicEnabled);
@@ -24,6 +25,22 @@ export const BreathingPage = () => {
 
   const level = BREATH_LEVELS[levelIndex];
   const { phase, phaseTimeLeft, totalTimeLeft, startSession, stopSession } = useBreathingSession(level, duration);
+
+  useEffect(() => {
+    if (countdown === null) return;
+
+    if (countdown <= 0) {
+      startSession();
+      setCountdown(null);
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setCountdown(prev => (prev === null ? null : prev - 1));
+    }, 1000);
+
+    return () => window.clearTimeout(timerId);
+  }, [countdown, startSession]);
 
   const handleToggleMusic = () => {
       const newState = !musicEnabled;
@@ -59,9 +76,15 @@ export const BreathingPage = () => {
     if (phase !== 'idle' && phase !== 'finished') {
         // Стоп
         stopSession();
+        setCountdown(null);
+    } else if (countdown !== null) {
+        setCountdown(null);
     } else {
+        if (phase === 'finished') {
+          stopSession();
+        }
         soundManager.unlock(); 
-        startSession();
+        setCountdown(3);
     }
   };
 
@@ -72,7 +95,9 @@ export const BreathingPage = () => {
       return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const isRunning = phase !== 'idle' && phase !== 'finished';
+  const isSessionRunning = phase !== 'idle' && phase !== 'finished';
+  const isPreparing = countdown !== null;
+  const isRunning = isSessionRunning || isPreparing;
 
   return (
     <div className="h-full flex flex-col relative z-0">
@@ -89,7 +114,7 @@ export const BreathingPage = () => {
                         <span className="text-[11px] font-bold app-muted uppercase tracking-widest">
                             Гиповентиляция
                         </span>
-                        {isRunning && (
+                        {isSessionRunning && (
                             <span className="text-[11px] font-bold app-header bg-[color:var(--tg-glass)] px-2 py-0.5 rounded-md font-mono flex items-center gap-1 backdrop-blur-sm">
                                 <Timer className="w-3 h-3" />
                                 {formatTotalTime(totalTimeLeft)}
@@ -143,6 +168,14 @@ export const BreathingPage = () => {
                                 totalDuration={getTotalDuration()} 
                             />
                             
+                            {isPreparing && (
+                                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                    <span className="text-[clamp(34px,9vw,54px)] font-black text-[color:var(--tg-header)] leading-none tabular-nums animate-pulse">
+                                        {countdown}
+                                    </span>
+                                </div>
+                            )}
+
                             {!isRunning && (
                                 <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                                     <span className="text-[11px] font-black text-[color:var(--tg-muted)] uppercase tracking-[0.2em] ml-1 animate-pulse">
