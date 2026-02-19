@@ -1,8 +1,6 @@
 // src/App.tsx
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './app/Layout';
-import { WelcomeScreen } from './app/WelcomeScreen';
 import { TimerProvider } from './features/fasting/context/TimerContext';
 import { ProfilePage } from './app/ProfilePage';
 import {
@@ -12,7 +10,6 @@ import {
   LegalSettingsPage,
   AboutSettingsPage,
 } from './app/settings';
-import { storageGet } from './utils/storage';
 
 // Контейнер для профильных страниц с правильной высотой
 const ProfileLayout = ({ children }: { children: React.ReactNode }) => (
@@ -23,24 +20,6 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => (
 );
 
 function App() {
-  const [showWelcome, setShowWelcome] = useState<boolean | null>(null);
-
-  useEffect(() => {
-      const checkFirstRun = async () => {
-          const accepted = await storageGet('legal_acceptance_v1');
-          setShowWelcome(!accepted);
-      };
-      checkFirstRun();
-  }, []);
-
-  if (showWelcome === null) {
-      return null;
-  }
-
-  if (showWelcome) {
-      return <WelcomeScreen onComplete={() => setShowWelcome(false)} />;
-  }
-
   return (
     <TimerProvider>
       <BrowserRouter>
