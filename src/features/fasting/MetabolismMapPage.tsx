@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PhaseSheet } from './components/PhaseSheet';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
+import WebApp from '@twa-dev/sdk';
 
 const ArticlesPage = lazy(() =>
   import('../articles/pages/ArticlesPage').then((m) => ({ default: m.ArticlesPage }))
@@ -27,6 +28,41 @@ export const MetabolismMapPage = () => {
   useEffect(() => {
     setViewMode(isFasting ? 'map' : 'articles');
   }, [isFasting]);
+
+  useEffect(() => {
+    if (!selectedPhase) return;
+
+    const handleBack = () => setSelectedPhase(null);
+
+    try {
+      WebApp.BackButton.show();
+      WebApp.BackButton.onClick(handleBack);
+    } catch {
+      return;
+    }
+
+    return () => {
+      try {
+        WebApp.BackButton.offClick(handleBack);
+        WebApp.BackButton.hide();
+      } catch {
+        // ignore when running outside Telegram
+      }
+    };
+  }, [selectedPhase]);
+
+  useEffect(() => {
+    if (!selectedPhase) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelectedPhase(null);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedPhase]);
 
   const activeIndex = useMemo(() => {
     for (let i = FASTING_PHASES.length - 1; i >= 0; i--) {
@@ -272,7 +308,6 @@ export const MetabolismMapPage = () => {
         {selectedPhase && (
             <PhaseSheet
                 phase={selectedPhase}
-                onClose={() => setSelectedPhase(null)}
             />
         )}
       </div>

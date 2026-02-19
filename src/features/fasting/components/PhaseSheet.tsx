@@ -1,15 +1,14 @@
 import { createPortal } from 'react-dom';
-import { ChevronLeft, X, Activity, AlertTriangle, Lightbulb, Thermometer } from 'lucide-react';
+import { Activity, AlertTriangle, Lightbulb, Thermometer } from 'lucide-react';
 import { getPhaseBgClasses, getPhaseTextClasses } from '../data/stages';
 import type { FastingStage } from '../data/stages';
 import { cn } from '../../../utils/cn';
 
 interface Props {
   phase: FastingStage | null;
-  onClose: () => void;
 }
 
-export const PhaseSheet = ({ phase, onClose }: Props) => {
+export const PhaseSheet = ({ phase }: Props) => {
   if (!phase) return null;
   const iconBgClass = getPhaseBgClasses(phase);
   const iconTextClass = getPhaseTextClasses(phase);
@@ -17,22 +16,8 @@ export const PhaseSheet = ({ phase, onClose }: Props) => {
   const content = (
     <div className="fixed inset-0 z-[120] app-page animate-fade-in">
       <div className="sticky top-0 z-20 px-4 pt-[calc(var(--app-top-offset)+10px)] pb-3 bg-[linear-gradient(180deg,var(--tg-bg)_0%,color-mix(in_srgb,var(--tg-bg)_88%,transparent)_100%)] backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-3">
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full app-panel flex items-center justify-center app-muted"
-            aria-label="Назад"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+        <div className="flex items-center justify-center">
           <div className="tg-chip">Фаза голодания</div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full app-panel flex items-center justify-center app-muted"
-            aria-label="Закрыть"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
       </div>
 
