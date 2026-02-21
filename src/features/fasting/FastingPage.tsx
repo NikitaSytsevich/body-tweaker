@@ -104,8 +104,7 @@ export const FastingPage = () => {
 
   // Хендлер выбора из модалки
   const handleSelectScheme = (id: string) => {
-    setSchemeId(id);       
-    setIsSelecting(false); 
+    setSchemeId(id);
     
     // Если таймер НЕ запущен — запускаем
     if (!isFasting) {
