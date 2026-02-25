@@ -1,400 +1,195 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import dayjs from 'dayjs';
+// src/features/breathing/hooks/useBreathingSession.ts
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { BreathLevel } from '../data/patterns';
+import dayjs from 'dayjs';
 import { soundManager } from '../../../utils/sounds';
-import { storageUpdateHistory } from '../../../utils/storage';
+import { storageUpdateHistory } from '../../../utils/storage'; // 👈 NEW
 import type { HistoryRecord } from '../../../utils/types';
 
-const TICK_MS = 120;
-const MIN_HISTORY_SECONDS = 15;
+const MIN_SESSION_DURATION_SECONDS = 15;
+const TIMER_INTERVAL_MS = 250;
 
-export type ActivePhase = 'inhale' | 'hold' | 'exhale';
-export type Phase = 'idle' | 'countdown' | ActivePhase | 'paused' | 'finished';
+export type Phase = 'idle' | 'inhale' | 'hold' | 'exhale' | 'finished';
 
-interface EngineState {
-  phase: Phase;
-  activePhase: ActivePhase;
-  timerId: number | null;
-  countdownEndsAt: number;
-  sessionStartedAt: number;
-  sessionEndsAt: number;
-  phaseEndsAt: number;
-  pausedSessionRemainingMs: number;
-  pausedPhaseRemainingMs: number;
-  historySaved: boolean;
-}
-
-interface StartConfig {
-  level: BreathLevel;
-  durationSeconds: number;
-  countdownSeconds: number;
-}
-
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
-
-const createEngineState = (): EngineState => ({
-  phase: 'idle',
-  activePhase: 'inhale',
-  timerId: null,
-  countdownEndsAt: 0,
-  sessionStartedAt: 0,
-  sessionEndsAt: 0,
-  phaseEndsAt: 0,
-  pausedSessionRemainingMs: 0,
-  pausedPhaseRemainingMs: 0,
-  historySaved: false
-});
-
-const getPhaseDuration = (phase: ActivePhase, level: BreathLevel) => {
-  if (phase === 'inhale') return level.inhale;
-  if (phase === 'hold') return level.hold;
-  return level.exhale;
-};
-
-const getTargetCycles = (durationSeconds: number, level: BreathLevel) => {
-  const cycle = Math.max(1, level.inhale + level.hold + level.exhale);
-  return Math.max(1, Math.floor(durationSeconds / cycle));
-};
-
-const isActivePhase = (phase: Phase): phase is ActivePhase => {
-  return phase === 'inhale' || phase === 'hold' || phase === 'exhale';
-};
-
-export const useBreathingSession = (level: BreathLevel, durationMinutes: number, countdownSeconds: number) => {
-  const configuredDurationSeconds = useMemo(() => Math.max(60, Math.round(durationMinutes * 60)), [durationMinutes]);
-  const safeCountdown = useMemo(() => Math.max(1, Math.round(countdownSeconds)), [countdownSeconds]);
-
+export const useBreathingSession = (level: BreathLevel, sessionDurationMinutes: number) => {
   const [phase, setPhase] = useState<Phase>('idle');
-  const [activePhase, setActivePhase] = useState<ActivePhase>('inhale');
-  const [countdownLeft, setCountdownLeft] = useState(safeCountdown);
-  const [phaseTimeLeft, setPhaseTimeLeft] = useState(level.inhale);
-  const [phaseProgress, setPhaseProgress] = useState(0);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [sessionTimeLeft, setSessionTimeLeft] = useState(configuredDurationSeconds);
-  const [sessionProgress, setSessionProgress] = useState(0);
+  const [phaseTimeLeft, setPhaseTimeLeft] = useState(0);
+  const [totalTimeLeft, setTotalTimeLeft] = useState(0);
   const [cycles, setCycles] = useState(0);
-  const [targetCycles, setTargetCycles] = useState(getTargetCycles(configuredDurationSeconds, level));
 
-  const engineRef = useRef<EngineState>(createEngineState());
-  const levelRef = useRef(level);
-  const configRef = useRef<StartConfig>({
-    level,
-    durationSeconds: configuredDurationSeconds,
-    countdownSeconds: safeCountdown
+  const state = useRef({
+    status: 'idle' as Phase,
+    startTime: null as number | null,     
+    phaseEndTime: 0,                      
+    sessionEndTime: 0,                    
+    isInfinite: false,
+    timerId: null as number | null
   });
 
-  useEffect(() => {
-    levelRef.current = level;
-    configRef.current.level = level;
+  const nextPhase = useCallback(() => {
+    const current = state.current.status;
+    let next: Phase = 'idle';
+    let duration = 0;
+
+    if (current === 'inhale') {
+      next = 'hold';
+      duration = level.hold;
+      soundManager.playHold();
+    } else if (current === 'hold') {
+      next = 'exhale';
+      duration = level.exhale;
+      soundManager.playExhale();
+    } else if (current === 'exhale') {
+      next = 'inhale';
+      duration = level.inhale;
+      setCycles(c => c + 1);
+      soundManager.playInhale();
+    }
+
+    const now = Date.now();
+    state.current.status = next;
+    state.current.phaseEndTime = now + (duration * 1000); 
+    
+    setPhase(next);
+    setPhaseTimeLeft(duration);
+    
+    if (navigator.vibrate) navigator.vibrate(50);
   }, [level]);
 
-  useEffect(() => {
-    configRef.current.durationSeconds = configuredDurationSeconds;
-    if (engineRef.current.phase === 'idle') {
-      setSessionTimeLeft(configuredDurationSeconds);
-      setTargetCycles(getTargetCycles(configuredDurationSeconds, levelRef.current));
-    }
-  }, [configuredDurationSeconds]);
-
-  useEffect(() => {
-    configRef.current.countdownSeconds = safeCountdown;
-    if (engineRef.current.phase === 'idle') {
-      setCountdownLeft(safeCountdown);
-    }
-  }, [safeCountdown]);
-
-  const stopTicker = useCallback(() => {
-    if (engineRef.current.timerId != null) {
-      window.clearInterval(engineRef.current.timerId);
-      engineRef.current.timerId = null;
+  const stopEngine = useCallback(() => {
+    if (state.current.timerId) {
+      clearInterval(state.current.timerId);
+      state.current.timerId = null;
     }
   }, []);
 
-  const saveHistory = useCallback((finishedAt: number) => {
-    const state = engineRef.current;
-    if (!state.sessionStartedAt || state.historySaved) return;
-
-    const durationSeconds = Math.max(0, Math.floor((finishedAt - state.sessionStartedAt) / 1000));
-    if (durationSeconds < MIN_HISTORY_SECONDS) return;
-
-    const activeLevel = levelRef.current;
-    const plannedMinutes = Math.round(configRef.current.durationSeconds / 60);
+  // СОХРАНЕНИЕ
+  const saveToHistory = useCallback((endTimeStr: string, durationSec: number) => {
+    if (durationSec < MIN_SESSION_DURATION_SECONDS) return; 
 
     const record: HistoryRecord = {
-      id: `${finishedAt}`,
+      id: Date.now().toString(),
       type: 'breathing',
-      scheme: `Уровень ${activeLevel.id} • ${activeLevel.inhale}-${activeLevel.hold}-${activeLevel.exhale} • ${plannedMinutes}м`,
-      startTime: dayjs(state.sessionStartedAt).toISOString(),
-      endTime: dayjs(finishedAt).toISOString(),
-      durationSeconds
+      scheme: `Уровень ${level.id} (${level.inhale}-${level.hold}-${level.exhale})`,
+      startTime: dayjs(state.current.startTime || Date.now()).toISOString(),
+      endTime: endTimeStr,
+      durationSeconds: durationSec
     };
 
-    state.historySaved = true;
+    // Асинхронное сохранение (fire and forget)
     storageUpdateHistory('history_fasting', record);
-  }, []);
+  }, [level]);
 
-  const resetToIdle = useCallback(() => {
-    const duration = configRef.current.durationSeconds;
-    const currentLevel = levelRef.current;
+  const finishSession = useCallback(() => {
+    stopEngine();
+    
+    soundManager.playFinish(); 
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 
-    engineRef.current = createEngineState();
-
-    setPhase('idle');
-    setActivePhase('inhale');
-    setCountdownLeft(configRef.current.countdownSeconds);
-    setPhaseTimeLeft(currentLevel.inhale);
-    setPhaseProgress(0);
-    setElapsedSeconds(0);
-    setSessionTimeLeft(duration);
-    setSessionProgress(0);
-    setCycles(0);
-    setTargetCycles(getTargetCycles(duration, currentLevel));
-  }, []);
-
-  const playPhaseCue = (next: ActivePhase) => {
-    if (next === 'inhale') soundManager.playInhale();
-    if (next === 'hold') soundManager.playHold();
-    if (next === 'exhale') soundManager.playExhale();
-
-    if (navigator.vibrate) navigator.vibrate(35);
-  };
-
-  const moveToPhase = useCallback((next: ActivePhase, now: number, increaseCycle: boolean) => {
-    const duration = getPhaseDuration(next, levelRef.current);
-
-    engineRef.current.phase = next;
-    engineRef.current.activePhase = next;
-    engineRef.current.phaseEndsAt = now + duration * 1000;
-
-    setPhase(next);
-    setActivePhase(next);
-    setPhaseTimeLeft(duration);
-    setPhaseProgress(0);
-
-    if (increaseCycle) {
-      setCycles((prev) => prev + 1);
+    if (state.current.startTime) {
+      const now = Date.now();
+      const duration = Math.floor((now - state.current.startTime) / 1000);
+      saveToHistory(dayjs(now).toISOString(), duration);
     }
 
-    playPhaseCue(next);
-  }, []);
-
-  const finishSession = useCallback((now: number) => {
-    stopTicker();
-    saveHistory(now);
-
-    soundManager.playFinish();
-    if (navigator.vibrate) navigator.vibrate([140, 90, 140]);
-
-    engineRef.current.phase = 'finished';
-
     setPhase('finished');
-    setPhaseTimeLeft(0);
-    setPhaseProgress(100);
-    setSessionTimeLeft(0);
-    setSessionProgress(100);
-  }, [saveHistory, stopTicker]);
-
-  const beginActiveSession = useCallback((now: number) => {
-    const currentLevel = levelRef.current;
-    const duration = configRef.current.durationSeconds;
-
-    engineRef.current.phase = 'inhale';
-    engineRef.current.activePhase = 'inhale';
-    engineRef.current.sessionStartedAt = now;
-    engineRef.current.sessionEndsAt = now + duration * 1000;
-    engineRef.current.phaseEndsAt = now + currentLevel.inhale * 1000;
-    engineRef.current.historySaved = false;
-
-    setPhase('inhale');
-    setActivePhase('inhale');
-    setCountdownLeft(0);
-    setPhaseTimeLeft(currentLevel.inhale);
-    setPhaseProgress(0);
-    setElapsedSeconds(0);
-    setSessionTimeLeft(duration);
-    setSessionProgress(0);
-    setCycles(1);
-    setTargetCycles(getTargetCycles(duration, currentLevel));
-
-    soundManager.startSession();
-    playPhaseCue('inhale');
-  }, []);
+    state.current.status = 'finished';
+  }, [stopEngine, saveToHistory]);
 
   const tick = useCallback(() => {
     const now = Date.now();
-    const state = engineRef.current;
+    const s = state.current;
 
-    if (state.phase === 'countdown') {
-      const remainingMs = state.countdownEndsAt - now;
-      const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
-      setCountdownLeft(remainingSeconds);
-
-      if (remainingMs <= 0) {
-        beginActiveSession(now);
+    if (!s.isInfinite && s.sessionEndTime > 0) {
+      const remaining = Math.ceil((s.sessionEndTime - now) / 1000);
+      if (remaining <= 0) {
+        finishSession();
+        return;
       }
-      return;
+      setTotalTimeLeft(remaining);
     }
 
-    if (!isActivePhase(state.phase)) {
-      return;
+    const phaseRemaining = Math.ceil((s.phaseEndTime - now) / 1000);
+    if (phaseRemaining <= 0) {
+      nextPhase();
+    } else {
+      setPhaseTimeLeft(phaseRemaining);
     }
-
-    const elapsed = Math.max(0, Math.floor((now - state.sessionStartedAt) / 1000));
-    const remainingSession = Math.max(0, Math.ceil((state.sessionEndsAt - now) / 1000));
-
-    setElapsedSeconds(elapsed);
-    setSessionTimeLeft(remainingSession);
-
-    const sessionDuration = Math.max(1, configRef.current.durationSeconds);
-    setSessionProgress(clamp((elapsed / sessionDuration) * 100, 0, 100));
-
-    if (remainingSession <= 0) {
-      finishSession(now);
-      return;
-    }
-
-    const currentPhaseDuration = getPhaseDuration(state.activePhase, levelRef.current);
-    const remainingPhaseMs = state.phaseEndsAt - now;
-    const remainingPhaseSeconds = Math.max(0, Math.ceil(remainingPhaseMs / 1000));
-
-    setPhaseTimeLeft(remainingPhaseSeconds);
-    setPhaseProgress(clamp((1 - remainingPhaseMs / Math.max(1, currentPhaseDuration * 1000)) * 100, 0, 100));
-
-    if (remainingPhaseMs <= 0) {
-      if (state.activePhase === 'inhale') {
-        moveToPhase('hold', now, false);
-      } else if (state.activePhase === 'hold') {
-        moveToPhase('exhale', now, false);
-      } else {
-        moveToPhase('inhale', now, true);
-      }
-    }
-  }, [beginActiveSession, finishSession, moveToPhase]);
-
-  const startTicker = useCallback(() => {
-    stopTicker();
-    engineRef.current.timerId = window.setInterval(tick, TICK_MS);
-  }, [stopTicker, tick]);
-
-  const startSession = useCallback(() => {
-    const currentPhase = engineRef.current.phase;
-    if (currentPhase === 'countdown' || isActivePhase(currentPhase) || currentPhase === 'paused') return;
-
-    soundManager.unlock();
-
-    const now = Date.now();
-    engineRef.current.phase = 'countdown';
-    engineRef.current.activePhase = 'inhale';
-    engineRef.current.countdownEndsAt = now + configRef.current.countdownSeconds * 1000;
-    engineRef.current.historySaved = false;
-
-    setPhase('countdown');
-    setActivePhase('inhale');
-    setCountdownLeft(configRef.current.countdownSeconds);
-    setElapsedSeconds(0);
-    setPhaseProgress(0);
-    setSessionProgress(0);
-    setSessionTimeLeft(configRef.current.durationSeconds);
-    setCycles(0);
-
-    startTicker();
-  }, [startTicker]);
-
-  const cancelCountdown = useCallback(() => {
-    if (engineRef.current.phase !== 'countdown') return;
-
-    stopTicker();
-    soundManager.stopSession();
-    resetToIdle();
-  }, [resetToIdle, stopTicker]);
+  }, [nextPhase, finishSession]);
 
   const stopSession = useCallback(() => {
+    if (state.current.startTime && state.current.status !== 'idle' && state.current.status !== 'finished') {
+      const now = Date.now();
+      const duration = Math.floor((now - state.current.startTime) / 1000);
+      saveToHistory(dayjs(now).toISOString(), duration);
+    }
+
+    stopEngine();
+    soundManager.stopSession(); 
+    
+    state.current.status = 'idle';
+    setPhase('idle');
+  }, [stopEngine, saveToHistory]);
+
+  const startSession = useCallback(() => {
+    stopEngine();
+    soundManager.unlock();
+    soundManager.startSession(); 
+    soundManager.playInhale();   
+
     const now = Date.now();
-    const currentPhase = engineRef.current.phase;
-
-    if (isActivePhase(currentPhase) || currentPhase === 'paused') {
-      saveHistory(now);
+    state.current.startTime = now;
+    state.current.status = 'inhale';
+    state.current.phaseEndTime = now + (level.inhale * 1000);
+    state.current.isInfinite = sessionDurationMinutes === 0;
+    
+    if (sessionDurationMinutes > 0) {
+      state.current.sessionEndTime = now + (sessionDurationMinutes * 60 * 1000);
+      setTotalTimeLeft(sessionDurationMinutes * 60);
+    } else {
+      state.current.sessionEndTime = 0;
+      setTotalTimeLeft(0);
     }
 
-    stopTicker();
-    soundManager.stopSession();
-    resetToIdle();
-  }, [resetToIdle, saveHistory, stopTicker]);
+    setPhase('inhale');
+    setPhaseTimeLeft(level.inhale);
+    setCycles(0);
 
-  const togglePause = useCallback(() => {
-    const now = Date.now();
-    const state = engineRef.current;
-
-    if (isActivePhase(state.phase)) {
-      state.pausedPhaseRemainingMs = Math.max(1, state.phaseEndsAt - now);
-      state.pausedSessionRemainingMs = Math.max(1, state.sessionEndsAt - now);
-      state.phase = 'paused';
-
-      stopTicker();
-      soundManager.stopSession();
-
-      setPhase('paused');
-      setPhaseTimeLeft(Math.ceil(state.pausedPhaseRemainingMs / 1000));
-      setSessionTimeLeft(Math.ceil(state.pausedSessionRemainingMs / 1000));
-      return;
-    }
-
-    if (state.phase === 'paused') {
-      state.phase = state.activePhase;
-      state.phaseEndsAt = now + state.pausedPhaseRemainingMs;
-      state.sessionEndsAt = now + state.pausedSessionRemainingMs;
-
-      setPhase(state.activePhase);
-      soundManager.startSession();
-      startTicker();
-    }
-  }, [startTicker, stopTicker]);
-
-  const resetSession = useCallback(() => {
-    if (engineRef.current.phase !== 'finished') {
-      stopSession();
-      return;
-    }
-
-    soundManager.stopSession();
-    resetToIdle();
-  }, [resetToIdle, stopSession]);
+    state.current.timerId = window.setInterval(tick, TIMER_INTERVAL_MS);
+  }, [level, sessionDurationMinutes, tick, stopEngine]);
 
   useEffect(() => {
     return () => {
-      const state = engineRef.current;
-      const now = Date.now();
-
-      if (isActivePhase(state.phase) || state.phase === 'paused') {
-        saveHistory(now);
+      // Сохранение при размонтировании
+      if (state.current.status !== 'idle' && state.current.status !== 'finished') {
+        const now = Date.now();
+        const start = state.current.startTime || now;
+        const duration = Math.floor((now - start) / 1000);
+        
+        if (duration > MIN_SESSION_DURATION_SECONDS) {
+             const rec: HistoryRecord = {
+                id: Date.now().toString(),
+                type: 'breathing',
+                scheme: `Уровень ${level.id}`, 
+                startTime: dayjs(start).toISOString(),
+                endTime: dayjs(now).toISOString(),
+                durationSeconds: duration
+             };
+             // Fire and forget
+             storageUpdateHistory('history_fasting', rec);
+        }
       }
-
-      stopTicker();
-      soundManager.stopAll();
+      stopEngine();
+      soundManager.stopAll(); 
     };
-  }, [saveHistory, stopTicker]);
+  }, [level, stopEngine]); 
 
-  const phaseDuration = getPhaseDuration(activePhase, levelRef.current);
-
-  return {
-    phase,
-    activePhase,
-    countdownLeft,
-    phaseTimeLeft,
-    phaseDuration,
-    phaseProgress,
-    elapsedSeconds,
-    sessionTimeLeft,
-    sessionProgress,
-    cycles,
-    targetCycles,
-    isCountingDown: phase === 'countdown',
-    isRunning: isActivePhase(phase),
-    isPaused: phase === 'paused',
-    startSession,
-    cancelCountdown,
-    stopSession,
-    togglePause,
-    resetSession
+  return { 
+    phase, 
+    phaseTimeLeft, 
+    totalTimeLeft, 
+    startSession, 
+    stopSession, 
+    cycles 
   };
 };
