@@ -11,11 +11,49 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PhaseSheet } from './components/PhaseSheet';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
+import { AnimatedSticker } from '../../components/ui/AnimatedSticker';
+import type { StickerId } from '../stickers/stickerCatalog';
 import WebApp from '@twa-dev/sdk';
 
 const ArticlesPage = lazy(() =>
   import('../articles/pages/ArticlesPage').then((m) => ({ default: m.ArticlesPage }))
 );
+
+const STICKER_BY_PHASE: Record<number, StickerId> = {
+  1: 'book',
+  2: 'drop',
+  3: 'fire',
+  4: 'bolt',
+  5: 'rocket',
+  6: 'wind',
+  7: 'trophy',
+  8: 'sun',
+  9: 'check'
+};
+
+const PHASE_CUE_BY_ID: Record<number, string> = {
+  1: 'Энергия поступает из последней пищи',
+  2: 'Инсулиновый профиль мягко снижается',
+  3: 'Печень активнее расходует гликоген',
+  4: 'Организм переключает топливный режим',
+  5: 'Кетоновые пути становятся заметнее',
+  6: 'Кетоз стабилизируется в фоне',
+  7: 'Метаболизм работает устойчиво',
+  8: 'Продленный режим требует аккуратности',
+  9: 'Критична дисциплина и контроль выхода'
+};
+
+const SURFACE_BY_PHASE: Record<number, string> = {
+  1: 'from-blue-50/75 via-white to-white dark:from-blue-900/24 dark:via-slate-900 dark:to-slate-900',
+  2: 'from-sky-50/70 via-white to-white dark:from-sky-900/20 dark:via-slate-900 dark:to-slate-900',
+  3: 'from-amber-50/75 via-white to-white dark:from-amber-900/22 dark:via-slate-900 dark:to-slate-900',
+  4: 'from-orange-50/75 via-white to-white dark:from-orange-900/22 dark:via-slate-900 dark:to-slate-900',
+  5: 'from-violet-50/70 via-white to-white dark:from-violet-900/20 dark:via-slate-900 dark:to-slate-900',
+  6: 'from-cyan-50/70 via-white to-white dark:from-cyan-900/20 dark:via-slate-900 dark:to-slate-900',
+  7: 'from-teal-50/70 via-white to-white dark:from-teal-900/20 dark:via-slate-900 dark:to-slate-900',
+  8: 'from-slate-100/80 via-white to-white dark:from-slate-800/50 dark:via-slate-900 dark:to-slate-900',
+  9: 'from-stone-100/85 via-white to-white dark:from-stone-800/50 dark:via-slate-900 dark:to-slate-900'
+};
 
 export const MetabolismMapPage = () => {
   const { isFasting, elapsed } = useFastingTimerContext();
@@ -84,6 +122,8 @@ export const MetabolismMapPage = () => {
 
   const activePhase = FASTING_PHASES[activeIndex] ?? FASTING_PHASES[0];
   const nextPhase = FASTING_PHASES[activeIndex + 1] ?? null;
+  const activeSticker = STICKER_BY_PHASE[activePhase?.id ?? 1] ?? 'sparkles';
+  const activeCue = PHASE_CUE_BY_ID[activePhase?.id ?? 1] ?? 'Организм проходит очередной этап метаболического перехода.';
   const elapsedLabel = useMemo(() => {
     const totalSeconds = Math.max(0, Math.floor(elapsed));
     const hours = Math.floor(totalSeconds / 3600);
@@ -128,11 +168,21 @@ export const MetabolismMapPage = () => {
                             {activePhase?.subtitle ?? 'Подготовка'}
                         </h3>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[color:var(--tg-glass)] border border-[color:var(--tg-border)]">
-                        <Timer className="w-3.5 h-3.5 text-[color:var(--tg-accent)]" />
-                        <span className="text-[11px] font-bold app-muted">
-                            {isFasting ? `${Math.round(activeProgress)}%` : '0%'}
-                        </span>
+                    <div className="flex items-center gap-2">
+                        <motion.div
+                          animate={{ y: [0, -2, 0], rotate: [0, 4, 0] }}
+                          transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+                          className="relative"
+                        >
+                          <div className="absolute inset-0 rounded-full bg-[color:var(--tg-accent)]/12 blur-xl" />
+                          <AnimatedSticker name={activeSticker} size={38} />
+                        </motion.div>
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[color:var(--tg-glass)] border border-[color:var(--tg-border)]">
+                            <Timer className="w-3.5 h-3.5 text-[color:var(--tg-accent)]" />
+                            <span className="text-[11px] font-bold app-muted">
+                                {isFasting ? `${Math.round(activeProgress)}%` : '0%'}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -157,6 +207,9 @@ export const MetabolismMapPage = () => {
                         ? `Далее: ${nextPhase.subtitle} с ${nextPhase.hoursStart}ч.`
                         : 'Финальная стадия достигнута. Дальше важен мягкий выход.'
                       : 'Запустите голодание, чтобы таймлайн начал обновляться в реальном времени.'}
+                </p>
+                <p className="mt-2 text-[11px] font-semibold text-[color:var(--tg-accent)]/90">
+                    {activeCue}
                 </p>
                 <div className="mt-3 flex items-center justify-between text-[11px] app-muted font-semibold">
                     <span>Прошло: {isFasting ? elapsedLabel : '0ч 0м'}</span>
@@ -206,13 +259,16 @@ export const MetabolismMapPage = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="space-y-3"
+                    className="space-y-3.5"
                 >
                     {FASTING_PHASES.map((phase, index) => {
                         const isCurrent = isFasting ? index === activeIndex : index === 0;
                         const isPassed = isFasting && index < activeIndex;
                         const isNext = isFasting ? index === activeIndex + 1 : index === 1;
                         const isFuture = isFasting ? index > activeIndex + 1 : index > 1;
+                        const phaseSticker = STICKER_BY_PHASE[phase.id] ?? 'sparkles';
+                        const phaseCue = PHASE_CUE_BY_ID[phase.id] ?? 'Метаболическая динамика этого этапа';
+                        const phaseSurface = SURFACE_BY_PHASE[phase.id] ?? SURFACE_BY_PHASE[1];
 
                         const statusText = isPassed
                           ? 'ПРОШЕЛ'
@@ -228,8 +284,10 @@ export const MetabolismMapPage = () => {
                                 onClick={() => setSelectedPhase(phase)}
                                 initial={false}
                                 whileTap={{ scale: 0.98 }}
+                                whileHover={{ y: -2 }}
                                 className={cn(
-                                    "relative p-5 rounded-[2.1rem] transition-all duration-300 cursor-pointer overflow-hidden min-h-[128px] flex flex-col justify-between app-card",
+                                    "relative p-5 rounded-[2.1rem] transition-all duration-300 cursor-pointer overflow-hidden min-h-[148px] flex flex-col justify-between app-card bg-gradient-to-br",
+                                    phaseSurface,
                                     isCurrent && "border-[color:var(--tg-accent)] shadow-[0_14px_34px_-24px_rgba(59,130,246,0.45)]",
                                     isNext && "border-blue-200/70 dark:border-blue-400/30 bg-blue-50/35 dark:bg-blue-500/10",
                                     isPassed && "bg-emerald-50/30 dark:bg-emerald-500/8 border-emerald-200/55 dark:border-emerald-400/20",
@@ -237,12 +295,28 @@ export const MetabolismMapPage = () => {
                                 )}
                             >
                                 <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-[color:var(--tg-glass)] to-transparent" />
+                                <div className="pointer-events-none absolute -right-8 -top-10 w-32 h-32 rounded-full bg-[color:var(--tg-accent)]/12 blur-2xl" />
+                                <motion.div
+                                  className="absolute right-4 top-4 z-20"
+                                  animate={{ y: [0, -3, 0], rotate: [0, 5, 0] }}
+                                  transition={{ duration: isCurrent ? 4.4 : 6.4, repeat: Infinity, ease: 'easeInOut' }}
+                                  style={{ width: 46, height: 46 }}
+                                >
+                                  <div className="absolute inset-0 rounded-full bg-[color:var(--tg-accent)]/15 blur-xl" />
+                                  <AnimatedSticker name={phaseSticker} size={46} />
+                                </motion.div>
+
                                 {/* Header Row */}
                                 {/* min-h-[2.5rem] предотвращает скачки высоты контента при переносе заголовка */}
-                                <div className="flex justify-between items-start gap-3 min-h-[2.5rem] relative z-10">
-                                    <span className="text-sm font-medium opacity-85 leading-snug max-w-[65%] app-header">
+                                <div className="flex justify-between items-start gap-3 min-h-[2.5rem] relative z-10 pr-14">
+                                    <div className="space-y-1">
+                                      <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] app-muted">
+                                        Этап {phase.id}
+                                      </div>
+                                      <span className="block text-sm font-medium opacity-85 leading-snug app-header">
                                         {phase.title}
-                                    </span>
+                                      </span>
+                                    </div>
 
                                     <div className={cn(
                                         "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 whitespace-nowrap",
@@ -260,11 +334,14 @@ export const MetabolismMapPage = () => {
 
                                 {/* Main Content */}
                                 <div className="mt-2 relative z-10">
-                                    <h3 className="text-xl font-bold leading-tight mb-1 app-header">
+                                    <h3 className="text-[22px] font-[900] tracking-tight leading-[1.06] mb-1.5 app-header pr-8">
                                        {phase.subtitle}
                                     </h3>
+                                    <p className="text-[11px] font-semibold tracking-tight text-[color:var(--tg-accent)]/85 mb-1 pr-5">
+                                      {phaseCue}
+                                    </p>
 
-                                    <div className="flex items-center gap-2 mt-2">
+                                    <div className="flex items-center gap-2 mt-1.5">
                                         <span className="text-xs font-bold opacity-60 app-muted">
                                            {isPassed
                                               ? `${phase.hoursEnd} ч • Завершено`
@@ -279,7 +356,7 @@ export const MetabolismMapPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[color:var(--tg-accent)] relative z-10">
+                                <div className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[color:var(--tg-accent)] relative z-10 bg-[color:var(--tg-glass)] border border-[color:var(--tg-border)] px-2.5 py-1 rounded-full">
                                     Открыть фазу
                                     <ArrowUpRight className="w-3.5 h-3.5" />
                                 </div>
@@ -308,6 +385,7 @@ export const MetabolismMapPage = () => {
         {selectedPhase && (
             <PhaseSheet
                 phase={selectedPhase}
+                onClose={() => setSelectedPhase(null)}
             />
         )}
       </div>
