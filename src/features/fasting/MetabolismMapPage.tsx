@@ -1,394 +1,483 @@
-// src/features/fasting/MetabolismMapPage.tsx
-
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useFastingTimerContext } from './context/TimerContext';
-import { FASTING_PHASES } from './data/stages';
-import type { FastingStage } from './data/stages';
-import { cn } from '../../utils/cn';
-import { BookOpen, Activity, Timer, Check, ArrowUpRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PhaseSheet } from './components/PhaseSheet';
-import { SegmentedControl } from '../../components/ui/SegmentedControl';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, ArrowUpRight, Sparkles, Shield, BookOpen, Timer, CheckCircle2, Target } from 'lucide-react';
 import { ProfileAvatar } from '../../components/ui/ProfileAvatar';
-import { AnimatedSticker } from '../../components/ui/AnimatedSticker';
-import type { StickerId } from '../stickers/stickerCatalog';
-import WebApp from '@twa-dev/sdk';
+import { useFastingTimerContext } from './context/TimerContext';
+import { articlesMeta } from '../articles/content';
+import type { ArticleMeta } from '../articles/types';
+import { storageGetHistory, HISTORY_UPDATED_EVENT_NAME } from '../../utils/storage';
+import type { HistoryRecord } from '../../utils/types';
+import { cn } from '../../utils/cn';
 
-const ArticlesPage = lazy(() =>
-  import('../articles/pages/ArticlesPage').then((m) => ({ default: m.ArticlesPage }))
-);
+type KnowledgeFocus = 'prep' | 'fundamentals' | 'nutrition' | 'safety' | 'exit' | 'special';
+type FilterOption = 'all' | KnowledgeFocus;
+type KnowledgeMode = 'onboarding' | 'preparation' | 'steady' | 'finishing' | 'exit';
 
-const STICKER_BY_PHASE: Record<number, StickerId> = {
-  1: 'book',
-  2: 'drop',
-  3: 'fire',
-  4: 'bolt',
-  5: 'rocket',
-  6: 'wind',
-  7: 'trophy',
-  8: 'sun',
-  9: 'check'
+interface FocusOption {
+  id: FilterOption;
+  label: string;
+}
+
+interface KnowledgeHistoryStats {
+  totalSessions: number;
+  avgDurationHours: number;
+  completionRate: number;
+  lastSessionAt: string | null;
+}
+
+interface KnowledgeProfile {
+  focus: KnowledgeFocus[];
+  readMinutes: number;
+  intensity: 1 | 2 | 3;
+}
+
+interface RankedArticle {
+  article: ArticleMeta;
+  profile: KnowledgeProfile;
+  score: number;
+  reason: string;
+}
+
+const FILTERS: FocusOption[] = [
+  { id: 'all', label: 'Все' },
+  { id: 'prep', label: 'Подготовка' },
+  { id: 'fundamentals', label: 'Фундамент' },
+  { id: 'nutrition', label: 'Питание' },
+  { id: 'safety', label: 'Безопасность' },
+  { id: 'exit', label: 'Выход' },
+  { id: 'special', label: 'Особые случаи' }
+];
+
+const EMPTY_HISTORY_STATS: KnowledgeHistoryStats = {
+  totalSessions: 0,
+  avgDurationHours: 0,
+  completionRate: 0,
+  lastSessionAt: null
 };
 
-const PHASE_CUE_BY_ID: Record<number, string> = {
-  1: 'Энергия поступает из последней пищи',
-  2: 'Инсулиновый профиль мягко снижается',
-  3: 'Печень активнее расходует гликоген',
-  4: 'Организм переключает топливный режим',
-  5: 'Кетоновые пути становятся заметнее',
-  6: 'Кетоз стабилизируется в фоне',
-  7: 'Метаболизм работает устойчиво',
-  8: 'Продленный режим требует аккуратности',
-  9: 'Критична дисциплина и контроль выхода'
+const ARTICLE_PROFILES: Record<string, KnowledgeProfile> = {
+  'how-to-prepare': { focus: ['prep', 'safety'], readMinutes: 15, intensity: 1 },
+  'shelton-fasting-art': { focus: ['fundamentals', 'exit'], readMinutes: 18, intensity: 2 },
+  'bragg-miracle-fasting': { focus: ['fundamentals', 'prep'], readMinutes: 14, intensity: 1 },
+  'china-study': { focus: ['nutrition'], readMinutes: 16, intensity: 2 },
+  'greger-how-not-to-die': { focus: ['nutrition'], readMinutes: 17, intensity: 2 },
+  'furman-eat-to-live': { focus: ['nutrition', 'prep'], readMinutes: 14, intensity: 1 },
+  'meat-for-weaklings': { focus: ['nutrition', 'fundamentals'], readMinutes: 13, intensity: 2 },
+  'raw-food-monodiet': { focus: ['nutrition', 'special'], readMinutes: 12, intensity: 3 },
+  'smoking-and-fasting': { focus: ['safety', 'special'], readMinutes: 11, intensity: 2 },
+  'diabetes-fasting': { focus: ['safety', 'special'], readMinutes: 18, intensity: 3 },
+  'how-to-exit': { focus: ['exit', 'safety'], readMinutes: 13, intensity: 1 }
 };
 
-const SURFACE_BY_PHASE: Record<number, string> = {
-  1: 'from-blue-50/75 via-white to-white dark:from-blue-900/24 dark:via-slate-900 dark:to-slate-900',
-  2: 'from-sky-50/70 via-white to-white dark:from-sky-900/20 dark:via-slate-900 dark:to-slate-900',
-  3: 'from-amber-50/75 via-white to-white dark:from-amber-900/22 dark:via-slate-900 dark:to-slate-900',
-  4: 'from-orange-50/75 via-white to-white dark:from-orange-900/22 dark:via-slate-900 dark:to-slate-900',
-  5: 'from-violet-50/70 via-white to-white dark:from-violet-900/20 dark:via-slate-900 dark:to-slate-900',
-  6: 'from-cyan-50/70 via-white to-white dark:from-cyan-900/20 dark:via-slate-900 dark:to-slate-900',
-  7: 'from-teal-50/70 via-white to-white dark:from-teal-900/20 dark:via-slate-900 dark:to-slate-900',
-  8: 'from-slate-100/80 via-white to-white dark:from-slate-800/50 dark:via-slate-900 dark:to-slate-900',
-  9: 'from-stone-100/85 via-white to-white dark:from-stone-800/50 dark:via-slate-900 dark:to-slate-900'
+const getKnowledgeProfile = (id: string): KnowledgeProfile => {
+  return ARTICLE_PROFILES[id] ?? { focus: ['fundamentals'], readMinutes: 10, intensity: 1 };
+};
+
+const calculateHistoryStats = (records: HistoryRecord[]): KnowledgeHistoryStats => {
+  const fastingRecords = records
+    .filter((record) => record.type === 'fasting' && Number.isFinite(record.durationSeconds) && record.durationSeconds > 0)
+    .sort((a, b) => new Date(b.endTime).getTime() - new Date(a.endTime).getTime());
+
+  if (!fastingRecords.length) return EMPTY_HISTORY_STATS;
+
+  const totalSeconds = fastingRecords.reduce((sum, record) => sum + record.durationSeconds, 0);
+  const totalSessions = fastingRecords.length;
+  const avgDurationHours = Number((totalSeconds / totalSessions / 3600).toFixed(1));
+  const completionRate = Math.round(
+    (fastingRecords.filter((record) => record.durationSeconds >= 24 * 3600).length / totalSessions) * 100
+  );
+
+  return {
+    totalSessions,
+    avgDurationHours,
+    completionRate,
+    lastSessionAt: fastingRecords[0]?.endTime ?? null
+  };
+};
+
+const getKnowledgeMode = (
+  params: { isFasting: boolean; elapsed: number; goalSeconds: number; history: KnowledgeHistoryStats }
+): KnowledgeMode => {
+  const { isFasting, elapsed, goalSeconds, history } = params;
+  if (history.totalSessions === 0) return 'onboarding';
+  if (!isFasting) return 'preparation';
+  if (elapsed >= goalSeconds) return 'exit';
+  if (goalSeconds - elapsed <= 3 * 3600) return 'finishing';
+  return 'steady';
+};
+
+const scoreArticle = (
+  article: ArticleMeta,
+  profile: KnowledgeProfile,
+  ctx: {
+    mode: KnowledgeMode;
+    isFasting: boolean;
+    completionRate: number;
+    elapsedHours: number;
+  }
+): { score: number; reason: string } => {
+  const { mode, isFasting, completionRate, elapsedHours } = ctx;
+  let score = 10 + profile.readMinutes;
+  let reason = 'Полезно для общей стратегии голодания';
+
+  const hasFocus = (focus: KnowledgeFocus) => profile.focus.includes(focus);
+
+  if (mode === 'onboarding') {
+    if (hasFocus('prep')) {
+      score += 70;
+      reason = 'Лучший старт для первой безопасной сессии';
+    } else if (hasFocus('fundamentals')) {
+      score += 45;
+      reason = 'Помогает понять базовую механику процесса';
+    }
+  }
+
+  if (mode === 'preparation') {
+    if (hasFocus('prep')) {
+      score += 55;
+      reason = 'Актуально перед запуском следующего цикла';
+    }
+    if (hasFocus('nutrition')) {
+      score += 28;
+      reason = 'Полезно для настройки питания между циклами';
+    }
+  }
+
+  if (mode === 'steady') {
+    if (hasFocus('fundamentals')) {
+      score += 34;
+      reason = 'Поддерживает фокус и понимание процесса в сессии';
+    }
+    if (hasFocus('safety')) {
+      score += 32;
+      reason = 'Закрывает вопросы контроля самочувствия в процессе';
+    }
+    if (elapsedHours >= 12 && hasFocus('nutrition')) {
+      score += 15;
+      reason = 'Помогает заранее подготовить стратегию выхода';
+    }
+  }
+
+  if (mode === 'finishing') {
+    if (hasFocus('exit')) {
+      score += 70;
+      reason = 'Самая важная тема перед завершением цикла';
+    } else if (hasFocus('safety')) {
+      score += 45;
+      reason = 'Снижает риски ошибок в финишном окне';
+    }
+  }
+
+  if (mode === 'exit') {
+    if (hasFocus('exit')) {
+      score += 90;
+      reason = 'Сейчас ключевая тема: мягкий и безопасный выход';
+    } else if (hasFocus('nutrition')) {
+      score += 36;
+      reason = 'Подсказывает как вернуть питание без перегрузки';
+    }
+  }
+
+  if (completionRate < 50 && hasFocus('safety')) {
+    score += 22;
+  }
+  if (completionRate >= 70 && hasFocus('nutrition')) {
+    score += 12;
+  }
+  if (!isFasting && hasFocus('special')) {
+    score += 8;
+  }
+
+  score -= profile.intensity * 2;
+  score += article.title.length % 7;
+
+  return { score, reason };
+};
+
+const getModeLabels = (mode: KnowledgeMode) => {
+  switch (mode) {
+    case 'onboarding':
+      return {
+        badge: 'Первый цикл',
+        title: 'Соберите базу перед стартом',
+        description: 'Структурировали материалы так, чтобы вы быстро прошли безопасную подготовку и уверенно запустили первую сессию.'
+      };
+    case 'preparation':
+      return {
+        badge: 'Подготовка',
+        title: 'Готовим следующий заход',
+        description: 'Рекомендации смещены на предзапуск: питание, фундамент, риски и точное планирование следующего цикла.'
+      };
+    case 'steady':
+      return {
+        badge: 'Активная сессия',
+        title: 'Поддержка во время процесса',
+        description: 'Подборка держит фокус на стабильном темпе, понимании физиологии и контроле самочувствия.'
+      };
+    case 'finishing':
+      return {
+        badge: 'Финишный коридор',
+        title: 'Подготовьте мягкий выход',
+        description: 'Сейчас приоритет у материалов по завершению сессии и бережному возврату к питанию.'
+      };
+    case 'exit':
+      return {
+        badge: 'После цели',
+        title: 'Выход важнее продления',
+        description: 'В топе статьи по безопасному завершению и восстановлению после целевого окна голодания.'
+      };
+  }
+};
+
+const formatLastSession = (iso: string | null) => {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
 };
 
 export const MetabolismMapPage = () => {
-  const { isFasting, elapsed } = useFastingTimerContext();
-  const elapsedHours = elapsed / 3600;
   const navigate = useNavigate();
+  const { isFasting, elapsed, scheme } = useFastingTimerContext();
 
-  const [viewMode, setViewMode] = useState<'map' | 'articles'>('map');
-  const [selectedPhase, setSelectedPhase] = useState<FastingStage | null>(null);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<FilterOption>('all');
+  const [historyStats, setHistoryStats] = useState<KnowledgeHistoryStats>(EMPTY_HISTORY_STATS);
 
-  useEffect(() => {
-    setViewMode(isFasting ? 'map' : 'articles');
-  }, [isFasting]);
+  const goalSeconds = scheme.hours * 3600;
+  const elapsedHours = elapsed / 3600;
+  const remainingSeconds = Math.max(0, goalSeconds - elapsed);
+  const mode = getKnowledgeMode({ isFasting, elapsed, goalSeconds, history: historyStats });
+  const modeLabels = getModeLabels(mode);
 
-  useEffect(() => {
-    if (!selectedPhase) return;
-
-    const handleBack = () => setSelectedPhase(null);
-
+  const loadHistory = useCallback(async () => {
     try {
-      WebApp.BackButton.show();
-      WebApp.BackButton.onClick(handleBack);
-    } catch {
-      return;
+      const history = await storageGetHistory<HistoryRecord>('history_fasting');
+      setHistoryStats(calculateHistoryStats(history));
+    } catch (error) {
+      console.error('Failed to load knowledge history stats:', error);
+      setHistoryStats(EMPTY_HISTORY_STATS);
     }
-
-    return () => {
-      try {
-        WebApp.BackButton.offClick(handleBack);
-        WebApp.BackButton.hide();
-      } catch {
-        // ignore when running outside Telegram
-      }
-    };
-  }, [selectedPhase]);
+  }, []);
 
   useEffect(() => {
-    if (!selectedPhase) return;
+    void loadHistory();
+  }, [loadHistory]);
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setSelectedPhase(null);
+  useEffect(() => {
+    const handleHistoryUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<{ key?: string }>).detail;
+      if (!detail?.key || detail.key === 'history_fasting') {
+        void loadHistory();
       }
     };
+    window.addEventListener(HISTORY_UPDATED_EVENT_NAME, handleHistoryUpdate);
+    return () => window.removeEventListener(HISTORY_UPDATED_EVENT_NAME, handleHistoryUpdate);
+  }, [loadHistory]);
 
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedPhase]);
+  const rankedArticles = useMemo<RankedArticle[]>(() => {
+    return articlesMeta
+      .map((article) => {
+        const profile = getKnowledgeProfile(article.id);
+        const rank = scoreArticle(article, profile, {
+          mode,
+          isFasting,
+          completionRate: historyStats.completionRate,
+          elapsedHours
+        });
+        return {
+          article,
+          profile,
+          score: rank.score,
+          reason: rank.reason
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [mode, isFasting, historyStats.completionRate, elapsedHours]);
 
-  const activeIndex = useMemo(() => {
-    for (let i = FASTING_PHASES.length - 1; i >= 0; i--) {
-      if (elapsedHours >= FASTING_PHASES[i].hoursStart) return i;
-    }
-    return 0;
-  }, [elapsedHours]);
+  const filteredArticles = useMemo(() => {
+    return rankedArticles.filter((item) => {
+      if (filter !== 'all' && !item.profile.focus.includes(filter)) return false;
+      if (!query.trim()) return true;
+      const q = query.toLowerCase().trim();
+      return (
+        item.article.title.toLowerCase().includes(q) ||
+        item.article.summary.toLowerCase().includes(q) ||
+        item.article.category.toLowerCase().includes(q)
+      );
+    });
+  }, [filter, query, rankedArticles]);
 
-  const activeProgress = useMemo(() => {
-    if (!isFasting) return 0;
-    const phase = FASTING_PHASES[activeIndex];
-    if (!phase) return 0;
-    if (elapsedHours < phase.hoursStart) return 0;
-    if (!phase.hoursEnd || phase.hoursEnd <= phase.hoursStart) return 100;
-    const duration = phase.hoursEnd - phase.hoursStart;
-    const progress = ((elapsedHours - phase.hoursStart) / duration) * 100;
-    return Math.min(Math.max(progress, 0), 100);
-  }, [activeIndex, elapsedHours, isFasting]);
+  const spotlight = filteredArticles[0] ?? null;
+  const quickPicks = filteredArticles.slice(1, 4);
+  const catalog = filteredArticles.slice(4);
 
-  const activePhase = FASTING_PHASES[activeIndex] ?? FASTING_PHASES[0];
-  const nextPhase = FASTING_PHASES[activeIndex + 1] ?? null;
-  const activeSticker = STICKER_BY_PHASE[activePhase?.id ?? 1] ?? 'sparkles';
-  const activeCue = PHASE_CUE_BY_ID[activePhase?.id ?? 1] ?? 'Организм проходит очередной этап метаболического перехода.';
-  const elapsedLabel = useMemo(() => {
-    const totalSeconds = Math.max(0, Math.floor(elapsed));
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    return `${hours}ч ${minutes}м`;
-  }, [elapsed]);
+  const heroStatLeft = isFasting
+    ? remainingSeconds > 0
+      ? `До цели ${Math.ceil(remainingSeconds / 3600)}ч`
+      : 'Цель достигнута'
+    : `${historyStats.totalSessions} сессий`;
 
-  const tabs = [
-    { value: 'map', label: 'Процессы', icon: Activity },
-    { value: 'articles', label: 'База знаний', icon: BookOpen }
-  ];
+  const heroStatRight = `Точность ${historyStats.completionRate}%`;
 
   return (
-    <>
-      <div className="relative z-0 flex flex-col pb-[calc(6.5rem+var(--app-safe-bottom))]">
-        
-        {/* MAIN CONTAINER */}
-        <div className="app-card relative flex flex-col z-10 min-h-[85vh] overflow-hidden">
-
-          {/* HEADER SECTION */}
-          {/* rounded-b-[2.5rem] создает закругление "лепестком" над серым фоном контента */}
-          <div className="px-5 pt-6 pb-4 z-20 relative border-b border-[color:var(--tg-border)]">
-             <div className="flex items-center justify-between mb-6">
-                 <h1 className="text-[28px] font-bold tracking-tight app-header">
-                     Метаболизм
-                 </h1>
-                 <ProfileAvatar onClick={() => navigate('/profile')} />
-             </div>
-
-             {/* Dynamic timeline window */}
-             <button
-                type="button"
-                onClick={() => setSelectedPhase(activePhase)}
-                className="app-card-soft rounded-[1.5rem] p-4 border border-[color:var(--tg-border)] mb-6 w-full text-left transition-transform active:scale-[0.99]"
-             >
-                <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <p className="text-[11px] font-bold app-muted uppercase tracking-widest">
-                            Прогресс фазы
-                        </p>
-                        <h3 className="text-[17px] font-[800] app-header leading-tight mt-1">
-                            {activePhase?.subtitle ?? 'Подготовка'}
-                        </h3>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <motion.div
-                          animate={{ y: [0, -2, 0], rotate: [0, 4, 0] }}
-                          transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-                          className="relative"
-                        >
-                          <div className="absolute inset-0 rounded-full bg-[color:var(--tg-accent)]/12 blur-xl" />
-                          <AnimatedSticker name={activeSticker} size={38} />
-                        </motion.div>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[color:var(--tg-glass)] border border-[color:var(--tg-border)]">
-                            <Timer className="w-3.5 h-3.5 text-[color:var(--tg-accent)]" />
-                            <span className="text-[11px] font-bold app-muted">
-                                {isFasting ? `${Math.round(activeProgress)}%` : '0%'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-3">
-                    <div className="h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
-                        <motion.div
-                            className="h-full bg-[linear-gradient(90deg,var(--tg-accent),#60A5FA)]"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${isFasting ? activeProgress : 0}%` }}
-                            transition={{ duration: 0.6, ease: 'easeOut' }}
-                        />
-                    </div>
-                    <div className="mt-2 flex items-center justify-between text-[11px] app-muted font-semibold">
-                        <span>{activePhase?.hoursStart ?? 0}ч</span>
-                        <span>{activePhase?.hoursEnd ?? '∞'}ч</span>
-                    </div>
-                </div>
-
-                <p className="mt-3 text-[12px] app-muted leading-relaxed">
-                    {isFasting
-                      ? nextPhase
-                        ? `Далее: ${nextPhase.subtitle} с ${nextPhase.hoursStart}ч.`
-                        : 'Финальная стадия достигнута. Дальше важен мягкий выход.'
-                      : 'Запустите голодание, чтобы таймлайн начал обновляться в реальном времени.'}
-                </p>
-                <p className="mt-2 text-[11px] font-semibold text-[color:var(--tg-accent)]/90">
-                    {activeCue}
-                </p>
-                <div className="mt-3 flex items-center justify-between text-[11px] app-muted font-semibold">
-                    <span>Прошло: {isFasting ? elapsedLabel : '0ч 0м'}</span>
-                    <span>Нажмите для деталей</span>
-                </div>
-             </button>
-
-             {/* Segmented Control */}
-             <div className="mt-1">
-                 <SegmentedControl
-                    options={tabs}
-                    value={viewMode}
-                    onChange={(val) => setViewMode(val as 'map' | 'articles')}
-                />
-             </div>
+    <div className="relative z-0 flex flex-col pb-[calc(6.5rem+var(--app-safe-bottom))]">
+      <div className="app-card relative flex flex-col z-10 min-h-[85vh] overflow-hidden">
+        <div className="px-5 pt-6 pb-4 z-20 relative border-b border-[color:var(--tg-border)]">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-[28px] font-black tracking-tight app-header">Знания</h1>
+            <ProfileAvatar onClick={() => navigate('/profile')} />
           </div>
 
-          {/* CONTENT AREA */}
-          {/* bg-transparent позволяет видеть серый фон родителя (#F9F9F9), 
-              чтобы закругление шапки было заметно */}
-          <div className="flex-1 px-5 pb-8 pt-6">
-            <AnimatePresence mode="wait">
-                
-                {viewMode === 'articles' ? (
-                    <motion.div
-                        key="articles"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ duration: 0.2 }}
-                    > 
-                        <Suspense
-                          fallback={
-                            <div className="flex items-center justify-center py-16 text-sm app-muted">
-                              Загрузка...
-                            </div>
-                          }
-                        >
-                          <ArticlesPage />
-                        </Suspense>
-                    </motion.div>
-                ) : (
-                    
-                /* === MAP MODE === */
-                <motion.div
-                    key="map"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="space-y-3.5"
-                >
-                    {FASTING_PHASES.map((phase, index) => {
-                        const isCurrent = isFasting ? index === activeIndex : index === 0;
-                        const isPassed = isFasting && index < activeIndex;
-                        const isNext = isFasting ? index === activeIndex + 1 : index === 1;
-                        const isFuture = isFasting ? index > activeIndex + 1 : index > 1;
-                        const phaseSticker = STICKER_BY_PHASE[phase.id] ?? 'sparkles';
-                        const phaseCue = PHASE_CUE_BY_ID[phase.id] ?? 'Метаболическая динамика этого этапа';
-                        const phaseSurface = SURFACE_BY_PHASE[phase.id] ?? SURFACE_BY_PHASE[1];
+          <div className="rounded-[24px] border border-[color:var(--tg-border)] bg-[linear-gradient(150deg,color-mix(in_srgb,var(--tg-surface)_93%,transparent)_0%,color-mix(in_srgb,var(--tg-glass)_83%,transparent)_100%)] p-4">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] app-muted">
+              <Sparkles className="w-3 h-3 text-[color:var(--tg-accent)]" />
+              {modeLabels.badge}
+            </div>
 
-                        const statusText = isPassed
-                          ? 'ПРОШЕЛ'
-                          : isCurrent
-                            ? 'СЕЙЧАС'
-                            : isNext
-                              ? 'ДАЛЕЕ'
-                              : 'ПОТОМ';
+            <h2 className="mt-2 text-[20px] font-[900] leading-tight app-header">{modeLabels.title}</h2>
+            <p className="mt-1 text-[12px] app-muted leading-relaxed">{modeLabels.description}</p>
 
-                        return (
-                            <motion.div
-                                key={phase.id}
-                                onClick={() => setSelectedPhase(phase)}
-                                initial={false}
-                                whileTap={{ scale: 0.98 }}
-                                whileHover={{ y: -2 }}
-                                className={cn(
-                                    "relative p-5 rounded-[2.1rem] transition-all duration-300 cursor-pointer overflow-hidden min-h-[148px] flex flex-col justify-between app-card bg-gradient-to-br",
-                                    phaseSurface,
-                                    isCurrent && "border-[color:var(--tg-accent)] shadow-[0_14px_34px_-24px_rgba(59,130,246,0.45)]",
-                                    isNext && "border-blue-200/70 dark:border-blue-400/30 bg-blue-50/35 dark:bg-blue-500/10",
-                                    isPassed && "bg-emerald-50/30 dark:bg-emerald-500/8 border-emerald-200/55 dark:border-emerald-400/20",
-                                    isFuture && "opacity-55 grayscale-[0.12]"
-                                )}
-                            >
-                                <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-[color:var(--tg-glass)] to-transparent" />
-                                <div className="pointer-events-none absolute -right-8 -top-10 w-32 h-32 rounded-full bg-[color:var(--tg-accent)]/12 blur-2xl" />
-                                <motion.div
-                                  className="absolute right-4 top-4 z-20"
-                                  animate={{ y: [0, -3, 0], rotate: [0, 5, 0] }}
-                                  transition={{ duration: isCurrent ? 4.4 : 6.4, repeat: Infinity, ease: 'easeInOut' }}
-                                  style={{ width: 46, height: 46 }}
-                                >
-                                  <div className="absolute inset-0 rounded-full bg-[color:var(--tg-accent)]/15 blur-xl" />
-                                  <AnimatedSticker name={phaseSticker} size={46} />
-                                </motion.div>
-
-                                {/* Header Row */}
-                                {/* min-h-[2.5rem] предотвращает скачки высоты контента при переносе заголовка */}
-                                <div className="flex justify-between items-start gap-3 min-h-[2.5rem] relative z-10 pr-14">
-                                    <div className="space-y-1">
-                                      <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] app-muted">
-                                        Этап {phase.id}
-                                      </div>
-                                      <span className="block text-sm font-medium opacity-85 leading-snug app-header">
-                                        {phase.title}
-                                      </span>
-                                    </div>
-
-                                    <div className={cn(
-                                        "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0 whitespace-nowrap",
-                                        isCurrent
-                                          ? "bg-[color:var(--tg-accent)] text-white border border-[color:var(--tg-accent)]"
-                                          : isPassed
-                                            ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40 dark:border-emerald-500/20"
-                                            : "bg-[color:var(--tg-glass)] app-muted border border-[color:var(--tg-border)]"
-                                    )}>
-                                        {isCurrent && <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
-                                        {statusText}
-                                        <phase.icon className="w-3 h-3 ml-1 opacity-70" />
-                                    </div>
-                                </div>
-
-                                {/* Main Content */}
-                                <div className="mt-2 relative z-10">
-                                    <h3 className="text-[22px] font-[900] tracking-tight leading-[1.06] mb-1.5 app-header pr-8">
-                                       {phase.subtitle}
-                                    </h3>
-                                    <p className="text-[11px] font-semibold tracking-tight text-[color:var(--tg-accent)]/85 mb-1 pr-5">
-                                      {phaseCue}
-                                    </p>
-
-                                    <div className="flex items-center gap-2 mt-1.5">
-                                        <span className="text-xs font-bold opacity-60 app-muted">
-                                           {isPassed
-                                              ? `${phase.hoursEnd} ч • Завершено`
-                                              : isCurrent
-                                                ? `${phase.hoursStart} - ${phase.hoursEnd || '∞'} ч • Идет сейчас`
-                                              : isNext
-                                                ? `${phase.hoursStart} - ${phase.hoursEnd || '∞'} ч • Следующий`
-                                              : `${phase.hoursStart} - ${phase.hoursEnd || '∞'} ч`
-                                           }
-                                        </span>
-                                        {isPassed && <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-                                    </div>
-                                </div>
-
-                                <div className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[color:var(--tg-accent)] relative z-10 bg-[color:var(--tg-glass)] border border-[color:var(--tg-border)] px-2.5 py-1 rounded-full">
-                                    Открыть фазу
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                </div>
-
-                                {/* Active Progress Bar */}
-                                {isCurrent && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/5 dark:bg-white/10">
-                                        <motion.div
-                                            layoutId="activeProgress"
-                                            className="h-full bg-[linear-gradient(90deg,var(--tg-accent),#60A5FA)]"
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${isFasting ? activeProgress : 0}%` }}
-                                            transition={{ duration: 0.6, ease: 'easeOut' }}
-                                        />
-                                    </div>
-                                )}
-                            </motion.div>
-                        );
-                    })}
-                </motion.div>
-                )}
-            </AnimatePresence>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] px-2.5 py-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] app-muted">Фокус</p>
+                <p className="mt-1 text-[12px] font-bold app-header">{heroStatLeft}</p>
+              </div>
+              <div className="rounded-xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] px-2.5 py-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] app-muted">Результат</p>
+                <p className="mt-1 text-[12px] font-bold app-header">{heroStatRight}</p>
+              </div>
+              <div className="rounded-xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] px-2.5 py-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] app-muted">Последняя</p>
+                <p className="mt-1 text-[12px] font-bold app-header">{formatLastSession(historyStats.lastSessionAt)}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {selectedPhase && (
-            <PhaseSheet
-                phase={selectedPhase}
-                onClose={() => setSelectedPhase(null)}
+        <div className="flex-1 px-5 pb-8 pt-5 space-y-4">
+          <div className="rounded-2xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] px-3 py-2.5 flex items-center gap-2">
+            <Search className="w-4 h-4 text-[color:var(--tg-muted)]" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Поиск по материалам"
+              className="w-full bg-transparent outline-none text-[13px] app-header placeholder:text-[color:var(--tg-muted)]"
             />
-        )}
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {FILTERS.map((option) => {
+              const active = filter === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setFilter(option.id)}
+                  className={cn(
+                    'shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors',
+                    active
+                      ? 'bg-[color:var(--tg-accent)] text-white border-[color:var(--tg-accent)]'
+                      : 'border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] app-muted'
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {spotlight && (
+            <Link
+              to={`/articles/${spotlight.article.id}`}
+              className="group block rounded-[24px] overflow-hidden border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] shadow-[var(--app-shadow-card)]"
+            >
+              <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <img
+                  src={spotlight.article.imageUrl}
+                  alt={spotlight.article.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/75" />
+                <div className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-black/35 text-white text-[11px] font-semibold px-3 py-1 backdrop-blur-md border border-white/25">
+                  <Target className="w-3.5 h-3.5" />
+                  Сейчас в приоритете
+                </div>
+              </div>
+              <div className="p-5">
+                <h3 className="text-[22px] font-[900] leading-tight app-header">{spotlight.article.title}</h3>
+                <p className="mt-2 text-[13px] app-muted leading-relaxed line-clamp-2">{spotlight.reason}</p>
+                <div className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-[color:var(--tg-accent)]">
+                  Читать сейчас
+                  <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {!!quickPicks.length && (
+            <div className="grid grid-cols-1 gap-2.5">
+              {quickPicks.map((item, index) => (
+                <Link
+                  key={item.article.id}
+                  to={`/articles/${item.article.id}`}
+                  className="group rounded-2xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)] px-3.5 py-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-[color:var(--tg-accent)]/14 text-[color:var(--tg-accent)] text-[11px] font-black flex items-center justify-center shrink-0">
+                      {index + 2}
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="text-[14px] font-[800] app-header leading-snug line-clamp-2">{item.article.title}</h4>
+                      <p className="mt-1 text-[11px] app-muted line-clamp-2">{item.reason}</p>
+                    </div>
+                    <ArrowUpRight className="w-4 h-4 shrink-0 text-[color:var(--tg-muted)] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="pt-1">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[14px] font-black app-header uppercase tracking-[0.1em]">Каталог</h3>
+              <span className="text-[11px] app-muted">{filteredArticles.length} материалов</span>
+            </div>
+
+            <div className="space-y-2.5">
+              {(catalog.length ? catalog : filteredArticles).map((item) => (
+                <Link
+                  key={item.article.id}
+                  to={`/articles/${item.article.id}`}
+                  className="group rounded-2xl border border-[color:var(--tg-border)] bg-[color:var(--tg-surface)] px-3.5 py-3.5 flex items-start gap-3"
+                >
+                  <div className="mt-0.5 shrink-0">
+                    {item.profile.focus.includes('safety') ? (
+                      <Shield className="w-4 h-4 text-amber-500" />
+                    ) : item.profile.focus.includes('exit') ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    ) : item.profile.focus.includes('prep') ? (
+                      <Timer className="w-4 h-4 text-sky-500" />
+                    ) : (
+                      <BookOpen className="w-4 h-4 text-[color:var(--tg-accent)]" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-[14px] font-[800] leading-snug app-header line-clamp-2">{item.article.title}</h4>
+                    <p className="mt-1 text-[11px] app-muted line-clamp-2">{item.article.summary}</p>
+                    <div className="mt-1.5 text-[10px] font-semibold text-[color:var(--tg-accent)]/90">
+                      {item.reason} • ~{item.profile.readMinutes} мин
+                    </div>
+                  </div>
+
+                  <ArrowUpRight className="w-4 h-4 shrink-0 text-[color:var(--tg-muted)] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 };

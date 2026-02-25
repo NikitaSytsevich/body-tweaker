@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom';
-import { X, Map, Rocket, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { X, Rocket } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -8,13 +7,6 @@ interface Props {
 }
 
 export const FastingStartModal = ({ isOpen, onClose }: Props) => {
-  const navigate = useNavigate();
-
-  const handleGoToMap = () => {
-    onClose();
-    navigate('/'); 
-  };
-
   if (!isOpen) return null;
 
   return createPortal(
@@ -49,20 +41,11 @@ export const FastingStartModal = ({ isOpen, onClose }: Props) => {
             </h2>
 
             <p className="text-sm app-muted leading-relaxed mb-8 px-2">
-              Таймер начал отсчет. Теперь вы можете следить за процессами в организме на <b>Карте</b>.
+              Таймер начал отсчет. Продолжайте сессию на текущем экране.
             </p>
 
             {/* Кнопки */}
-            <div className="w-full space-y-3">
-              <button
-                onClick={handleGoToMap}
-                className="w-full py-4 tg-button rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
-              >
-                <Map className="w-5 h-5" />
-                <span>Открыть Карту</span>
-                <ArrowRight className="w-4 h-4 opacity-50" />
-              </button>
-
+            <div className="w-full">
               <button
                 onClick={onClose}
                 className="w-full py-3 app-muted font-bold text-xs uppercase tracking-wide hover:text-[color:var(--tg-text)] transition-colors"

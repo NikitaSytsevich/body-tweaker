@@ -1,15 +1,13 @@
-/* ==========================================================================
-   Базовые стили Bottom Sheet (TG Токены + Mobile-first)
-   ========================================================================== */
+/* Bottom sheet */
 .ps-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(8, 12, 20, 0.44);
-  backdrop-filter: blur(6px) saturate(110%);
-  -webkit-backdrop-filter: blur(6px) saturate(110%);
+  z-index: 10000;
   display: flex;
   align-items: flex-end;
-  z-index: 10000;
+  background: rgba(8, 12, 20, 0.44);
+  backdrop-filter: blur(8px) saturate(110%);
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
   opacity: 1;
   transition: opacity 0.35s cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -24,48 +22,37 @@
 }
 
 .ps-sheet {
-  background: color-mix(in srgb, var(--tg-surface) 72%, transparent);
+  position: relative;
   width: 100%;
-  max-height: 85vh;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
+  max-height: 86vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
   transform: translateY(0);
   transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1);
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--tg-accent) 14%, transparent) 0%, transparent 60%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--tg-surface) 92%, transparent) 0%,
+      color-mix(in srgb, var(--tg-bg) 95%, transparent) 100%
+    );
+  border-top: 1px solid color-mix(in srgb, var(--tg-border) 88%, transparent);
+  box-shadow: 0 -14px 48px rgba(0, 0, 0, 0.26);
   padding-bottom: var(--app-safe-bottom, 24px);
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  isolation: isolate;
-  position: relative;
 }
 
-.ps-sheet::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  backdrop-filter: blur(18px) saturate(130%);
-  -webkit-backdrop-filter: blur(18px) saturate(130%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.ps-sheet > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* ==========================================================================
-   Шапка (Header)
-   ========================================================================== */
+/* Header */
 .ps-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 16px;
-  border-bottom: 1px solid var(--tg-border, #eee);
-  position: relative;
+  gap: 12px;
+  padding: 24px 22px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--tg-border) 72%, transparent);
   background: color-mix(in srgb, var(--tg-glass) 55%, transparent);
 }
 
@@ -75,56 +62,52 @@
   top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 40px;
+  width: 42px;
   height: 4px;
-  background: var(--tg-muted, #ccc);
-  border-radius: 2px;
-  opacity: 0.5;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--tg-muted) 70%, transparent);
 }
 
 .ps-header h3 {
   margin: 0;
   font-size: 22px;
-  color: var(--tg-text, #000);
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--tg-text);
 }
 
 .ps-close-btn {
-  background: var(--tg-surface, #f5f5f5);
-  border: none;
-  color: var(--tg-muted, #888);
-  cursor: pointer;
-  padding: 10px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--tg-border) 82%, transparent);
   border-radius: 50%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  outline: none;
+  background: color-mix(in srgb, var(--tg-glass) 72%, transparent);
+  color: var(--tg-muted);
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .ps-close-btn:hover,
 .ps-close-btn:focus-visible {
-  background: var(--tg-border, #e0e0e0);
-  color: var(--tg-text, #000);
-  transform: rotate(180deg);
+  color: var(--tg-text);
+  background: color-mix(in srgb, var(--tg-glass-strong) 75%, transparent);
 }
 
 .ps-close-btn:active {
-  transform: scale(0.9) rotate(180deg);
+  transform: scale(0.94);
 }
 
-/* ==========================================================================
-   Список протоколов (List & Cards)
-   ========================================================================== */
+/* List */
 .ps-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 24px;
+  padding: 14px 18px 18px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   overscroll-behavior: contain;
 }
 
@@ -132,678 +115,312 @@
   width: 6px;
 }
 
-.ps-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
 .ps-list::-webkit-scrollbar-thumb {
-  background: var(--tg-border, #ddd);
-  border-radius: 10px;
+  background: color-mix(in srgb, var(--tg-border) 90%, transparent);
+  border-radius: 99px;
 }
 
+/* Cards */
 .ps-card {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 18px;
-  background: var(--tg-surface, #f8f8f8);
-  border: 2px solid transparent;
-  border-radius: 24px;
+  gap: 12px;
+  text-align: left;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--tg-border) 72%, transparent);
+  background:
+    linear-gradient(
+      152deg,
+      color-mix(in srgb, var(--tg-surface) 94%, transparent) 0%,
+      color-mix(in srgb, var(--tg-glass) 86%, transparent) 100%
+    );
+  padding: 14px 14px 13px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  user-select: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   -webkit-tap-highlight-color: transparent;
-  outline: none;
 }
 
 .ps-card:hover {
-  background: var(--tg-glass, #f0f0f0);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.ps-card:focus-visible {
-  border-color: var(--tg-accent, #007aff);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--tg-glass-strong) 60%, transparent);
 }
 
 .ps-card:active {
-  transform: scale(0.96);
+  transform: scale(0.985);
+}
+
+.ps-card:focus-visible {
+  border-color: var(--tg-accent);
 }
 
 .ps-card--selected {
-  background: var(--tg-bg, #fff);
-  border-color: var(--tg-accent, #007aff);
-  box-shadow: 0 12px 32px var(--tg-glass, rgba(0, 122, 255, 0.15));
-  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--tg-accent) 72%, var(--tg-border));
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--tg-accent) 22%, transparent);
 }
 
-.ps-card-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 18px;
-  background: var(--tg-glass, #f0f0f0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--tg-accent, #007aff);
-  margin-right: 18px;
-  flex-shrink: 0;
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.ps-card--selected .ps-card-icon {
-  background: var(--tg-bg, #fff);
-  box-shadow: 0 8px 24px var(--tg-glass-strong, rgba(0, 0, 0, 0.12));
-  transform: scale(1.05);
-}
-
-.ps-card-content {
+.ps-card-main {
   flex: 1;
   min-width: 0;
 }
 
-.ps-card-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--tg-text, #000);
-  margin-bottom: 6px;
-  transition: color 0.3s ease;
+.ps-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.ps-card-desc {
-  font-size: 14px;
-  color: var(--tg-muted, #888);
-  line-height: 1.45;
+.ps-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tg-border) 86%, transparent);
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ps-chip--hours {
+  color: var(--tg-text);
+  background: color-mix(in srgb, var(--tg-glass) 66%, transparent);
+}
+
+.ps-chip--active {
+  border-color: color-mix(in srgb, var(--tg-accent) 70%, var(--tg-border));
+  color: var(--tg-accent);
+}
+
+.ps-chip--tier {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.ps-chip--base {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.ps-chip--balanced {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.12);
+}
+
+.ps-chip--advanced {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.ps-chip--deep {
+  color: #be123c;
+  background: rgba(244, 63, 94, 0.14);
+}
+
+.ps-card-title {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 850;
+  color: var(--tg-text);
+  line-height: 1.22;
 }
 
 .ps-card--selected .ps-card-title {
-  color: var(--tg-accent, #007aff);
+  color: color-mix(in srgb, var(--tg-accent) 92%, var(--tg-text));
 }
 
-/* ==========================================================================
-   Подвал и CTA Кнопка (Footer & CTA)
-   ========================================================================== */
-.ps-footer {
-  padding: 20px 24px;
-  border-top: 1px solid var(--tg-border, #eee);
-  background: color-mix(in srgb, var(--tg-glass-strong) 70%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  z-index: 10;
+.ps-card-desc {
+  margin-top: 6px;
+  color: var(--tg-muted);
+  font-size: 12px;
+  line-height: 1.38;
 }
 
-.ps-cta {
-  width: 100%;
-  padding: 18px;
-  background: linear-gradient(135deg, var(--tg-accent, #007aff), color-mix(in srgb, var(--tg-accent, #007aff) 55%, #002f6b));
-  color: var(--tg-accent-contrast, #fff);
-  border: none;
-  border-radius: 18px;
-  font-size: 17px;
+.ps-card-meta {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ps-meta-item {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--tg-border) 72%, transparent);
+  background: color-mix(in srgb, var(--tg-glass) 68%, transparent);
+  padding: 7px 8px;
+  min-width: 0;
+}
+
+.ps-meta-label {
+  display: block;
+  font-size: 9px;
   font-weight: 800;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 8px 24px var(--tg-glass, rgba(0, 122, 255, 0.4));
-  outline: none;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tg-muted);
 }
 
-.ps-cta:disabled {
-  background: var(--tg-surface, #e0e0e0);
-  color: var(--tg-muted, #999);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
+.ps-meta-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--tg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.ps-cta:not(:disabled):hover,
-.ps-cta:not(:disabled):focus-visible {
-  filter: brightness(1.15);
-  box-shadow: 0 12px 32px var(--tg-glass, rgba(0, 122, 255, 0.5));
-  transform: translateY(-2px);
+.ps-card-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.ps-cta:not(:disabled):active {
-  transform: scale(0.96) translateY(0);
-}
-
-/* ==========================================================================
-   Премиальный Чекбокс (Checkbox)
-   ========================================================================== */
+/* Checkbox */
 .ps-checkbox {
   position: relative;
   width: 32px;
   height: 32px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   border-radius: 50%;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .ps-checkbox-glow {
   position: absolute;
-  inset: -10px;
+  inset: -8px;
   border-radius: 50%;
-  background: var(--tg-accent, #007aff);
+  background: var(--tg-accent);
   opacity: 0;
-  filter: blur(12px);
-  transition: opacity 0.5s ease;
+  filter: blur(10px);
+  transition: opacity 0.35s ease;
 }
 
 .ps-checkbox-ring {
   position: absolute;
   inset: 0;
-  border: 2.5px solid var(--tg-border, #ccc);
   border-radius: 50%;
+  border: 2.5px solid color-mix(in srgb, var(--tg-border) 96%, transparent);
   background: transparent;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .ps-checkbox-tick {
   position: relative;
+  z-index: 1;
   width: 18px;
   height: 18px;
-  color: var(--tg-accent-contrast, #fff);
-  z-index: 1;
-  transform: scale(0.3) rotate(-15deg);
+  color: #fff;
   opacity: 0;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  transform: scale(0.45) rotate(-15deg);
+  transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
 .ps-checkbox-tick path {
   stroke-dasharray: 24;
   stroke-dashoffset: 24;
-  transition: stroke-dashoffset 0.5s cubic-bezier(0.25, 1, 0.5, 1) 0.15s;
-}
-
-.ps-card:hover .ps-checkbox-ring {
-  border-color: var(--tg-muted, #888);
+  transition: stroke-dashoffset 0.25s ease;
 }
 
 .ps-checkbox--selected .ps-checkbox-glow {
-  opacity: 0.35;
-  animation: pulse-glow 3s infinite alternate;
-}
-
-@keyframes pulse-glow {
-  0% {
-    opacity: 0.25;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 0.45;
-    transform: scale(1.1);
-  }
+  opacity: 0.34;
 }
 
 .ps-checkbox--selected .ps-checkbox-ring {
-  background: var(--tg-accent, #007aff);
-  border-color: var(--tg-accent, #007aff);
-  transform: scale(1);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-color: var(--tg-accent);
+  background: var(--tg-accent);
 }
 
 .ps-checkbox--selected .ps-checkbox-tick {
-  transform: scale(1) rotate(0);
   opacity: 1;
+  transform: scale(1) rotate(0deg);
 }
 
 .ps-checkbox--selected .ps-checkbox-tick path {
   stroke-dashoffset: 0;
 }
 
-/* ==========================================================================
-   Цветные многоуровневые SVG-Анимации Протоколов
-   ========================================================================== */
-.ps-icon {
-  width: 36px;
-  height: 36px;
-  position: relative;
-  overflow: visible;
+/* Footer */
+.ps-footer {
+  padding: 16px 18px 18px;
+  border-top: 1px solid color-mix(in srgb, var(--tg-border) 70%, transparent);
+  background: color-mix(in srgb, var(--tg-glass-strong) 68%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.icon--calm * {
-  transition: all 0.5s ease;
+.ps-selected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--tg-border) 78%, transparent);
+  border-radius: 14px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--tg-glass) 68%, transparent);
+  margin-bottom: 10px;
 }
 
-.icon--calm .ps-wave-base,
-.icon--calm .ps-flame-base,
-.icon--calm .ps-shield-base,
-.icon--calm .ps-lightning-base,
-.icon--calm .ps-sine-base,
-.icon--calm .ps-sparks-base,
-.icon--calm .ps-star-base {
-  opacity: 1;
-  color: var(--tg-muted, #a0a0a0);
+.ps-selected-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tg-accent);
+  flex-shrink: 0;
 }
 
-/* --- 24h: Волна гидратации --- */
-@keyframes wave-flow {
-  0% {
-    transform: translateY(0) scaleY(1);
-  }
-  50% {
-    transform: translateY(-3px) scaleY(1.05) scaleX(0.97);
-  }
-  100% {
-    transform: translateY(0) scaleY(1);
-  }
+.ps-cta {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 850;
+  letter-spacing: 0.01em;
+  color: var(--tg-accent-contrast);
+  background: linear-gradient(
+    130deg,
+    var(--tg-accent) 0%,
+    color-mix(in srgb, var(--tg-accent) 62%, #1e40af) 100%
+  );
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--tg-accent) 34%, transparent);
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 
-@keyframes bubble-rise {
-  0% {
-    transform: translateY(4px) scale(0.5);
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-12px) scale(1.2);
-    opacity: 0;
-  }
+.ps-cta:not(:disabled):hover,
+.ps-cta:not(:disabled):focus-visible {
+  filter: brightness(1.07);
 }
 
-.icon--active.ps-icon-24h .ps-wave-fg {
-  animation: wave-flow 2.5s ease-in-out infinite;
-  transform-origin: bottom;
+.ps-cta:not(:disabled):active {
+  transform: scale(0.985);
 }
 
-.icon--active.ps-icon-24h .ps-wave-bg {
-  animation: wave-flow 2.5s ease-in-out infinite 0.4s reverse;
-  transform-origin: bottom;
+.ps-cta:disabled {
+  cursor: not-allowed;
+  box-shadow: none;
+  background: var(--tg-surface);
+  color: var(--tg-muted);
 }
 
-.icon--active.ps-icon-24h .ps-bubble {
-  animation: bubble-rise 2s ease-in infinite;
-}
-
-.icon--active.ps-icon-24h .b1 {
-  animation-delay: 0s;
-}
-
-.icon--active.ps-icon-24h .b2 {
-  animation-delay: 0.7s;
-}
-
-.icon--active.ps-icon-24h .b3 {
-  animation-delay: 1.4s;
-}
-
-/* --- 36h: Пламя Кетоза --- */
-@keyframes flame-burn {
-  0%,
-  100% {
-    transform: scale(1) skewX(0deg);
-  }
-  25% {
-    transform: scale(1.05) skewX(-2deg);
-  }
-  75% {
-    transform: scale(1.02) skewX(2deg);
-  }
-}
-
-@keyframes flame-pulse {
-  0%,
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(0.85) translateY(2px);
-    opacity: 0.8;
-  }
-}
-
-@keyframes ember-fly {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-15px) translateX(var(--tx, 5px)) scale(0);
-    opacity: 0;
-  }
-}
-
-.icon--active.ps-icon-36h .ps-flame-outer {
-  animation: flame-burn 2s ease-in-out infinite;
-  transform-origin: center bottom;
-  filter: drop-shadow(0 4px 12px rgba(255, 65, 108, 0.6));
-}
-
-.icon--active.ps-icon-36h .ps-flame-inner {
-  animation: flame-pulse 1.2s ease-in-out infinite;
-  transform-origin: center bottom;
-}
-
-.icon--active.ps-icon-36h .ps-ember {
-  animation: ember-fly 1.5s ease-out infinite;
-}
-
-.icon--active.ps-icon-36h .e1 {
-  --tx: -8px;
-  animation-delay: 0s;
-}
-
-.icon--active.ps-icon-36h .e2 {
-  --tx: 5px;
-  animation-delay: 0.5s;
-}
-
-.icon--active.ps-icon-36h .e3 {
-  --tx: -3px;
-  animation-delay: 1s;
-}
-
-/* --- 48h: Щит Иммунитета --- */
-@keyframes shield-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 6px rgba(178, 36, 239, 0.5));
-  }
-  50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 16px rgba(178, 36, 239, 0.9));
-  }
-}
-
-@keyframes glare-sweep {
-  0% {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  20% {
-    opacity: 0.5;
-    transform: translateX(5px);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(15px);
-  }
-}
-
-@keyframes core-beat {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
-}
-
-.icon--active.ps-icon-48h .ps-shield-body {
-  animation: shield-breathe 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  transform-origin: center;
-}
-
-.icon--active.ps-icon-48h .ps-shield-glare {
-  animation: glare-sweep 4s linear infinite;
-}
-
-.icon--active.ps-icon-48h .ps-shield-core {
-  animation: core-beat 1.5s ease-in-out infinite;
-  transform-origin: center;
-}
-
-/* --- 72h: Неоновая Молния --- */
-@keyframes lightning-flash {
-  0%,
-  100% {
-    opacity: 1;
-    filter: drop-shadow(0 0 12px rgba(248, 216, 0, 0.8));
-  }
-  40% {
-    opacity: 1;
-  }
-  45% {
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 1;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1));
-    transform: scale(1.05);
-  }
-  55% {
-    opacity: 0.2;
-    transform: scale(1);
-  }
-  60% {
-    opacity: 1;
-  }
-}
-
-@keyframes spark-flicker {
-  0%,
-  100% {
-    opacity: 0;
-    stroke-dasharray: 0 10;
-  }
-  50% {
-    opacity: 1;
-    stroke-dasharray: 10 0;
-  }
-}
-
-.icon--active.ps-icon-72h .ps-lightning-color {
-  animation: lightning-flash 3.5s infinite;
-  transform-origin: center;
-}
-
-.icon--active.ps-icon-72h .ps-lightning-spark {
-  animation: spark-flicker 0.8s infinite alternate;
-}
-
-.icon--active.ps-icon-72h .s1 {
-  animation-delay: 0.2s;
-}
-
-.icon--active.ps-icon-72h .s2 {
-  animation-delay: 0.5s;
-}
-
-.icon--active.ps-icon-72h .s3 {
-  animation-delay: 0.8s;
-}
-
-/* --- 96h: Нейро-Волны (Двойная Спираль) --- */
-@keyframes dna-flow {
-  0% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: -20;
-  }
-}
-
-@keyframes node-travel {
-  0% {
-    transform: translateX(-10px) scale(0.5);
-    opacity: 0;
-  }
-  50% {
-    transform: translateX(0) scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(10px) scale(0.5);
-    opacity: 0;
-  }
-}
-
-.icon--active.ps-icon-96h .ps-sine-front,
-.icon--active.ps-icon-96h .ps-sine-back {
-  stroke-dasharray: 10 10;
-  animation: dna-flow 2s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(56, 249, 215, 0.7));
-}
-
-.icon--active.ps-icon-96h .ps-sine-back {
-  animation-direction: reverse;
-  animation-duration: 3s;
-}
-
-.icon--active.ps-icon-96h .ps-neuro-node {
-  animation: node-travel 1.5s ease-in-out infinite;
-}
-
-.icon--active.ps-icon-96h .n1 {
-  animation-delay: 0s;
-}
-
-.icon--active.ps-icon-96h .n2 {
-  animation-delay: 0.5s;
-}
-
-.icon--active.ps-icon-96h .n3 {
-  animation-delay: 1s;
-}
-
-/* --- 120h: Космические Искры --- */
-@keyframes galaxy-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes aura-pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-.icon--active.ps-icon-120h .ps-spark-aura {
-  animation: aura-pulse 3s ease-in-out infinite;
-  transform-origin: center;
-}
-
-.icon--active.ps-icon-120h .ps-spark-core {
-  filter: drop-shadow(0 0 10px #00F2FE);
-}
-
-.icon--active.ps-icon-120h .ps-spark-orbit-1 {
-  animation: galaxy-spin 4s linear infinite;
-  transform-origin: 16px 16px;
-}
-
-.icon--active.ps-icon-120h .ps-spark-orbit-2 {
-  animation: galaxy-spin 6s linear infinite reverse;
-  transform-origin: 16px 16px;
-}
-
-.icon--active.ps-icon-120h .ps-spark-orbit-3 {
-  animation: galaxy-spin 3s linear infinite;
-  transform-origin: 16px 16px;
-}
-
-.icon--active.ps-icon-120h .ps-spark-orbit-4 {
-  animation: galaxy-spin 5s linear infinite reverse;
-  transform-origin: 16px 16px;
-}
-
-/* --- 168h: Звезда Аутофагии (Мандала) --- */
-@keyframes mandala-spin-slow {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-  50% {
-    transform: rotate(180deg) scale(1.1);
-  }
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
-}
-
-@keyframes mandala-spin-fast {
-  0% {
-    transform: rotate(45deg);
-  }
-  100% {
-    transform: rotate(-315deg);
-  }
-}
-
-@keyframes core-supernova {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 1;
-    filter: drop-shadow(0 0 8px #fff);
-  }
-}
-
-.icon--active.ps-icon-168h .ps-star-color-1 {
-  animation: mandala-spin-slow 10s linear infinite;
-  transform-origin: 16px 16px;
-}
-
-.icon--active.ps-icon-168h .ps-star-color-2 {
-  animation: mandala-spin-fast 8s linear infinite;
-  transform-origin: 16px 16px;
-}
-
-.icon--active.ps-icon-168h .ps-star-color-3 {
-  animation: mandala-spin-slow 6s linear infinite reverse;
-  transform-origin: 16px 16px;
-}
-
-.icon--active.ps-icon-168h .ps-star-core-inner {
-  animation: core-supernova 2s ease-in-out infinite;
-  transform-origin: center;
-}
-
-.icon--active.ps-icon-168h .ps-star-particles {
-  animation: galaxy-spin 12s linear infinite;
-  transform-origin: 16px 16px;
-}
-
-/* ==========================================================================
-   Accessibility (a11y) & Media Queries
-   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .ps-sheet,
   .ps-sheet * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .ps-checkbox--selected .ps-checkbox-glow {
-    animation: none;
-    opacity: 0.3;
-  }
-
-  .icon--active .ps-wave-fg,
-  .icon--active .ps-flame-outer,
-  .icon--active .ps-shield-body {
-    transform: scale(1.05);
-    filter: none;
   }
 }
 
 @media (min-width: 768px) {
   .ps-sheet {
-    max-width: 480px;
+    max-width: 520px;
     margin: 0 auto;
-    border-radius: 32px 32px 0 0;
+    border-radius: 34px 34px 0 0;
   }
 }
