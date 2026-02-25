@@ -1,71 +1,143 @@
-import { cn } from '../../../utils/cn'; // 3 точки
-import type { Phase } from '../hooks/useBreathingSession'; // 1 точка
+import { cn } from '../../../utils/cn';
+import type { ActivePhase, Phase } from '../hooks/useBreathingSession';
 
 interface Props {
   phase: Phase;
+  activePhase: ActivePhase;
   timeLeft: number;
-  totalDuration: number; 
+  progress: number;
+  compact?: boolean;
 }
 
-type ConfigType = {
-  [key in Phase]: { text: string; color: string; scale: number };
+interface PhaseTheme {
+  ring: string;
+  glow: string;
+  chip: string;
+  scale: number;
+  label: string;
+}
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+const THEMES: Record<ActivePhase, PhaseTheme> = {
+  inhale: {
+    ring: '#10BCE2',
+    glow: 'rgba(34,211,238,0.34)',
+    chip: 'bg-cyan-100/85 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-200',
+    scale: 1.3,
+    label: 'Вдох'
+  },
+  hold: {
+    ring: '#8B5CF6',
+    glow: 'rgba(139,92,246,0.32)',
+    chip: 'bg-violet-100/85 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200',
+    scale: 1.36,
+    label: 'Задержка'
+  },
+  exhale: {
+    ring: '#3B82F6',
+    glow: 'rgba(59,130,246,0.32)',
+    chip: 'bg-blue-100/85 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200',
+    scale: 1,
+    label: 'Выдох'
+  }
 };
 
-export const BreathingCircle = ({ phase, timeLeft, totalDuration }: Props) => {
-  
-  const config: ConfigType = {
-    idle: { text: "", color: "bg-white/70 dark:bg-white/10 border border-white/80 dark:border-white/10 shadow-[inset_0_0_20px_rgba(255,255,255,0.8)]", scale: 1 },
-    inhale: { text: "Вдох", color: "bg-cyan-100/80 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300", scale: 1.45 },
-    hold: { text: "Задержка", color: "bg-violet-100/80 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300", scale: 1.45 },
-    exhale: { text: "Выдох", color: "bg-blue-100/80 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300", scale: 1 },
-    finished: { text: "Готово", color: "bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", scale: 1 },
-  };
+export const BreathingCircle = ({ phase, activePhase, timeLeft, progress, compact = false }: Props) => {
+  const size = compact ? 204 : 276;
+  const stroke = compact ? 8 : 9;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
 
-  const current = config[phase];
-  const glowColor = phase === 'hold'
-    ? 'rgba(167,139,250,0.45)'
-    : phase === 'inhale'
-      ? 'rgba(103,232,249,0.45)'
-      : phase === 'exhale'
-        ? 'rgba(96,165,250,0.45)'
-        : 'rgba(148,163,184,0.25)';
+  const theme = THEMES[activePhase];
 
-  const duration = totalDuration > 0 ? totalDuration : 0.5;
+  const isIdle = phase === 'idle';
+  const isCountdown = phase === 'countdown';
+  const isPaused = phase === 'paused';
+  const isFinished = phase === 'finished';
+
+  const ringProgress = isFinished ? 100 : isIdle ? 0 : clamp(progress, 0, 100);
+  const dashOffset = circumference - (ringProgress / 100) * circumference;
+
+  const label = isCountdown
+    ? 'Старт'
+    : isPaused
+      ? 'Пауза'
+      : isFinished
+        ? 'Готово'
+        : isIdle
+          ? 'Старт'
+          : theme.label;
+
+  const value = isFinished ? 'OK' : isIdle ? '' : `${Math.max(0, timeLeft)}`;
+
+  const centerScale = isFinished
+    ? 1
+    : isPaused
+      ? 1.16
+      : isCountdown
+        ? 1.18
+        : theme.scale;
+
+  const chipClasses = isFinished
+    ? 'bg-emerald-100/90 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200'
+    : isPaused
+      ? 'bg-amber-100/90 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
+      : isCountdown
+        ? 'bg-sky-100/90 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200'
+        : theme.chip;
+
+  const ringColor = isFinished ? '#10B981' : isPaused ? '#F59E0B' : isCountdown ? '#0EA5E9' : theme.ring;
+  const glowColor = isFinished ? 'rgba(16,185,129,0.26)' : isPaused ? 'rgba(245,158,11,0.26)' : theme.glow;
 
   return (
-    <div className="relative w-[clamp(190px,48vw,250px)] h-[clamp(190px,48vw,250px)] flex items-center justify-center">
-      
-      {phase !== 'finished' && phase !== 'idle' && (
-        <div
-          style={{
-            background: `radial-gradient(circle, ${glowColor} 0%, rgba(0,0,0,0) 70%)`,
-            opacity: phase === 'hold' ? 0.6 : 0.45,
-            transform: `scale(${current.scale})`,
-            transition: `transform ${duration}s linear, opacity ${duration}s linear`
-          }}
-          className="absolute -inset-[6%] rounded-full"
+    <div className={cn('relative flex items-center justify-center', compact ? 'w-[204px] h-[204px]' : 'w-[276px] h-[276px]')}>
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          background: `radial-gradient(circle, ${glowColor} 0%, rgba(0,0,0,0) 72%)`,
+          transform: `scale(${centerScale * 0.9})`,
+          transition: 'transform 360ms ease'
+        }}
+      />
+
+      <svg className="absolute inset-0 -rotate-90" width="100%" height="100%" viewBox={`0 0 ${size} ${size}`}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="rgba(148,163,184,0.23)"
+          strokeWidth={stroke}
         />
-      )}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={ringColor}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          style={{ transition: 'stroke-dashoffset 140ms linear, stroke 220ms ease' }}
+        />
+      </svg>
 
       <div
         className={cn(
-          "w-[clamp(92px,24vw,120px)] h-[clamp(92px,24vw,120px)] rounded-full flex flex-col items-center justify-center shadow-lg relative z-10 transition-colors duration-500 backdrop-blur-xl",
-          current.color
+          'rounded-full backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.8)] flex flex-col items-center justify-center transition-colors duration-300',
+          compact ? 'w-[96px] h-[96px]' : 'w-[136px] h-[136px]',
+          chipClasses
         )}
-        style={{ transform: `scale(${current.scale})`, transition: `transform ${duration}s linear` }}
+        style={{
+          transform: `scale(${centerScale})`,
+          transition: 'transform 420ms linear'
+        }}
       >
-        {phase !== 'idle' && (
-            <>
-                <span className="text-[clamp(11px,2.6vw,14px)] font-bold uppercase tracking-widest">{current.text}</span>
-                {phase !== 'finished' && (
-                    <span className="text-[clamp(18px,4.6vw,26px)] font-mono font-black mt-1">
-                      {timeLeft}
-                    </span>
-                )}
-            </>
-        )}
+        <span className={cn('font-black uppercase tracking-[0.14em]', compact ? 'text-[11px]' : 'text-[12px]')}>{label}</span>
+        {value && <span className={cn('font-mono font-black tabular-nums mt-1', compact ? 'text-[28px]' : 'text-[32px]')}>{value}</span>}
       </div>
-
     </div>
   );
 };
