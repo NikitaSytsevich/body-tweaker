@@ -1,9 +1,36 @@
-// src/app/ProfilePage.tsx
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Smartphone, Database, ShieldCheck, Info, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Sun,
+  Smartphone,
+  Database,
+  ShieldCheck,
+  Info,
+  X,
+  Activity,
+  Paintbrush,
+} from 'lucide-react';
 import WebApp from '@twa-dev/sdk';
 import { ProfileAvatar } from '../components/ui/ProfileAvatar';
 import { SettingsSection, SettingsGroup, SettingsRow } from '../components/ui/SettingsList';
+import { useSettingsOverview } from './settings/useSettingsOverview';
+
+interface SettingsMenuItem {
+  icon: LucideIcon;
+  label: string;
+  description: string;
+  to: string;
+  value?: string;
+  iconBgClassName?: string;
+  iconClassName?: string;
+  tone?: 'default' | 'danger';
+}
+
+interface SettingsMenuSection {
+  title: string;
+  items: SettingsMenuItem[];
+}
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
@@ -11,9 +38,89 @@ export const ProfilePage = () => {
   const firstName = user?.first_name || 'Гость';
   const username = user?.username ? `@${user.username}` : 'Локальный профиль';
 
+  const overview = useSettingsOverview();
+
+  const sections = useMemo<SettingsMenuSection[]>(() => {
+    const dataValue = overview.historyCount > 0 ? `${overview.historyCount} записей` : 'Пусто';
+
+    return [
+      {
+        title: 'Основное',
+        items: [
+          {
+            icon: Sun,
+            label: 'Оформление',
+            description: `Активный режим: ${overview.themeLabel}`,
+            to: '/profile/settings/appearance',
+            value: overview.themeLabel,
+            iconBgClassName: 'bg-amber-100 dark:bg-amber-500/20',
+            iconClassName: 'text-amber-600 dark:text-amber-400',
+          },
+          {
+            icon: Smartphone,
+            label: 'Приложение',
+            description: `Установка: ${overview.installLabel.toLowerCase()}`,
+            to: '/profile/settings/app',
+            value: overview.installLabel,
+            iconBgClassName: 'bg-violet-100 dark:bg-violet-500/20',
+            iconClassName: 'text-violet-600 dark:text-violet-400',
+          },
+        ],
+      },
+      {
+        title: 'Данные',
+        items: [
+          {
+            icon: Database,
+            label: 'Резервные копии',
+            description: `Последняя активность: ${overview.lastActivityLabel}`,
+            to: '/profile/settings/data',
+            value: dataValue,
+            iconBgClassName: 'bg-blue-100 dark:bg-blue-500/20',
+            iconClassName: 'text-blue-600 dark:text-blue-400',
+          },
+        ],
+      },
+      {
+        title: 'Документы',
+        items: [
+          {
+            icon: ShieldCheck,
+            label: 'Политики и соглашения',
+            description: overview.legalAccepted
+              ? 'Согласие с условиями сохранено'
+              : 'Рекомендуем проверить актуальные документы',
+            to: '/profile/settings/legal',
+            value: overview.legalAccepted ? 'ОК' : 'Проверить',
+            tone: overview.legalAccepted ? 'default' : 'danger',
+            iconBgClassName: overview.legalAccepted
+              ? 'bg-emerald-100 dark:bg-emerald-500/20'
+              : 'bg-rose-100 dark:bg-rose-500/20',
+            iconClassName: overview.legalAccepted
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-rose-600 dark:text-rose-400',
+          },
+        ],
+      },
+      {
+        title: 'О проекте',
+        items: [
+          {
+            icon: Info,
+            label: 'О приложении',
+            description: 'Команда, философия и каналы связи',
+            to: '/profile/settings/about',
+            value: 'Инфо',
+            iconBgClassName: 'bg-slate-100 dark:bg-slate-500/20',
+            iconClassName: 'text-slate-700 dark:text-slate-300',
+          },
+        ],
+      },
+    ];
+  }, [overview.historyCount, overview.installLabel, overview.lastActivityLabel, overview.legalAccepted, overview.themeLabel]);
+
   return (
-    <div className="app-page px-4 pt-4 pb-24">
-      {/* HEADER */}
+    <div className="app-page h-full overflow-y-auto scrollbar-hide px-4 pt-4 pb-24">
       <div className="flex items-center gap-4 mb-6">
         <button
           onClick={() => navigate(-1)}
@@ -25,85 +132,52 @@ export const ProfilePage = () => {
         <h1 className="text-2xl font-[900] app-header">Настройки</h1>
       </div>
 
-      {/* USER CARD */}
-      <div className="app-panel p-5 rounded-[2rem] flex items-center gap-4 mb-6">
-        <div className="relative">
-          <ProfileAvatar size="lg" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-[color:var(--tg-surface)] rounded-full" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-lg font-bold app-header truncate">{firstName}</h3>
-          <p className="text-sm font-medium app-muted truncate">{username}</p>
+      <div className="app-panel p-5 rounded-[2rem] mb-6 relative overflow-hidden">
+        <div className="absolute -top-14 -right-16 w-44 h-44 rounded-full bg-gradient-to-br from-cyan-400/25 to-emerald-400/15 blur-2xl pointer-events-none" />
+        <div className="relative z-10 flex items-start gap-4">
+          <div className="relative">
+            <ProfileAvatar size="lg" />
+            <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-[color:var(--tg-surface)] rounded-full" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xl font-black app-header truncate leading-tight">{firstName}</h3>
+            <p className="text-sm app-muted truncate">{username}</p>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)]">
+                <Paintbrush className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[11px] font-semibold app-muted">Тема: {overview.themeLabel}</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[color:var(--tg-border)] bg-[color:var(--tg-glass)]">
+                <Activity className="w-3.5 h-3.5 text-blue-500" />
+                <span className="text-[11px] font-semibold app-muted">{overview.lastActivityLabel}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="space-y-5">
-        <SettingsSection title="Основное">
-          <SettingsGroup>
-            <SettingsRow
-              icon={Sun}
-              label="Оформление"
-              description="Тема и внешний вид"
-              to="/profile/settings/appearance"
-              iconBgClassName="bg-amber-100 dark:bg-amber-500/20"
-              iconClassName="text-amber-600 dark:text-amber-400"
-            />
-            <SettingsRow
-              icon={Smartphone}
-              label="Приложение"
-              description="Установка и устройство"
-              to="/profile/settings/app"
-              iconBgClassName="bg-violet-100 dark:bg-violet-500/20"
-              iconClassName="text-violet-600 dark:text-violet-400"
-            />
-          </SettingsGroup>
-        </SettingsSection>
-
-        <SettingsSection title="Данные">
-          <SettingsGroup>
-            <SettingsRow
-              icon={Database}
-              label="Резервные копии"
-              description="Экспорт, импорт, сброс"
-              to="/profile/settings/data"
-              iconBgClassName="bg-blue-100 dark:bg-blue-500/20"
-              iconClassName="text-blue-600 dark:text-blue-400"
-            />
-          </SettingsGroup>
-        </SettingsSection>
-
-        <SettingsSection title="Правовые документы">
-          <SettingsGroup>
-            <SettingsRow
-              icon={ShieldCheck}
-              label="Политики и соглашения"
-              description="Пользовательское соглашение, политика"
-              to="/profile/settings/legal"
-              iconBgClassName="bg-emerald-100 dark:bg-emerald-500/20"
-              iconClassName="text-emerald-600 dark:text-emerald-400"
-            />
-          </SettingsGroup>
-        </SettingsSection>
-
-        <SettingsSection title="О проекте">
-          <SettingsGroup>
-            <SettingsRow
-              icon={Info}
-              label="О приложении"
-              description="Команда, философия, контакты"
-              to="/profile/settings/about"
-              iconBgClassName="bg-slate-100 dark:bg-slate-500/20"
-              iconClassName="text-slate-700 dark:text-slate-300"
-            />
-          </SettingsGroup>
-        </SettingsSection>
-      </div>
-
-      <div className="mt-8 pt-6 flex justify-center opacity-40">
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-[color:var(--tg-glass)] rounded-full border border-[color:var(--tg-border)]">
-          <ShieldCheck className="w-3 h-3 app-muted" />
-          <span className="text-[10px] font-bold app-muted">Secure Storage</span>
-        </div>
+        {sections.map((section) => (
+          <SettingsSection key={section.title} title={section.title}>
+            <SettingsGroup>
+              {section.items.map((item) => (
+                <SettingsRow
+                  key={item.to}
+                  icon={item.icon}
+                  label={item.label}
+                  description={item.description}
+                  to={item.to}
+                  value={item.value}
+                  iconBgClassName={item.iconBgClassName}
+                  iconClassName={item.iconClassName}
+                  tone={item.tone}
+                />
+              ))}
+            </SettingsGroup>
+          </SettingsSection>
+        ))}
       </div>
     </div>
   );

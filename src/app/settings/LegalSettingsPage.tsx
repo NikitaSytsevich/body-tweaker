@@ -1,18 +1,50 @@
-import { useState } from 'react';
-import { ShieldCheck, FileText } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ShieldCheck, FileText, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { SettingsShell } from './SettingsShell';
 import { SettingsSection, SettingsGroup, SettingsRow } from '../../components/ui/SettingsList';
 import { LEGAL_DOCS, getLegalDocById, type LegalDocId } from '../legal/legalDocs';
+import { storageGet } from '../../utils/storage';
 
 export const LegalSettingsPage = () => {
   const [selectedDocId, setSelectedDocId] = useState<LegalDocId | null>(null);
+  const [accepted, setAccepted] = useState(false);
+
   const selectedDoc = selectedDocId ? getLegalDocById(selectedDocId) ?? null : null;
 
+  useEffect(() => {
+    let mounted = true;
+    void storageGet('has_accepted_terms').then((value) => {
+      if (!mounted) return;
+      setAccepted(value === 'true');
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
-    <SettingsShell title="Правовые документы" subtitle="Соглашения и политика">
+    <SettingsShell title="Правовые документы" subtitle="Соглашения, политика и актуальные версии">
       <div className="space-y-5">
         {!selectedDoc && (
           <>
+            <div className="app-panel rounded-[1.8rem] p-4">
+              <div className="flex items-center gap-3">
+                {accepted ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 text-amber-500" />
+                )}
+                <div>
+                  <p className="text-sm font-bold app-header">
+                    {accepted ? 'Согласие сохранено' : 'Рекомендуется проверка документов'}
+                  </p>
+                  <p className="text-xs app-muted">
+                    Последние версии: {LEGAL_DOCS.length} документов
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <SettingsSection title="Документы">
               <SettingsGroup>
                 {LEGAL_DOCS.map((doc) => (

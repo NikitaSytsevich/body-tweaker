@@ -8,6 +8,7 @@ import { storageGet, storageSet, STORAGE_READONLY_EVENT_NAME, flushCloudQueue } 
 import WebApp from '@twa-dev/sdk';
 import { ToastNotification } from '../components/ui/ToastNotification';
 import { PWA_UPDATE_EVENT_NAME, PWA_OFFLINE_READY_EVENT_NAME } from '../utils/pwa';
+import { HISTORY_MENU_VISIBILITY_EVENT_NAME } from '../features/history/historyEvents';
 
 // OPTIMIZATION: Lazy load feature pages for smaller initial bundle
 const MetabolismMapPage = lazy(() => import('../features/fasting/MetabolismMapPage').then(m => ({ default: m.MetabolismMapPage })));
@@ -56,6 +57,7 @@ export const Layout = () => {
   const [showStorageToast, setShowStorageToast] = useState(false);
   const [showPwaToast, setShowPwaToast] = useState(false);
   const [showOfflineReadyToast, setShowOfflineReadyToast] = useState(false);
+  const [isHistoryMenuOpen, setIsHistoryMenuOpen] = useState(false);
   
   const xPx = useMotionValue(0);
   const dragBaseRef = useRef<number | null>(null);
@@ -77,6 +79,8 @@ export const Layout = () => {
     return currentPath.startsWith(item.path);
   });
   const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
+  const isHistoryRoute = currentPath.startsWith('/history');
+  const shouldHideBottomDock = isHistoryRoute && isHistoryMenuOpen;
 
   const pillGap = 4;
   const [metrics, setMetrics] = useState({
@@ -249,6 +253,18 @@ export const Layout = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleHistoryMenuVisibility = (event: Event) => {
+      const detail = (event as CustomEvent<{ isOpen?: boolean }>).detail;
+      setIsHistoryMenuOpen(Boolean(detail?.isOpen));
+    };
+
+    window.addEventListener(HISTORY_MENU_VISIBILITY_EVENT_NAME, handleHistoryMenuVisibility);
+    return () => window.removeEventListener(HISTORY_MENU_VISIBILITY_EVENT_NAME, handleHistoryMenuVisibility);
+  }, []);
+
+  useEffect(() => {
     const handleMove = (e: PointerEvent) => {
       if (!isDragging || !navRef.current) return;
       if (!metrics.pillWidth) return;
@@ -351,7 +367,7 @@ export const Layout = () => {
         </main>
 
         {/* ИЗМЕНЕНИЕ: Скрываем навигацию на странице статьи */}
-        {!isArticleDetail && (
+        {!isArticleDetail && !shouldHideBottomDock && (
           <div
             className="fixed left-0 right-0 z-40 flex justify-center pointer-events-none"
             style={{ bottom: 'calc(12px + var(--app-safe-bottom))' }}

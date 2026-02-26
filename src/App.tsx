@@ -28,8 +28,8 @@ function App() {
           <Route path="/timer" element={<Layout />} />
           <Route path="/breathing" element={<Layout />} />
           <Route path="/history" element={<Layout />} />
-          <Route path="/profile" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
-          <Route path="/profile/settings" element={<Navigate to="/profile" replace />} />
+          <Route path="/profile" element={<Navigate to="/profile/settings" replace />} />
+          <Route path="/profile/settings" element={<ProfileLayout><ProfilePage /></ProfileLayout>} />
           <Route path="/profile/settings/appearance" element={<ProfileLayout><AppearanceSettingsPage /></ProfileLayout>} />
           <Route path="/profile/settings/app" element={<ProfileLayout><AppSettingsPage /></ProfileLayout>} />
           <Route path="/profile/settings/data" element={<ProfileLayout><DataSettingsPage /></ProfileLayout>} />
