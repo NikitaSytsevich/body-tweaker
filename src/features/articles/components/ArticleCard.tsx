@@ -4,6 +4,7 @@ import type { ArticleMeta } from '../types';
 
 interface Props {
   article: ArticleMeta;
+  position?: number;
 }
 
 export const ArticleCard = ({ article }: Props) => {

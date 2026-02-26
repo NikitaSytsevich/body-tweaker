@@ -57,6 +57,11 @@ const EMPTY_HISTORY_STATS: KnowledgeHistoryStats = {
 
 const ARTICLE_PROFILES: Record<string, KnowledgeProfile> = {
   'how-to-prepare': { focus: ['prep', 'safety'], readMinutes: 15, intensity: 1 },
+  'fasting-day-regimen': { focus: ['prep', 'safety'], readMinutes: 12, intensity: 1 },
+  'six-stages-rdt': { focus: ['fundamentals', 'prep'], readMinutes: 11, intensity: 1 },
+  'acidotic-crisis': { focus: ['safety', 'fundamentals'], readMinutes: 11, intensity: 2 },
+  'inpatient-vs-home': { focus: ['safety', 'special'], readMinutes: 10, intensity: 2 },
+  'exit-mistakes': { focus: ['exit', 'safety'], readMinutes: 11, intensity: 1 },
   'shelton-fasting-art': { focus: ['fundamentals', 'exit'], readMinutes: 18, intensity: 2 },
   'bragg-miracle-fasting': { focus: ['fundamentals', 'prep'], readMinutes: 14, intensity: 1 },
   'china-study': { focus: ['nutrition'], readMinutes: 16, intensity: 2 },
@@ -66,6 +71,10 @@ const ARTICLE_PROFILES: Record<string, KnowledgeProfile> = {
   'raw-food-monodiet': { focus: ['nutrition', 'special'], readMinutes: 12, intensity: 3 },
   'smoking-and-fasting': { focus: ['safety', 'special'], readMinutes: 11, intensity: 2 },
   'diabetes-fasting': { focus: ['safety', 'special'], readMinutes: 18, intensity: 3 },
+  'preventive-short-fasts': { focus: ['prep', 'special'], readMinutes: 10, intensity: 1 },
+  'movement-during-fasting': { focus: ['prep', 'fundamentals'], readMinutes: 10, intensity: 1 },
+  'skin-detox-hygiene': { focus: ['safety', 'prep'], readMinutes: 9, intensity: 1 },
+  'fractional-method': { focus: ['special', 'safety'], readMinutes: 11, intensity: 2 },
   'how-to-exit': { focus: ['exit', 'safety'], readMinutes: 13, intensity: 1 }
 };
 

@@ -310,7 +310,12 @@ export const Layout = () => {
 
       <div className="pointer-events-none absolute top-0 left-0 right-0 h-[var(--app-top-offset)] bg-gradient-to-b from-[color:var(--tg-surface)]/80 via-[color:var(--tg-surface)]/45 to-transparent" />
 
-      <div className="w-full max-w-md h-full relative flex flex-col shadow-2xl overflow-hidden app-surface">
+      <div
+        className={cn(
+          'w-full h-full relative flex flex-col overflow-hidden app-surface',
+          isArticleDetail ? 'max-w-none' : 'max-w-md shadow-2xl'
+        )}
+      >
 
         <main className="flex-1 relative w-full overflow-hidden">
             {/* ИЗМЕНЕНИЕ: Скрываем основные экраны, если открыта статья */}

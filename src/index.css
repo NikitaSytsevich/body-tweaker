@@ -254,6 +254,129 @@
   animation: slide-in-right 220ms ease-out;
 }
 
+@keyframes article-orbit {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) rotate(4deg) scale(1.04);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+.animate-article-orbit {
+  animation: article-orbit 4.8s ease-in-out infinite;
+}
+.animate-article-orbit-slow {
+  animation: article-orbit 6.6s ease-in-out infinite;
+}
+
+@keyframes article-glow-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.48;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.48;
+  }
+}
+.animate-article-glow {
+  animation: article-glow-pulse 5.2s ease-in-out infinite;
+}
+
+@keyframes article-bar-sheen {
+  0% {
+    transform: translateX(-150%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+.animate-article-bar-sheen {
+  animation: article-bar-sheen 2.3s linear infinite;
+}
+
+@keyframes article-float {
+  0% {
+    transform: translateY(0);
+    opacity: 0.92;
+  }
+  50% {
+    transform: translateY(-7px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.92;
+  }
+}
+.animate-article-float {
+  animation: article-float 4.2s ease-in-out infinite;
+}
+.animate-article-float-delayed {
+  animation: article-float 5.1s ease-in-out infinite;
+}
+
+@keyframes article-grid-drift {
+  0% {
+    transform: translateX(-10%) translateY(1%);
+    opacity: 0.08;
+  }
+  50% {
+    transform: translateX(0) translateY(-2%);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateX(10%) translateY(1%);
+    opacity: 0.08;
+  }
+}
+.animate-article-grid-drift {
+  animation: article-grid-drift 10s ease-in-out infinite;
+}
+
+.article-fullscreen {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(14, 165, 233, 0.1), transparent 48%),
+    radial-gradient(circle at 90% 95%, rgba(52, 211, 153, 0.1), transparent 52%),
+    var(--tg-bg);
+}
+
+.article-reading-content {
+  color: var(--article-text);
+}
+
+.article-reading-content strong {
+  color: var(--article-text);
+  font-weight: 600;
+}
+
+.article-reading-content em {
+  color: color-mix(in srgb, var(--article-text) 84%, var(--article-accent) 16%);
+}
+
+.article-reading-content a {
+  color: var(--article-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-reading-content section + section {
+  margin-top: 2.8rem;
+}
+
+@media (max-width: 768px) {
+  .article-reading-content section + section {
+    margin-top: 2.2rem;
+  }
+}
+
 /* Оптимизация для GPU */
 .transform-gpu {
   transform: translate3d(0, 0, 0);

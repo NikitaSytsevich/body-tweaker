@@ -5,8 +5,17 @@ type ArticleModule = Record<string, unknown>;
 
 const ARTICLE_IMPORTERS: Record<string, () => Promise<ArticleModule>> = {
   'how-to-prepare': () => import('./how-to-prepare'),
+  'fasting-day-regimen': () => import('./fasting-day-regimen'),
+  'six-stages-rdt': () => import('./six-stages-rdt'),
+  'acidotic-crisis': () => import('./acidotic-crisis'),
+  'inpatient-vs-home': () => import('./inpatient-vs-home'),
+  'exit-mistakes': () => import('./exit-mistakes'),
   'shelton-fasting-art': () => import('./shelton-fasting-art'),
   'bragg-miracle-fasting': () => import('./bragg-miracle-fasting'),
+  'preventive-short-fasts': () => import('./preventive-short-fasts'),
+  'movement-during-fasting': () => import('./movement-during-fasting'),
+  'skin-detox-hygiene': () => import('./skin-detox-hygiene'),
+  'fractional-method': () => import('./fractional-method'),
   'china-study': () => import('./china-study'),
   'greger-how-not-to-die': () => import('./greger-how-not-to-die'),
   'furman-eat-to-live': () => import('./furman-eat-to-live'),
